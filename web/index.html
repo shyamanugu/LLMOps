@@ -3,307 +3,216 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enterprise LLMOps for Afni · Evoke Technologies</title>
+<title>Enterprise LLMOps for AFNI</title>
 <style>
-  :root{
-    --navy:#121F3D; --indigo:#1B3A6B; --teal:#00A6A6; --cyan:#2EC4D3;
-    --amber:#F5A623; --green:#2E9E5B; --light:#F4F6FA; --gray:#5A6474;
-    --ink:#1C2433; --line:#E1E6F0; --white:#fff;
-  }
+  :root{--navy:#121F3D;--indigo:#1B3A6B;--teal:#00A6A6;--cyan:#2EC4D3;--amber:#F5A623;
+    --green:#2E9E5B;--light:#F4F6FA;--gray:#5A6474;--ink:#1C2433;--line:#E1E6F0;--white:#fff}
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;color:var(--ink);
-    background:var(--white);line-height:1.55;font-size:16px}
+  body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;color:var(--ink);background:#fff;line-height:1.55}
   a{color:var(--indigo);text-decoration:none}
-  .wrap{max-width:1160px;margin:0 auto;padding:0 24px}
-  /* nav */
-  nav{position:sticky;top:0;z-index:50;background:rgba(18,31,61,.97);
-    backdrop-filter:blur(6px);border-bottom:2px solid var(--teal)}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+  nav{position:sticky;top:0;z-index:50;background:rgba(18,31,61,.97);backdrop-filter:blur(6px);border-bottom:2px solid var(--teal)}
   nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
   nav .brand{color:#fff;font-weight:700;letter-spacing:.3px}
   nav .brand span{color:var(--cyan)}
-  nav ul{display:flex;gap:22px;list-style:none}
+  nav ul{display:flex;gap:20px;list-style:none}
   nav ul a{color:#C7D0E0;font-size:14px;font-weight:600}
   nav ul a:hover{color:#fff}
-  @media(max-width:820px){nav ul{display:none}}
-  /* hero */
-  .hero{background:linear-gradient(135deg,#0E1830 0%,#1B3A6B 100%);color:#fff;
-    padding:88px 0 76px;position:relative;overflow:hidden}
-  .hero:before{content:"";position:absolute;right:-120px;top:-120px;width:420px;height:420px;
-    background:radial-gradient(circle,rgba(46,196,211,.25),transparent 70%)}
-  .kicker{color:var(--cyan);font-weight:700;letter-spacing:2px;font-size:13px;margin-bottom:16px}
-  .hero h1{font-size:52px;line-height:1.05;font-weight:800;margin-bottom:18px;max-width:900px}
-  .hero .lead{font-size:19px;color:#C7D0E0;max-width:760px;margin-bottom:30px}
-  .bar{width:120px;height:6px;background:var(--amber);margin-bottom:26px;border-radius:3px}
+  @media(max-width:900px){nav ul{display:none}}
+  .hero{background:linear-gradient(135deg,#0E1830,#1B3A6B);color:#fff;padding:84px 0 70px;position:relative;overflow:hidden}
+  .hero:before{content:"";position:absolute;right:-120px;top:-120px;width:420px;height:420px;background:radial-gradient(circle,rgba(46,196,211,.25),transparent 70%)}
+  .kicker{color:var(--cyan);font-weight:700;letter-spacing:2px;font-size:13px;margin-bottom:14px}
+  .hero h1{font-size:50px;line-height:1.05;font-weight:800;margin-bottom:8px;max-width:900px}
+  .hero h1 small{display:block;font-size:26px;color:#9FB0CC;font-weight:700;margin-top:8px}
+  .hero .lead{font-size:18px;color:#C7D0E0;max-width:780px;margin:20px 0 28px}
+  .bar{width:120px;height:6px;background:var(--amber);margin-bottom:24px;border-radius:3px}
   .btns{display:flex;gap:14px;flex-wrap:wrap}
   .btn{display:inline-block;padding:13px 24px;border-radius:8px;font-weight:700;font-size:15px}
-  .btn.primary{background:var(--teal);color:#fff}
-  .btn.primary:hover{background:#00c2c2}
-  .btn.ghost{background:transparent;color:#fff;border:1.5px solid #45557C}
-  .btn.ghost:hover{border-color:var(--cyan);color:var(--cyan)}
-  .meta{margin-top:34px;color:#9FB0CC;font-size:14px;border-top:1px solid #2A406E;padding-top:18px}
-  /* sections */
-  section{padding:70px 0}
+  .btn.primary{background:var(--teal);color:#fff}.btn.primary:hover{background:#00c2c2}
+  .btn.ghost{background:transparent;color:#fff;border:1.5px solid #45557C}.btn.ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+  .meta{margin-top:32px;color:#9FB0CC;font-size:14px;border-top:1px solid #2A406E;padding-top:16px}
+  section{padding:64px 0}
   section:nth-child(even){background:var(--light)}
   .sec-kicker{color:var(--teal);font-weight:700;letter-spacing:1.5px;font-size:13px;margin-bottom:8px}
-  h2.title{font-size:34px;color:var(--navy);font-weight:800;margin-bottom:14px}
-  .sub{color:var(--gray);font-size:17px;max-width:760px;margin-bottom:36px}
-  /* stat row */
+  h2.title{font-size:32px;color:var(--navy);font-weight:800;margin-bottom:12px}
+  .sub{color:var(--gray);font-size:17px;max-width:820px;margin-bottom:30px}
+  .fig{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(18,31,61,.06)}
+  .fig img{width:100%;height:auto;display:block}
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px;
-    border-top:4px solid var(--teal)}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;border-top:4px solid var(--teal)}
   .stat b{display:block;font-size:15px;color:var(--navy);margin-bottom:6px}
   .stat span{color:var(--gray);font-size:14px}
-  /* cards grid */
   .grid{display:grid;gap:20px}
-  .g2{grid-template-columns:1fr 1fr}
-  .g3{grid-template-columns:repeat(3,1fr)}
-  .g4{grid-template-columns:repeat(4,1fr)}
-  @media(max-width:860px){.g2,.g3,.g4,.stats{grid-template-columns:1fr}}
-  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px;
-    box-shadow:0 1px 3px rgba(18,31,61,.05)}
-  .card h3{color:var(--navy);font-size:19px;margin-bottom:10px}
-  .card .tag{display:inline-block;font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;
-    background:#E7FAFA;color:#046b6b;margin-bottom:12px}
+  .g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:900px){.g2,.g3,.g4,.stats{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px}
+  .card .tag{display:inline-block;font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;margin-bottom:12px}
+  .card h3{color:var(--navy);font-size:19px;margin-bottom:8px}
   .card ul{list-style:none;margin-top:10px}
   .card ul li{padding-left:22px;position:relative;margin-bottom:7px;color:#37414f;font-size:14.5px}
   .card ul li:before{content:"▸";position:absolute;left:0;color:var(--teal);font-weight:700}
-  /* architecture layers */
-  .layer{display:flex;align-items:stretch;margin-bottom:8px;border-radius:8px;overflow:hidden;
-    border:1px solid var(--line)}
-  .layer .name{min-width:230px;background:var(--indigo);color:#fff;font-weight:700;padding:14px 16px;
-    display:flex;align-items:center;font-size:14.5px}
-  .layer .desc{background:#fff;padding:14px 18px;color:#37414f;font-size:14px;display:flex;align-items:center}
-  .layer.t0 .name{background:var(--cyan)}
-  .layer.t1 .name{background:var(--teal)}
-  .layer.t2 .name{background:var(--indigo)}
-  .layer.t3 .name{background:#3E5C99}
-  .layer.t4 .name{background:#4A6AA8}
-  .layer.t5 .name{background:var(--gray)}
-  .layer.t6 .name{background:var(--navy)}
-  .layer.t7 .name{background:#2E7D7D}
-  @media(max-width:860px){.layer{flex-direction:column}.layer .name{min-width:0}}
-  /* agent diagram */
-  .orch{background:var(--navy);color:#fff;text-align:center;padding:18px;border-radius:10px;
-    max-width:360px;margin:0 auto 10px}
-  .orch b{font-size:17px}.orch span{display:block;color:var(--cyan);font-size:13px;margin-top:4px}
-  .agents{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
-  @media(max-width:860px){.agents{grid-template-columns:repeat(2,1fr)}}
-  .agent{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fff;
-    border-top:4px solid var(--teal)}
-  .agent b{display:block;color:var(--navy);font-size:14.5px;margin-bottom:3px}
-  .agent span{color:var(--gray);font-size:13px}
-  /* table */
-  table.tbl{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;
-    border:1px solid var(--line);font-size:14.5px}
-  table.tbl th{background:var(--indigo);color:#fff;text-align:left;padding:12px 14px;font-size:14px}
-  table.tbl td{padding:11px 14px;border-top:1px solid var(--line)}
+  table.tbl{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;border:1px solid var(--line);font-size:14px;margin-top:14px}
+  table.tbl th{background:var(--indigo);color:#fff;text-align:left;padding:11px 14px}
+  table.tbl td{padding:10px 14px;border-top:1px solid var(--line)}
   table.tbl tr:nth-child(even) td{background:var(--light)}
   table.tbl td:first-child{font-weight:700;color:var(--navy)}
-  /* roadmap */
-  .road{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-  @media(max-width:860px){.road{grid-template-columns:1fr}}
-  .phase{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
-  .phase .top{padding:16px;color:#fff}
-  .phase.p0 .top{background:var(--gray)} .phase.p1 .top{background:var(--teal)}
-  .phase.p2 .top{background:var(--indigo)} .phase.p3 .top{background:var(--green)}
-  .phase .top b{display:block;font-size:16px}.phase .top span{font-size:13px;opacity:.9}
-  .phase .body{padding:16px}
-  .phase .body h4{color:var(--navy);font-size:14.5px;margin-bottom:8px}
-  .phase .body li{font-size:13.5px;color:#37414f;margin-bottom:6px;list-style:none;padding-left:16px;position:relative}
-  .phase .body li:before{content:"–";position:absolute;left:0;color:var(--teal)}
-  /* callout */
-  .callout{background:var(--indigo);color:#fff;border-radius:12px;padding:30px 34px;font-size:20px;
-    font-weight:600;line-height:1.45}
-  .callout .q{color:var(--cyan);font-size:40px;line-height:0;vertical-align:-8px;margin-right:6px}
+  .callout{background:var(--indigo);color:#fff;border-radius:12px;padding:28px 32px;font-size:19px;font-weight:600;line-height:1.45}
+  .callout .q{color:var(--cyan);font-size:38px;line-height:0;vertical-align:-8px;margin-right:6px}
   .note{font-size:13px;color:var(--gray);font-style:italic;margin-top:10px}
-  footer{background:var(--navy);color:#9FB0CC;padding:40px 0;font-size:14px}
+  .pill{display:inline-block;background:#E7FAFA;color:#046b6b;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;margin:0 6px 8px 0}
+  footer{background:var(--navy);color:#9FB0CC;padding:38px 0;font-size:14px}
   footer b{color:#fff}
-  .pill{display:inline-block;background:#E7FAFA;color:#046b6b;font-size:12px;font-weight:700;
-    padding:4px 12px;border-radius:20px;margin:0 6px 8px 0}
 </style>
 </head>
 <body>
-
 <nav><div class="wrap">
-  <div class="brand">Evoke × <span>Afni</span> · LLMOps</div>
+  <div class="brand">AFNI · <span>Enterprise LLMOps</span></div>
   <ul>
-    <li><a href="#why">Why now</a></li>
-    <li><a href="#arch">Architecture</a></li>
-    <li><a href="#agents">Multi-agent</a></li>
-    <li><a href="#usecases">Use cases</a></li>
+    <li><a href="#initiatives">Initiatives</a></li>
+    <li><a href="#platform">Platform</a></li>
+    <li><a href="#voice">Voice Agent</a></li>
+    <li><a href="#pi">PI Index</a></li>
+    <li><a href="#hiring">Hiring</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#next">Next steps</a></li>
   </ul>
 </div></nav>
 
 <header class="hero"><div class="wrap">
   <div class="kicker">ENTERPRISE PROPOSAL · 2026</div>
   <div class="bar"></div>
-  <h1>Enterprise LLMOps Platform for Afni</h1>
-  <p class="lead">Industrializing multi-agent Generative AI — Voice AI for contact centers and
-    AI-driven HR recruitment on one secure, governed Azure platform.</p>
+  <h1>Enterprise LLMOps for AFNI<small>Multi-agent GenAI, industrialized</small></h1>
+  <p class="lead">One secure, governed Azure platform powering three flagship initiatives —
+    <b style="color:#fff">Voice Agent</b>, the <b style="color:#fff">Performance Intelligence Index</b>,
+    and <b style="color:#fff">Hiring Intelligence</b>.</p>
   <div class="btns">
     <a class="btn primary" href="../presentation/Afni-LLMOps-Proposal.pptx">Download deck (PPTX)</a>
     <a class="btn ghost" href="../proposal/Afni-LLMOps-Proposal.docx">Full proposal (DOCX)</a>
     <a class="btn ghost" href="../docs/01-executive-summary.md">Read the docs</a>
   </div>
-  <div class="meta">Prepared by <b>Evoke Technologies</b> · GenAI Architecture Practice &nbsp;|&nbsp;
-    Author: Shyam, Senior GenAI Architect · Confidential — for Afni &amp; Evoke review</div>
+  <div class="meta">AFNI · Office of GenAI Architecture &nbsp;|&nbsp; Draft v2.0 · Internal &amp; Confidential</div>
 </div></header>
 
-<!-- WHY -->
 <section id="why"><div class="wrap">
   <div class="sec-kicker">WHY NOW</div>
   <h2 class="title">The BPO inflection point</h2>
-  <p class="sub">Afni's economics are driven by the cost and quality of high-volume voice
-    interactions and the cost and speed of hiring the people who handle them. This proposal
-    targets both — before AI-native competitors reprice the market.</p>
+  <p class="sub">AFNI's economics are driven by the cost and quality of high-volume voice interactions and
+    the cost and speed of hiring the people who handle them. This proposal targets both — before AI-native
+    competitors reprice the market.</p>
   <div class="stats">
-    <div class="stat"><b>Margin pressure</b><span>AI-native providers reset price and quality expectations.</span></div>
-    <div class="stat"><b>Attrition &amp; ramp</b><span>High turnover keeps hiring and training in permanent motion.</span></div>
-    <div class="stat"><b>CX expectations</b><span>Clients want 24/7, instant, consistent, compliant service.</span></div>
-    <div class="stat"><b>Move first</b><span>Become an AI-enabled partner — or be repriced.</span></div>
+    <div class="stat"><b>Margin pressure</b><span>AI-native providers reset price &amp; quality expectations.</span></div>
+    <div class="stat"><b>Attrition &amp; ramp</b><span>Hiring and training never stop.</span></div>
+    <div class="stat"><b>CX expectations</b><span>24/7, instant, consistent, compliant service.</span></div>
+    <div class="stat"><b>Move first</b><span>Become the AI-enabled partner of choice.</span></div>
   </div>
-  <div style="margin-top:36px" class="callout">
-    <span class="q">&ldquo;</span>Give Afni one secure, governed platform to build, evaluate, deploy,
-    govern and continuously improve fleets of cooperating AI agents — with the same operational
-    rigor Afni already applies to running contact centers.
+  <div style="margin-top:34px" class="callout">
+    <span class="q">&ldquo;</span>Give AFNI one secure, governed platform to build, evaluate, deploy, govern
+    and continuously improve fleets of cooperating AI agents — with the same operational rigor AFNI already
+    applies to running contact centers.
   </div>
 </div></section>
 
-<!-- STRATEGY -->
-<section id="strategy"><div class="wrap">
+<section id="initiatives"><div class="wrap">
   <div class="sec-kicker">THE STRATEGY</div>
-  <h2 class="title">Platform-first, not pilot-by-pilot</h2>
-  <p class="sub">Build the foundations once — orchestration, retrieval, evaluation, guardrails,
-    observability, security and governance — so every use case reuses them and ships in weeks.</p>
-  <div class="grid g4">
-    <div class="card"><h3>Platform-first</h3><p>Foundations built once; every use case inherits them.</p></div>
-    <div class="card"><h3>Multi-agent</h3><p>One orchestrator + specialist pattern, reused everywhere.</p></div>
-    <div class="card"><h3>Governed by design</h3><p>Responsible AI, compliance &amp; human-in-the-loop built in.</p></div>
-    <div class="card"><h3>Measurable value</h3><p>Quality, cost and business KPIs instrumented end to end.</p></div>
+  <h2 class="title">Three flagship initiatives, one shared platform</h2>
+  <p class="sub">Voice Agent generates real-time automation and interaction data; the Performance Intelligence
+    Index turns 100% of that data into performance intelligence; Hiring Intelligence reuses the same agents
+    and voice stack to hire the workforce. Build once, reuse everywhere.</p>
+  <div class="fig"><img src="../diagrams/03-three-initiatives.svg" alt="Three flagship initiatives on one shared platform"></div>
+  <div class="grid g3" style="margin-top:24px">
+    <div class="card" style="border-top:4px solid var(--teal)">
+      <span class="tag" style="background:#E7FAFA;color:#046b6b">VOICE AGENT</span>
+      <h3>Real-time voice automation</h3>
+      <ul><li>Agent-assist copilot for live reps</li><li>Autonomous voice for containable calls</li>
+        <li>Sub-second speech-to-speech</li><li>TCPA / PCI guardrails every turn</li></ul></div>
+    <div class="card" style="border-top:4px solid var(--indigo)">
+      <span class="tag" style="background:#E7ECF7;color:#1B3A6B">PI INDEX</span>
+      <h3>Performance Intelligence Index</h3>
+      <ul><li>Scores 100% of interactions</li><li>Seven explainable dimensions</li>
+        <li>One composite, comparable index</li><li>Drives coaching &amp; QA calibration</li></ul></div>
+    <div class="card" style="border-top:4px solid var(--amber)">
+      <span class="tag" style="background:#FFF2DB;color:#8a5600">HIRING INTELLIGENCE</span>
+      <h3>Fair, high-volume hiring</h3>
+      <ul><li>Screening &amp; résumé ranking</li><li>Conversational + voice pre-screen</li>
+        <li>Interview scoring (assist only)</li><li>Fairness first — humans decide</li></ul></div>
   </div>
 </div></section>
 
-<!-- ARCHITECTURE -->
-<section id="arch"><div class="wrap">
-  <div class="sec-kicker">PLATFORM ARCHITECTURE</div>
-  <h2 class="title">A layered reference stack on Azure AI Foundry</h2>
-  <p class="sub">Each layer has a clear responsibility and named Azure services, so use cases
-    compose from shared building blocks rather than bespoke stacks.</p>
-  <div class="layer t0"><div class="name">Experience &amp; channels</div><div class="desc">CCaaS + Azure Communication Services · web &amp; chat · agent-assist desktop · ATS / HR portals</div></div>
-  <div class="layer t1"><div class="name">Orchestration &amp; agents</div><div class="desc">Azure AI Agent Service · Semantic Kernel / AutoGen (Microsoft Agent Framework) · orchestrator + specialists</div></div>
-  <div class="layer t2"><div class="name">Models &amp; AI services</div><div class="desc">Azure OpenAI GPT-4o / mini · gpt-realtime (speech-to-speech) · AI Speech · Content Safety</div></div>
-  <div class="layer t3"><div class="name">Knowledge &amp; RAG</div><div class="desc">Azure AI Search (hybrid + semantic ranker) · AI Document Intelligence · grounding &amp; citations</div></div>
-  <div class="layer t4"><div class="name">Data &amp; integration</div><div class="desc">Cosmos DB (state/memory) · Data Lake / Fabric · Azure SQL · API Management · secure CRM / HRIS connectors</div></div>
-  <div class="layer t5"><div class="name">DevOps &amp; LLMOps</div><div class="desc">Prompt flow &amp; registry · AI evaluation SDK · GitHub Actions / Azure DevOps · Container Apps / AKS</div></div>
-  <div class="layer t6"><div class="name">Security &amp; governance</div><div class="desc">Entra ID · Key Vault · Defender for Cloud · Purview · private endpoints / VNet · Responsible AI</div></div>
-  <div class="layer t7"><div class="name">Observability &amp; FinOps</div><div class="desc">Azure Monitor · App Insights · OpenTelemetry (GenAI conventions) · token metering &amp; cost showback</div></div>
+<section id="platform"><div class="wrap">
+  <div class="sec-kicker">PLATFORM</div>
+  <h2 class="title">A layered reference architecture on Azure AI Foundry</h2>
+  <p class="sub">Each layer has a clear responsibility and named Azure services, so every initiative composes
+    from shared building blocks rather than bespoke stacks.</p>
+  <div class="fig"><img src="../diagrams/01-platform-architecture.svg" alt="Layered reference architecture"></div>
 </div></section>
 
-<!-- AGENTS -->
 <section id="agents"><div class="wrap">
   <div class="sec-kicker">MULTI-AGENT SYSTEMS</div>
-  <h2 class="title">One orchestration pattern, reused everywhere</h2>
-  <p class="sub">A supervisor/orchestrator routes work to specialist agents with narrow, testable
-    responsibilities. Deterministic guardrails wrap probabilistic agents.</p>
-  <div class="orch"><b>ORCHESTRATOR</b><span>supervisor · routing · policy</span></div>
-  <div class="agents">
-    <div class="agent"><b>Intent / Router</b><span>classify &amp; route</span></div>
-    <div class="agent"><b>Knowledge / RAG</b><span>grounded answers</span></div>
-    <div class="agent"><b>Action / Tooling</b><span>CRM · HRIS · billing</span></div>
-    <div class="agent"><b>Compliance</b><span>disclosures · PII · TCPA</span></div>
-    <div class="agent"><b>Sentiment</b><span>escalation cues</span></div>
-    <div class="agent"><b>Escalation / Handoff</b><span>warm human transfer</span></div>
-    <div class="agent"><b>Summarize / QA</b><span>disposition · scoring</span></div>
-    <div class="agent" style="border-top-color:var(--amber)"><b>Reused ×2</b><span>voice &amp; HR share these</span></div>
-  </div>
-  <div style="margin-top:32px">
-    <table class="tbl">
-      <tr><th>Specialist agent</th><th>Voice AI (contact center)</th><th>HR recruitment</th></tr>
-      <tr><td>Intent / Router</td><td>Why is the customer calling?</td><td>Where is the candidate in the funnel?</td></tr>
-      <tr><td>Knowledge / RAG</td><td>Policy, plan, billing answers</td><td>Role, benefits, process FAQs</td></tr>
-      <tr><td>Action / Tooling</td><td>Update CRM, take payment, verify</td><td>Read ATS, parse résumé, book interview</td></tr>
-      <tr><td>Compliance</td><td>TCPA, PCI pause/mask, disclosures</td><td>EEOC, NYC LL144, notice &amp; consent</td></tr>
-      <tr><td>Summarize / QA</td><td>Call summary, disposition, QA score</td><td>Structured interview notes (assist)</td></tr>
-    </table>
-  </div>
+  <h2 class="title">One orchestrator, seven specialist agents</h2>
+  <p class="sub">A supervisor routes work to specialist agents with narrow, testable responsibilities.
+    Deterministic guardrails wrap the probabilistic agents. The same pattern serves all three initiatives.</p>
+  <div class="fig"><img src="../diagrams/02-multi-agent.svg" alt="Multi-agent orchestration pattern"></div>
 </div></section>
 
-<!-- USE CASES -->
-<section id="usecases"><div class="wrap">
-  <div class="sec-kicker">FLAGSHIP USE CASES</div>
-  <h2 class="title">Two use cases, one platform</h2>
-  <p class="sub">Sequenced from lowest to highest risk, each delivering measurable value early.</p>
-  <div class="grid g2">
-    <div class="card">
-      <span class="tag">USE CASE 1 · VOICE AI</span>
-      <h3>Voice AI for contact centers</h3>
-      <ul>
-        <li><b>Agent-assist copilot</b> — live transcription, next-best-action, compliance nudges, auto-summary</li>
-        <li><b>Autonomous voice agent</b> — sub-second speech-to-speech for containable call types</li>
-        <li><b>Post-call analytics &amp; QA</b> — 100% coverage, not sampled</li>
-      </ul>
-      <table class="tbl" style="margin-top:16px;font-size:13px">
-        <tr><th>KPI</th><th>Target *</th></tr>
-        <tr><td>Containment</td><td>20–40% of eligible calls</td></tr>
-        <tr><td>AHT</td><td>15–25% reduction</td></tr>
-        <tr><td>QA coverage</td><td>~5% → 100%</td></tr>
-      </table>
-    </div>
-    <div class="card">
-      <span class="tag" style="background:#FFF2DB;color:#8a5600">USE CASE 2 · HR RECRUITMENT</span>
-      <h3>AI-driven HR recruitment</h3>
-      <ul>
-        <li><b>Agents per stage</b> — JD generation, screening, conversational pre-screen, scheduling, scoring assist</li>
-        <li><b>AI assists, humans decide</b> — no autonomous rejection</li>
-        <li><b>Fairness built in</b> — EEOC, NYC LL144 bias audits, IL AI Video Interview Act, EU AI Act, GDPR</li>
-      </ul>
-      <table class="tbl" style="margin-top:16px;font-size:13px">
-        <tr><th>KPI</th><th>Target *</th></tr>
-        <tr><td>Screening effort</td><td>30–50% reduction</td></tr>
-        <tr><td>Time-to-fill</td><td>Materially shorter</td></tr>
-        <tr><td>90-day attrition</td><td>Reduced via better matching</td></tr>
-      </table>
-    </div>
-  </div>
-  <p class="note">* All figures are illustrative placeholders, to be replaced with Afni actuals during Phase 0 discovery.</p>
+<section id="voice"><div class="wrap">
+  <div class="sec-kicker">INITIATIVE 1 · VOICE AGENT</div>
+  <h2 class="title">Real-time voice automation &amp; agent-assist</h2>
+  <p class="sub">Delivered in three modes, sequenced from lowest to highest risk, with guardrails on every turn.</p>
+  <div class="fig"><img src="../diagrams/04-voice-flow.svg" alt="Voice Agent call flow"></div>
+  <table class="tbl">
+    <tr><th>KPI</th><th>Baseline</th><th>Target *</th></tr>
+    <tr><td>Containment / deflection</td><td>Manual IVR</td><td>20–40% of eligible calls</td></tr>
+    <tr><td>Average Handle Time</td><td>Program baseline</td><td>15–25% reduction</td></tr>
+    <tr><td>QA coverage</td><td>2–10% sampled</td><td>100% (via PI Index)</td></tr>
+  </table>
+  <p class="note">* Illustrative — replaced with AFNI actuals in discovery.</p>
 </div></section>
 
-<!-- ROADMAP -->
+<section id="pi"><div class="wrap">
+  <div class="sec-kicker">INITIATIVE 2 · PERFORMANCE INTELLIGENCE INDEX</div>
+  <h2 class="title">From 100% of interactions to one explainable score</h2>
+  <p class="sub">Analysis agents score every interaction across seven dimensions; a calibrated, explainable
+    engine rolls them into one composite PI Index per agent, team, program and client — replacing sampled QA.</p>
+  <div class="fig"><img src="../diagrams/05-pi-index.svg" alt="Performance Intelligence Index architecture"></div>
+</div></section>
+
+<section id="hiring"><div class="wrap">
+  <div class="sec-kicker">INITIATIVE 3 · HIRING INTELLIGENCE</div>
+  <h2 class="title">An agent at every stage — humans make the decisions</h2>
+  <p class="sub">The platform applied to AFNI's own high-volume hiring, with fairness and human-in-the-loop
+    throughout.</p>
+  <div class="fig"><img src="../diagrams/06-hiring-intelligence.svg" alt="Hiring Intelligence funnel"></div>
+  <div style="margin-top:22px" class="callout"><span class="q">&ldquo;</span>AI assists, humans decide. No
+    autonomous rejection. Every automated employment decision tool is bias-audited and explainable —
+    EEOC, NYC Local Law 144, IL AI Video Interview Act, EU AI Act, GDPR.</div>
+</div></section>
+
+<section id="lifecycle"><div class="wrap">
+  <div class="sec-kicker">THE LLMOPS BACKBONE</div>
+  <h2 class="title">A continuous, governed improvement loop</h2>
+  <p class="sub">Curate → engineer → evaluate → ship → serve → observe → feed back. Governance and Responsible
+    AI wrap the entire loop; evaluation gates block regressions before they reach customers.</p>
+  <div class="fig" style="max-width:720px;margin:0 auto"><img src="../diagrams/07-llmops-lifecycle.svg" alt="LLMOps lifecycle loop"></div>
+</div></section>
+
 <section id="roadmap"><div class="wrap">
   <div class="sec-kicker">ROADMAP</div>
   <h2 class="title">Crawl → Walk → Run over ~9–12 months</h2>
   <p class="sub">Value is delivered from Phase 1; each phase has explicit exit criteria.</p>
-  <div class="road">
-    <div class="phase p0"><div class="top"><b>Phase 0</b><span>Weeks 0–4</span></div>
-      <div class="body"><h4>Foundations &amp; Discovery</h4><ul>
-        <li>Landing zone &amp; security baseline</li><li>Use-case intake &amp; metrics</li><li>Data access &amp; guardrail policy</li></ul></div></div>
-    <div class="phase p1"><div class="top"><b>Phase 1 · Crawl</b><span>Months 1–3</span></div>
-      <div class="body"><h4>Platform MVP + pilots</h4><ul>
-        <li>Agent-assist copilot (1 program)</li><li>HR screening pilot</li><li>Eval + observability baseline</li></ul></div></div>
-    <div class="phase p2"><div class="top"><b>Phase 2 · Walk</b><span>Months 4–7</span></div>
-      <div class="body"><h4>Scale &amp; autonomy</h4><ul>
-        <li>Autonomous voice (scoped)</li><li>HR voice pre-screen + scheduling</li><li>Online eval · FinOps · CoE</li></ul></div></div>
-    <div class="phase p3"><div class="top"><b>Phase 3 · Run</b><span>Months 8–12</span></div>
-      <div class="body"><h4>Enterprise scale</h4><ul>
-        <li>Multiple programs &amp; geos</li><li>Add subrogation &amp; QA analytics</li><li>Full governance · DR · flywheel</li></ul></div></div>
-  </div>
+  <div class="fig"><img src="../diagrams/08-roadmap.svg" alt="Implementation roadmap"></div>
 </div></section>
 
-<!-- NEXT -->
 <section id="next"><div class="wrap">
   <div class="sec-kicker">RECOMMENDATION</div>
   <h2 class="title">Approve a 4-week Phase 0</h2>
-  <p class="sub">Lock the foundations and launch the first pilots.</p>
-  <div class="grid g2">
-    <div class="card"><h3>1 · Confirm scope</h3><p>Lock the two flagship use cases and success metrics with Operations and HR leaders.</p></div>
-    <div class="card"><h3>2 · Stand up foundations</h3><p>Azure landing zone, security baseline and guardrail policy.</p></div>
-    <div class="card"><h3>3 · Intake &amp; risk-tier</h3><p>Run use-case intake and risk-tiering; secure data access.</p></div>
-    <div class="card"><h3>4 · Launch pilots</h3><p>Agent-assist copilot and HR-screening pilots in Phase 1.</p></div>
+  <p class="sub">Lock the foundations and launch the first pilots across all three initiatives.</p>
+  <div class="grid g4">
+    <div class="card"><h3>1 · Confirm scope</h3><p>Lock the three initiatives &amp; success metrics with Ops and HR leaders.</p></div>
+    <div class="card"><h3>2 · Foundations</h3><p>Azure landing zone, security baseline &amp; guardrail policy.</p></div>
+    <div class="card"><h3>3 · Intake</h3><p>Use-case intake &amp; risk-tiering; secure data access.</p></div>
+    <div class="card"><h3>4 · Pilots</h3><p>Voice Agent copilot, PI Index MVP &amp; Hiring screening pilot.</p></div>
   </div>
-  <div style="margin-top:30px">
+  <div style="margin-top:28px">
     <span class="pill">PCI-DSS</span><span class="pill">HIPAA</span><span class="pill">TCPA</span>
     <span class="pill">SOC 2</span><span class="pill">GDPR</span><span class="pill">EEOC / NYC LL144</span>
     <span class="pill">Responsible AI</span><span class="pill">Human-in-the-loop</span>
@@ -311,9 +220,8 @@
 </div></section>
 
 <footer><div class="wrap">
-  <b>Evoke Technologies</b> · GenAI Architecture Practice — prepared for <b>Afni, Inc.</b><br>
-  Enterprise LLMOps Proposal · Draft v1.0 · Confidential. All ROI figures illustrative, pending discovery.
+  <b>AFNI · Office of GenAI Architecture</b> — Enterprise LLMOps Proposal · Draft v2.0 · Internal &amp; Confidential.<br>
+  All ROI figures are illustrative, pending Phase 0 discovery.
 </div></footer>
-
 </body>
 </html>

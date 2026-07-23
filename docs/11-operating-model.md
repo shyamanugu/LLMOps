@@ -2,16 +2,16 @@
 
 ## Purpose
 
-Technology alone does not sustain an enterprise GenAI capability — an operating model does. Afni needs a durable structure that concentrates scarce expertise, enforces standards consistently, and still lets business units move fast on their own use cases. This document defines the **GenAI Center of Excellence (CoE)**, the **federated hub-and-spoke** model, roles and responsibilities, a lifecycle RACI, the use-case intake process, and the skills/enablement plan that ramps Afni toward self-sufficiency.
+Technology alone does not sustain an enterprise GenAI capability — an operating model does. AFNI needs a durable structure that concentrates scarce expertise, enforces standards consistently, and still lets business units move fast on their own use cases. This document defines the **GenAI Center of Excellence (CoE)**, the **federated hub-and-spoke** model, roles and responsibilities, a lifecycle RACI, the use-case intake process, and the skills/enablement plan that builds AFNI's self-sufficiency. All roles described here are **AFNI-internal**.
 
 ## The GenAI Center of Excellence (CoE)
 
-The CoE is the hub: a small, senior, cross-functional team that owns the **platform and the standards** — Azure AI Foundry, the shared agent patterns, guardrails, evaluation gates, CI/CD, observability, and Responsible AI policy. It does not own every use case. Instead, it enables business units ("spokes") to build use cases safely and repeatably on the shared foundation.
+The CoE is the hub: a small, senior, cross-functional AFNI team that owns the **platform and the standards** — Azure AI Foundry, the shared agent patterns, guardrails, evaluation gates, CI/CD, observability, and Responsible AI policy. It does not own every use case. Instead, it enables business units ("spokes") to build use cases safely and repeatably on the shared foundation, so that the Voice Agent, the PI Index, and Hiring Intelligence all run on one governed platform.
 
 **CoE mandate:**
 - Own and operate the LLMOps platform and reference architecture.
 - Set and enforce Responsible AI, security, and evaluation standards.
-- Curate reusable assets: agent templates, prompt registry, golden datasets, connectors.
+- Curate reusable assets: agent templates, prompt registry, golden datasets, connectors, PI Index scoring rubrics.
 - Run intake, risk-tiering, and promotion gates.
 - Provide enablement, office hours, and peer review to the spokes.
 
@@ -24,31 +24,34 @@ The CoE is the hub: a small, senior, cross-functional team that owns the **platf
                  | guardrails + eval + RAI   |
                  +------------+--------------+
                               |
-        +---------------------+---------------------+
-        |                     |                     |
-   +----v----+          +-----v-----+         +-----v-----+
-   | Contact  |          |    HR /   |         |  Future   |
-   | Center   |          | Recruiting|         |  programs |
-   | (spoke)  |          |  (spoke)  |         |  (spokes) |
-   +----------+          +-----------+         +-----------+
-   owns Voice AI         owns HR use case      own their use cases
+        +----------------+----+-----------+----------------+
+        |                |                |                |
+   +----v----+     +-----v-----+    +-----v-----+    +-----v-----+
+   | Contact  |     |  Workforce |    | Perf. /   |    |  Future   |
+   | Center   |     |  Analytics |    | Quality   |    |  programs |
+   | (spoke)  |     |   / HR     |    | (spoke)   |    |  (spokes) |
+   +----------+     +-----------+    +-----------+    +-----------+
+   owns Voice       owns Hiring       owns PI Index    own their
+   Agent            Intelligence      scoring          use cases
 ```
 
-The hub provides leverage and consistency; the spokes provide domain ownership and speed. This is precisely why the platform-first approach compounds: each new spoke reuses the shared multi-agent pattern (supervisor/orchestrator routing to intent, RAG, action, compliance, sentiment, escalation, and summarization agents) rather than rebuilding it.
+The hub provides leverage and consistency; the spokes provide domain ownership and speed. This is precisely why the platform-first approach compounds: each new spoke reuses the shared multi-agent pattern (supervisor/orchestrator routing to intent, RAG, action, compliance, sentiment, escalation, and summarization/scoring agents) rather than rebuilding it.
 
 ## Roles & Responsibilities
 
+All roles are staffed by AFNI personnel (hub or spoke).
+
 | Role | Home | Core responsibilities |
 | --- | --- | --- |
-| **Executive Sponsor** | Afni leadership | Funds and mandates the program; chairs the AI Governance Board; removes barriers. |
-| **AI Product Owner** | Hub / business | Owns the use-case portfolio, prioritization, and outcome KPIs. |
+| **Executive Sponsor** | AFNI leadership | Funds and mandates the program; chairs the AI Governance Board; removes barriers. |
+| **AI Product Owner** | Hub / business | Owns the use-case portfolio, prioritization, and outcome KPIs across the three initiatives. |
 | **GenAI Architect (lead)** | Hub | Owns reference architecture, agent patterns, and technical standards; author of the platform design. |
 | **Prompt / Agent Engineers** | Hub + spokes | Build and version prompts and agents; tune orchestration and tools. |
 | **LLMOps Engineers** | Hub | CI/CD, evaluation harness, serving, observability, FinOps tooling. |
-| **Data Engineers** | Hub | Knowledge curation, RAG ingestion, dataset pipelines, lineage. |
+| **Data Engineers** | Hub | Knowledge curation, RAG ingestion, dataset pipelines, PI Index data flows, lineage. |
 | **RAI / Governance Officer** | Hub | Risk-tiering, bias audits, model/system cards, incident response, governance cadence. |
 | **Security Engineer** | Hub | Identity, network isolation, secrets, Defender posture, compliance evidence. |
-| **Ops & HR SMEs** | Spokes | Domain requirements, must-say/do-not-say rules, human-decision workflows, validation. |
+| **Ops & HR SMEs** | Spokes | Domain requirements, must-say/do-not-say rules, scoring calibration, human-decision workflows, validation. |
 
 ## Lifecycle RACI
 
@@ -73,18 +76,18 @@ R = Responsible, A = Accountable, C = Consulted, I = Informed.
 2. **Triage & risk-tier** — RAI officer assigns a tier (see doc 08); AI product owner prioritizes against the portfolio.
 3. **Shape** — GenAI architect maps the use case to the shared agent pattern; identifies reuse and net-new components.
 4. **Build** — Spoke + hub engineers develop against platform standards, with hub peer review.
-5. **Gate** — Evaluation, safety, and security gates must pass before promotion; Tier 3 requires bias audit and board review.
+5. **Gate** — Evaluation, safety, and security gates must pass before promotion; Tier 3 (PI Index scoring, Hiring Intelligence) requires bias audit and board review.
 6. **Operate & improve** — Observability, FinOps, and the feedback loop drive continuous improvement.
 
 ## Skills & Enablement Plan
 
-Because Evoke staffs and leads early, a deliberate **capability-transfer** path moves Afni toward self-sufficiency:
+A deliberate **capability-build** path grows AFNI's internal GenAI bench in step with the roadmap:
 
-- **Foundations (Phase 0–1):** Azure AI Foundry, prompt engineering, and Responsible AI fundamentals for the initial CoE and spoke engineers; paired delivery with Evoke.
-- **Practitioner (Phase 2):** Agent orchestration (Semantic Kernel / AutoGen / Microsoft Agent Framework), evaluation design, and LLMOps tooling; Afni engineers lead features with Evoke shadowing.
-- **Sustained (Phase 3):** Communities of practice, office hours, internal certification, and a reusable-asset library; Afni owns operations with Evoke advisory.
-- **Ongoing:** Role-based enablement for ops/HR SMEs (how to write compliance rules, validate outputs, and own human decisions) and for leadership (governance, FinOps literacy).
+- **Foundations (Phase 0–1):** Azure AI Foundry, prompt engineering, and Responsible AI fundamentals for the initial CoE and spoke engineers; paired delivery and internal mentoring on the first pilots.
+- **Practitioner (Phase 2):** Agent orchestration (Semantic Kernel / AutoGen / Microsoft Agent Framework), evaluation design, and LLMOps tooling; AFNI engineers lead features across all three initiatives.
+- **Sustained (Phase 3):** Communities of practice, office hours, internal certification, and a reusable-asset library; AFNI owns operations end to end.
+- **Ongoing:** Role-based enablement for ops/HR SMEs (how to write compliance rules, calibrate PI Index scores, validate outputs, and own human decisions) and for leadership (governance, FinOps literacy).
 
-## Why This Model Works for Afni
+## Why This Model Works for AFNI
 
-The hub-and-spoke CoE mirrors how Afni already runs contact centers: centralized standards and quality assurance, with delivery ownership at the program level. It concentrates rare GenAI expertise where it creates the most leverage, enforces Responsible AI and security uniformly, and scales to new programs and geographies without reinventing the platform each time — turning GenAI from a series of projects into a durable, governed Afni capability.
+The hub-and-spoke CoE mirrors how AFNI already runs contact centers: centralized standards and quality assurance, with delivery ownership at the program level. It concentrates rare GenAI expertise where it creates the most leverage, enforces Responsible AI and security uniformly, and scales to new programs and geographies without reinventing the platform each time — turning GenAI from a series of projects into a durable, governed AFNI capability that serves the Voice Agent, the PI Index, and Hiring Intelligence from one foundation.

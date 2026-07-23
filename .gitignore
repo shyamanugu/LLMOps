@@ -4,6 +4,10 @@ __pycache__/
 .venv/
 venv/
 
+# Node (sharp used only to rasterize diagrams locally)
+node_modules/
+scripts/node_modules/
+
 # OS / editor
 .DS_Store
 Thumbs.db

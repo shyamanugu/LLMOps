@@ -1,147 +1,119 @@
-# Use Case 1 — Voice AI for Contact Centers
+# Voice Agent
 
-## Executive summary
+> **Confidential — AFNI, Inc. Internal.** Prepared by the AFNI Office of GenAI Architecture.
+> All metrics in this document are **ILLUSTRATIVE placeholders** pending discovery with AFNI actuals.
 
-Afni's core business is voice. Millions of inbound and outbound interactions flow through Afni's contact centers each year across Acquisition & Growth, Care & Retention, Collections, and P&C Insurance. This use case applies Evoke's proposed multi-agent LLMOps platform — built on Microsoft **Azure AI Foundry** — to that voice channel in three complementary modes. The design goal is not to replace agents wholesale, but to **contain the calls that can be safely automated, make every human agent measurably better in real time, and turn 100% of calls into structured quality and coaching signal.**
+## Overview
 
-All three modes reuse the same governed platform, the same **supervisor-orchestrator** agent pattern, and the same deterministic guardrails wrapped around probabilistic agents. This is what makes the investment compounding rather than one-off.
+The **Voice Agent** is AFNI's real-time, multi-agent voice automation and agent-assist capability for the contact center. It is one of AFNI's three flagship LLMOps initiatives and the primary generator of interaction data for the other two: transcripts and signals feed the **Performance Intelligence Index (PI Index)**, and the same speech stack is reused for **Hiring Intelligence** voice pre-screens.
 
-## The three operating modes
-
-### Mode A — Autonomous voice agent (containable calls)
-
-- **Problem:** A large share of call volume is repetitive and low-complexity — balance and status inquiries, payment reminders and promise-to-pay capture, appointment and identity verification, simple Care requests. These calls consume agent capacity, drive staffing cost, and create long queues at peaks, yet rarely need human judgment.
-- **Solution:** A **speech-to-speech** autonomous agent (Azure OpenAI **gpt-realtime**) handles the full call for scoped, pre-approved call types, with sub-second turn latency for natural conversation. It authenticates the caller, retrieves grounded answers, executes transactions through secure tools, and **warm-transfers to a human** the moment the interaction leaves its approved scope or a compliance/sentiment trigger fires.
-- **Agents involved:** Orchestrator/Supervisor, Intent/Router, Knowledge/RAG, Action/Tooling, Compliance/Guardrail, Sentiment/Emotion, Escalation/Handoff, Summarization/QA.
-- **Data/systems touched:** CRM, billing/payment systems, scheduling systems, knowledge base (via Azure **AI Search**, hybrid + semantic ranker), conversation state in **Cosmos DB**.
-- **KPIs:** containment/deflection rate, promise-to-pay rate (Collections), transaction success rate, handoff quality, compliance adherence.
-
-### Mode B — Real-time agent-assist copilot
-
-- **Problem:** Human agents juggle multiple screens, dense policy content, and strict compliance scripting while managing an emotional caller. Ramp time for new hires is long, and quality is uneven.
-- **Solution:** A live copilot that transcribes the call in real time, surfaces **next-best-action** and grounded knowledge snippets, detects rising frustration, delivers **must-say / do-not-say compliance nudges**, and auto-drafts the summary and disposition at wrap. The agent stays in control; the copilot advises.
-- **Agents involved:** Knowledge/RAG, Action/Tooling (suggested, agent-confirmed), Compliance/Guardrail, Sentiment/Emotion, Summarization/QA. Orchestrator coordinates streaming context.
-- **Data/systems touched:** Real-time transcription stream, knowledge base, CRM (read + agent-confirmed write), agent desktop overlay.
-- **KPIs:** AHT, FCR, agent ramp time, CSAT, after-call-work time, compliance adherence.
-
-### Mode C — Post-call analytics & QA
-
-- **Problem:** Today QA is sampled — typically 5–10% of calls (illustrative; Afni actuals confirmed in discovery) — leaving most interactions unreviewed and coaching reactive.
-- **Solution:** Every call is transcribed, summarized, scored against the QA rubric, and screened for compliance breaches and coaching opportunities. **LLM-as-judge** scoring is calibrated against human QA and routed for human review on low-confidence or high-stakes items.
-- **Agents involved:** Summarization/QA, Compliance/Guardrail, Sentiment/Emotion.
-- **Data/systems touched:** Call recordings, transcripts, QA scorecard system, **Fabric / Data Lake** for analytics, Purview for lineage.
-- **KPIs:** QA coverage (→100%), QA score, compliance breach detection rate, coaching cycle time.
-
-## End-to-end call flow
+The Voice Agent operates in **three complementary modes** on one platform:
 
 ```
-                          +-----------------------------+
-  Caller (PSTN/SIP) ----> |  Telephony / CCaaS          |
-                          |  Genesys / NICE / Five9 /   |
-                          |  Amazon Connect  OR          |
-                          |  Azure Communication Services|
-                          +--------------+--------------+
-                                         | media stream (SIP/WebRTC)
-                                         v
-                          +-----------------------------+
-                          |  Realtime Speech Layer      |
-                          |  gpt-realtime (S2S)         |
-                          |  Azure AI Speech (fallback) |
-                          +--------------+--------------+
-                                         | text + audio + events
-                                         v
-                          +-----------------------------+
-                          |  ORCHESTRATOR / SUPERVISOR  |
-                          |  (Semantic Kernel/AutoGen)  |
-                          +---+------+------+------+----+
-                              |      |      |      |
-                 +------------+  +---+--+  +-+----+ +-----------+
-                 v               v      v  v      v             v
-          +-----------+  +-----------+  +-----------+  +----------------+
-          | Intent/   |  | Knowledge/|  | Action/   |  | Compliance/    |
-          | Router    |  | RAG       |  | Tooling   |  | Guardrail      |
-          +-----------+  +-----+-----+  +-----+-----+  +--------+-------+
-                               |              |                 |
-                               v              v                 |
-                        +-------------+  +-----------+          |
-                        | Azure AI    |  | Systems of|          |
-                        | Search (KB) |  | Record:   |          |
-                        +-------------+  | CRM/billing|         |
-                                         | HRIS/sched |         |
-                                         +-----------+          |
-                              +----------------+----------------+
-                              v                v
-                       +-----------+    +----------------+
-                       | Sentiment |    | Escalation/    |
-                       | /Emotion  +--->| Handoff (warm  +---> Human agent
-                       +-----------+    | transfer +ctx) |     (Mode B copilot)
-                                        +----------------+
-                                         |
-                                         v
-                                 +----------------+
-                                 | Summarization/ |---> QA store / Fabric
-                                 | QA (Mode C)    |     (analytics + coaching)
-                                 +----------------+
++=====================================================================+
+|                        AFNI VOICE AGENT                             |
++=====================================================================+
+|                                                                     |
+|   MODE A                 MODE B                 MODE C              |
+|   Agent-Assist           Autonomous             Post-Call          |
+|   Copilot                Voice Agent            Analytics          |
+|   (human in loop)        (containable calls)    (100% of calls)    |
+|        |                      |                      |             |
+|        v                      v                      v             |
+|   Live rep hears/        Bot handles FAQs,      Every transcript   |
+|   sees next-best-        verification,          scored + mined     |
+|   action, KB, sentiment  reminders; warm        --> feeds          |
+|   compliance nudges      handoff to human       PI INDEX           |
+|                                                                     |
++=====================================================================+
+        Sub-second speech-to-speech (gpt-realtime) · Azure fallback
 ```
 
-## Multi-agent breakdown
+All three modes reuse the shared multi-agent pattern: an **Orchestrator/Supervisor** routes to specialist agents — **Intent/Router, Knowledge/RAG, Action/Tooling, Compliance/Guardrail, Sentiment, Escalation/Handoff, and Summarization/QA & Scoring**. Deterministic guardrails wrap the probabilistic agents.
 
-| Agent | Responsibility | Pattern | Key Azure services |
+---
+
+## Mode A — Agent-Assist Copilot
+
+**Problem.** Live human reps carry heavy cognitive load: searching knowledge, remembering compliance language, disposition-coding after each call, and de-escalating frustrated callers. New-hire ramp is slow, quality is uneven, and after-call work inflates handle time.
+
+**Solution.** A real-time copilot that listens to the live call, transcribes both channels, and surfaces guidance in the agent desktop: next-best-action, knowledge snippets (grounded via RAG), live sentiment, compliance nudges (e.g., required disclosures), and an auto-drafted summary and disposition at wrap-up. The human agent remains fully in control.
+
+**Agents involved.** Intent/Router (classifies caller need) → Knowledge/RAG (retrieves grounded answers from Azure AI Search) → Compliance/Guardrail (prompts required disclosures, flags risky language) → Sentiment (tracks trajectory, cues de-escalation) → Summarization/QA (auto-summary + disposition).
+
+**Systems touched.** CCaaS media stream (SIP/APIs), Azure AI Speech (STT), gpt-realtime, Azure AI Search + Document Intelligence (knowledge), CRM (customer context, disposition write-back), agent-assist desktop.
+
+**KPIs.** After-call work time, agent ramp time, knowledge-lookup rate, compliance-nudge adherence, CSAT.
+
+---
+
+## Mode B — Autonomous Voice Agent
+
+**Problem.** A meaningful share of inbound/outbound volume is routine and containable — FAQs, identity verification, appointment scheduling, balance and payment reminders — yet consumes trained-agent capacity during peak load.
+
+**Solution.** An autonomous, sub-second speech-to-speech agent that handles **containable call types** end to end, with a **warm human handoff** whenever intent falls outside scope, sentiment degrades, or a compliance boundary is reached. Scope is deliberately narrow at launch and expanded only after evaluation gates pass.
+
+**Agents involved.** Intent/Router → Action/Tooling (executes verification, scheduling, payment intents via secure APIs) → Compliance/Guardrail (TCPA consent checks, PCI pause/mask) → Escalation/Handoff (warm transfer with full context) → Summarization/QA.
+
+**Systems touched.** Telephony (generic CCaaS integration layer; **Azure Communication Services** for greenfield outbound/inbound), gpt-realtime speech-to-speech, Azure AI Speech (custom neural voice, TTS/STT fallback), CRM/billing/scheduling APIs (via APIM), Azure AI Content Safety.
+
+**KPIs.** Containment/deflection rate, contained-call AHT, First Contact Resolution (FCR), successful-handoff rate, compliance adherence, CSAT.
+
+---
+
+## Mode C — Post-Call Analytics (Feeds the PI Index)
+
+**Problem.** Traditional QA samples only 2–10% of interactions, so most calls are never reviewed, coaching is slow and subjective, and risk surfaces late.
+
+**Solution.** Every completed interaction — whether handled by a human (Mode A) or the autonomous agent (Mode B) — is transcribed, redacted, and analyzed. The output does not stop at a summary: it becomes structured **signals** that feed the **PI Index** (see `15-performance-intelligence-index.md`), where seven analysis agents score 100% of interactions and roll them up into a single explainable index per agent, team, program, and client.
+
+**Agents involved.** Summarization/QA & Scoring produces the analytic record; the PI Index scoring pipeline consumes it. Compliance/Guardrail applies PII detection and redaction before storage.
+
+**Systems touched.** Azure AI Speech (batch transcription), Content Safety + Microsoft Purview (PII detection/redaction, lineage), Microsoft Fabric / Data Lake (PI Index store), CRM dispositions and outcomes.
+
+**KPIs.** QA coverage (target 100%), coaching cycle time, anomaly/compliance-risk lead time.
+
+---
+
+## Technology and Latency
+
+- **Speech-to-speech:** Azure **OpenAI gpt-realtime** for sub-second turn latency; **Azure AI Speech** (STT/TTS, custom neural voice) as hybrid/fallback and for batch transcription.
+- **Orchestration:** Azure AI Agent Service with Semantic Kernel / AutoGen (converging into the Microsoft Agent Framework).
+- **Gateway:** Azure API Management for token metering, quotas, caching, and model routing.
+- **Telephony:** integrate the existing CCaaS estate (Genesys, NICE, Five9, Amazon Connect) via SIP/APIs; the integration layer is kept **generic**. **Azure Communication Services** provides greenfield voice.
+
+## Compliance
+
+- **TCPA** — consent capture and honoring for outbound; calling-window and DNC enforcement.
+- **PCI-DSS** — automatic **pause/mask** of audio and transcript during card capture; no card data persisted in agent context.
+- **HIPAA** — for healthcare clients: minimum-necessary handling, PHI redaction, BAA-aligned data flows.
+- **Call recording & consent** — jurisdiction-aware disclosures, recording notices, and consent logging.
+- Deterministic guardrails (Content Safety prompt shields, groundedness checks, PII detection) wrap every model call.
+
+## KPI Table (ILLUSTRATIVE)
+
+| KPI | Baseline (illustrative) | Target (illustrative) | Mode(s) |
 |---|---|---|---|
-| Orchestrator/Supervisor | Owns the turn; routes, sequences, and arbitrates specialist agents; enforces scope | Supervisor-orchestrator | Azure AI Agent Service, Semantic Kernel / AutoGen |
-| Intent/Router | Classifies caller intent and call type; decides containment vs. handoff | Sequential | GPT-4o-mini |
-| Knowledge/RAG | Retrieves grounded, cited answers from policy/KB | Concurrent | Azure AI Search, embeddings |
-| Action/Tooling | Executes transactions against systems of record via secure tools | Hand-off | Azure Functions, APIM, Key Vault |
-| Compliance/Guardrail | Enforces disclosures, PCI pause/mask, TCPA, must-say/do-not-say | Deterministic wrapper | Azure AI Content Safety, policy layer |
-| Sentiment/Emotion | Detects frustration/escalation cues; triggers handoff | Concurrent/reflection | GPT-4o, Speech prosody |
-| Escalation/Handoff | Warm transfer with full context packet to a human | Human-in-the-loop | CCaaS APIs, Cosmos DB |
-| Summarization/QA | Post-call summary, disposition, QA score | Reflection/critic | GPT-4o, LLM-as-judge |
-
-The defining principle is **deterministic guardrails around probabilistic agents**: the Compliance/Guardrail agent and the policy layer can force, block, or redirect any turn regardless of what the language model proposes.
-
-## Latency, telephony, and compliance
-
-**Latency.** Natural voice requires sub-second turn latency. Mode A uses realtime **speech-to-speech** (gpt-realtime) to avoid the STT → LLM → TTS round-trip penalty; Azure **AI Speech** (with custom neural voice) serves as a hybrid/fallback path and for languages or controls the realtime model does not cover. Barge-in, endpointing, and streaming partials are handled at the speech layer.
-
-**Telephony integration.** The integration layer is deliberately **generic**: Afni's existing CCaaS (Genesys, NICE, Five9, Amazon Connect, etc.) connects via SIP/media-streaming APIs, while **Azure Communication Services** is recommended for any greenfield or overflow voice. No single incumbent is assumed; the orchestrator and agents are decoupled from the carrier/CCaaS.
-
-**Compliance (non-negotiable).**
-
-| Regime | Control in the platform |
-|---|---|
-| TCPA | Consent verification and calling-window enforcement on outbound; opt-out honored by Compliance agent |
-| PCI-DSS | Automatic **pause/mask** of card capture; audio and transcript redaction; agent never "hears" full PAN |
-| HIPAA | PHI handling for healthcare clients; BAA-aligned data flows; least-privilege tool access |
-| Recording/consent | Disclosure playback and consent capture logged with immutable audit trail |
-| Disclosures | Must-say scripting enforced deterministically before transaction completion |
-
-PII detection/redaction is delivered through **Content Safety + Microsoft Purview**; all flows carry audit trails and lineage.
-
-## KPI framework
-
-| KPI | Baseline (illustrative) | Target impact | Mode |
-|---|---|---|---|
-| Containment / deflection | — | 20–40% of eligible call types | A |
-| Average Handle Time (AHT) | — | 15–25% reduction | A, B |
-| First-Contact Resolution (FCR) | — | +5–15 pts | B |
+| Containment / deflection (eligible calls) | — | 20–40% | B |
+| Average Handle Time (AHT) | — | −15–25% | A, B |
+| First Contact Resolution (FCR) | — | +5–10 pts | A, B |
 | CSAT | — | +3–8 pts | A, B |
-| QA coverage | 5–10% | 100% | C |
-| Compliance adherence | — | measurable uplift, fewer breaches | A, B, C |
-| Agent ramp time | — | 20–40% faster | B |
-| Promise-to-pay (Collections) | — | uplift on reminder calls | A |
+| Compliance adherence | — | 99%+ | A, B, C |
+| Agent ramp time | — | −20–30% | A |
+| QA coverage | 2–10% | 100% | C |
 
-All figures are illustrative placeholders; Afni actuals replace them during Phase 0 discovery.
+## Implementation Approach and Pilot Scope
 
-## Implementation approach
+1. **Foundations (Weeks 0–4).** Landing zone, security baseline, CCaaS media-stream integration, PII redaction, consent/recording controls, evaluation golden sets.
+2. **Crawl pilot (Months 1–3).** Deploy **Mode A agent-assist** on **one program**; stand up **Mode C post-call analytics** feeding the PI Index MVP (offline scoring of historical interactions).
+3. **Walk (Months 4–7).** Introduce **Mode B autonomous** handling for a **narrow set of containable call types** with warm handoff; add online evaluation (A/B, shadow), FinOps token metering, and near-real-time analytics.
+4. **Run (Months 8–12).** Scale across programs and geographies; expand containable scope; extend custom neural voice; harden disaster recovery.
 
-1. **Discovery & scoping** — inventory call types, rank by containment potential and risk; capture baselines; define guardrail policies per client/regulatory context.
-2. **Copilot first (lowest risk)** — deploy Mode B agent-assist on one program with a human always in control; build the offline eval harness and observability baseline.
-3. **Autonomous, tightly scoped** — introduce Mode A on 1–2 low-risk call types behind canary/shadow deployment with automatic handoff.
-4. **QA at scale** — turn on Mode C across the pilot program; calibrate LLM-as-judge against human QA.
-5. **Harden & expand** — online A/B and shadow eval, FinOps token metering via APIM, guardrail hardening, then scale to additional programs and geos.
+**Pilot success criteria (illustrative):** containment and AHT targets met on scoped call types; compliance adherence ≥ 99%; agent-assist CSAT lift on the pilot program; 100% of pilot interactions scored by the PI Index.
 
-## Suggested pilot scope
+## Synergy Across the Three Initiatives
 
-- **One contact-center program**, single line of business (recommend Care & Retention or Collections reminders).
-- **Mode B copilot** for all agents on that program + **Mode A** on 1–2 clearly containable call types + **Mode C** QA across 100% of the program's calls.
-- **8–12 week pilot**, success gated on containment, AHT, QA coverage, and zero compliance regressions before promotion, consistent with the Crawl→Walk roadmap.
+- **→ PI Index:** Voice Agent transcripts and signals are the primary data source; Mode C makes 100% scoring possible.
+- **→ Hiring Intelligence:** the same gpt-realtime + Azure AI Speech stack powers optional **candidate voice pre-screens**, reusing orchestration, guardrails, and telephony rather than rebuilding them.
+
+Build the voice platform once; all three flagship initiatives — and future use cases such as subrogation — reuse it.

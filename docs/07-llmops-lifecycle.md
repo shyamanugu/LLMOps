@@ -2,7 +2,7 @@
 
 ## Overview
 
-LLMOps is the operational backbone that lets Afni build, evaluate, deploy, govern, and continuously improve fleets of cooperating AI agents with the same rigor Afni already applies to running contact centers. This document defines the end-to-end lifecycle, the evaluation and CI/CD disciplines that make it trustworthy, and the mapping of each lifecycle stage to concrete Azure services.
+LLMOps is the operational backbone that lets AFNI build, evaluate, deploy, govern, and continuously improve fleets of cooperating AI agents with the same rigor AFNI already applies to running contact centers. This document defines the end-to-end lifecycle, the evaluation and CI/CD disciplines that make it trustworthy, and the mapping of each lifecycle stage to concrete Azure services. It applies uniformly to all three flagship initiatives — the **Voice Agent**, the **Performance Intelligence Index (PI Index)**, and **Hiring Intelligence**.
 
 Governance and Responsible AI wrap the entire loop. **A model/prompt registry entry and passing evaluation gates are mandatory before any promotion to production.**
 
@@ -31,11 +31,11 @@ Governance and Responsible AI wrap the entire loop. **A model/prompt registry en
   | dataset        |   +----------------------+   +----------------------+
   +----------------+            |                          |
           ^                     v                          v
-          +-----------------  SERVING (APIM gateway, quotas, caching) 
+          +-----------------  SERVING (APIM gateway, quotas, caching)
 ```
 
 ### 1. Data & Knowledge Curation
-Source documents (policies, KBs, job requisitions, transcripts) are ingested via **Azure AI Document Intelligence**, chunked, embedded with **text-embedding-3-large**, and indexed in **Azure AI Search**. Curated datasets, golden sets, and evaluation corpora are versioned in **Azure Data Lake / Microsoft Fabric**. Purview enforces classification and lineage.
+Source documents (policies, KBs, job requisitions, transcripts) are ingested via **Azure AI Document Intelligence**, chunked, embedded with **text-embedding-3-large**, and indexed in **Azure AI Search**. Curated datasets, golden sets, evaluation corpora, and PI Index scoring rubrics are versioned in **Microsoft Fabric / Azure Data Lake**. Purview enforces classification and lineage.
 
 ### 2. Prompt / Agent Engineering (versioned)
 Prompts, agent definitions, tool schemas, and orchestration graphs are authored in **Azure AI Foundry / Prompt flow** and stored **as code** in Git. Every prompt and agent config is versioned, code-reviewed, and traceable to an evaluation result — no ad-hoc production prompt edits.
@@ -47,29 +47,29 @@ See the dedicated section below.
 Automated pipelines promote artifacts through dev → test → prod behind evaluation gates. See CI/CD section below.
 
 ### 5. Observability
-**Azure Monitor + Application Insights** ingest **OpenTelemetry** traces using the **GenAI semantic conventions**: token usage, cost, latency per turn/agent/tool, quality scores, groundedness, and drift. Dashboards surface FinOps (token spend by use case, via APIM metering) alongside quality KPIs.
+**Azure Monitor + Application Insights** ingest **OpenTelemetry** traces using the **GenAI semantic conventions**: token usage, cost, latency per turn/agent/tool, quality scores, groundedness, and drift. Dashboards surface FinOps (token spend by initiative, via APIM metering) alongside quality KPIs.
 
 ### 6. Feedback Loop
-End-user thumbs, human QA scores, and production incidents are captured and routed back into curated datasets — closing the flywheel so real-world failures become tomorrow's regression tests.
+End-user thumbs, human QA scores, PI Index calibration adjustments, and production incidents are captured and routed back into curated datasets — closing the flywheel so real-world failures become tomorrow's regression tests.
 
 ## Evaluation in Depth
 
-Evaluation is the discipline that separates a demo from an enterprise deployment. Afni runs a layered evaluation strategy using the **Azure AI Evaluation SDK**.
+Evaluation is the discipline that separates a demo from an enterprise deployment. AFNI runs a layered evaluation strategy using the **Azure AI Evaluation SDK**.
 
 ### Offline Evaluation
-- **Golden datasets** — curated, versioned input/expected-output sets per use case and per specialist agent, including edge cases and known failure modes. Every prompt/agent change is scored against them.
+- **Golden datasets** — curated, versioned input/expected-output sets per initiative and per specialist agent, including edge cases and known failure modes. Every prompt/agent change is scored against them. PI Index scoring is validated against human-calibrated reference scores.
 - **LLM-as-judge** — a strong model (GPT-4o) scores responses on relevance, coherence, completeness, and tone using calibrated rubrics, enabling scale beyond manual review.
-- **Groundedness / faithfulness** — RAG outputs are checked against retrieved sources (Azure AI Content Safety groundedness detection) to catch hallucination; every claim must trace to a citation.
-- **Human-in-the-loop review** — SMEs from ops and HR review sampled and high-risk outputs; their labels calibrate the LLM judge and feed golden sets.
-- **Red-teaming** — adversarial testing for jailbreaks, prompt injection, PII leakage, unsafe tool calls, and (for HR) bias/adverse-impact probing, aligned to NYC Local Law 144 bias-audit expectations.
+- **Groundedness / faithfulness** — RAG outputs are checked against retrieved sources (Azure AI Content Safety groundedness detection) to catch hallucination; every claim (and every PI Index driver rationale) must trace to a citation or evidence span.
+- **Human-in-the-loop review** — SMEs from ops, QA, and HR review sampled and high-risk outputs; their labels calibrate the LLM judge and feed golden sets.
+- **Red-teaming** — adversarial testing for jailbreaks, prompt injection, PII leakage, unsafe tool calls, and (for Hiring Intelligence) bias/adverse-impact probing, aligned to NYC Local Law 144 bias-audit expectations.
 
 ### Online Evaluation
-- **A/B testing** — new prompt/model versions serve a traffic slice; business KPIs (containment, AHT, FCR, CSAT; time-to-fill, funnel conversion) are compared.
-- **Shadow testing** — a candidate version runs silently on live traffic with outputs logged but not served, de-risking changes before exposure.
+- **A/B testing** — new prompt/model versions serve a traffic slice; business KPIs (containment, AHT, FCR, CSAT for Voice Agent; scoring agreement for PI Index; time-to-fill, funnel conversion for Hiring) are compared.
+- **Shadow testing** — a candidate version runs silently on live traffic with outputs logged but not served, de-risking changes before exposure. PI Index changes are shadow-scored against production before cutover.
 - **Continuous online scoring** — sampled production interactions are scored by the LLM judge and monitored for quality drift.
 
 ### Regression Gates
-Promotion is blocked automatically if a change reduces golden-set scores, groundedness, or safety metrics below defined thresholds, or increases cost/latency beyond budget. Gates are codified in the pipeline, not left to reviewer judgment.
+Promotion is blocked automatically if a change reduces golden-set scores, groundedness, scoring agreement, or safety metrics below defined thresholds, or increases cost/latency beyond budget. Gates are codified in the pipeline, not left to reviewer judgment.
 
 ## CI/CD in Depth
 
@@ -97,7 +97,7 @@ Production traffic flows through the **Azure API Management** AI gateway providi
 | CI/CD | Azure DevOps / GitHub Actions |
 | Serving & gateway | Azure API Management; Container Apps / AKS |
 | Observability | Azure Monitor, Application Insights, OpenTelemetry (GenAI) |
-| Data & analytics | Azure Data Lake / Microsoft Fabric; Azure SQL |
+| Data & analytics | Microsoft Fabric / Azure Data Lake; Azure SQL |
 | Governance & security | Microsoft Purview, Entra ID, Key Vault, Defender for Cloud, Content Safety |
 
 ## LLMOps vs. Traditional MLOps / DevOps
@@ -113,4 +113,4 @@ Production traffic flows through the **Azure API Management** AI gateway providi
 | Guardrails | Access control | Data validation | **Content safety + deterministic policy around probabilistic models** |
 | Human role | Reviewer | Data/label validation | **Human-in-the-loop for consequential decisions** |
 
-LLMOps inherits DevOps automation and MLOps discipline but adds first-class handling of prompts as versioned artifacts, non-deterministic evaluation, token-level FinOps, safety/groundedness guardrails, and mandatory human oversight for consequential decisions — exactly the controls Afni's regulated contact-center and hiring workloads require.
+LLMOps inherits DevOps automation and MLOps discipline but adds first-class handling of prompts as versioned artifacts, non-deterministic evaluation, token-level FinOps, safety/groundedness guardrails, and mandatory human oversight for consequential decisions — exactly the controls AFNI's regulated contact-center, performance-scoring, and hiring workloads require.

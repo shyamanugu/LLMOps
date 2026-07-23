@@ -1,149 +1,122 @@
-# Use Case 2 — AI-Driven HR Recruitment
+# Hiring Intelligence
 
-## Executive summary
+> **Confidential — AFNI, Inc. Internal.** Prepared by the AFNI Office of GenAI Architecture.
+> All metrics in this document are **ILLUSTRATIVE placeholders** pending discovery with AFNI actuals.
 
-Afni hires at high volume and high velocity. Staffing thousands of contact-center roles across US sites (IL, AZ, KY, TX, MO, AL), Mexico, the Philippines, and the **Afni@Home** program means large applicant funnels, seasonal surges, and constant pressure on time-to-fill, cost-per-hire, and early attrition. This use case applies the same governed **Azure AI Foundry** multi-agent platform proposed for Voice AI to Afni's *own* recruiting operation — turning a labor-intensive, inconsistent funnel into a fast, consistent, and **auditable** candidate experience.
+## Overview
 
-One principle governs every design choice below and is stated up front because it is load-bearing for the entire use case:
+**Hiring Intelligence** is AFNI's AI-driven, fair, high-volume recruitment capability for AFNI's own contact-center hiring across the US, Mexico, and the Philippines. It is one of AFNI's three flagship LLMOps initiatives. It applies the same multi-agent platform used by the **Voice Agent** and the **Performance Intelligence Index (PI Index)** — and reuses the Voice Agent speech stack for optional candidate voice pre-screens.
 
-> **AI assists, humans decide. No candidate is ever autonomously rejected by a model.**
+The governing principle is non-negotiable and appears at every stage of this document:
 
-Every consequential decision — advance, reject, offer — is made by a human recruiter or hiring manager. The agents accelerate, structure, and standardize; they do not adjudicate.
+> **AI assists, humans decide. There is no autonomous rejection.** Every consequential decision — advance, decline, offer — is made by a human recruiter or hiring manager. Agents rank, summarize, draft, and surface signals; they never auto-reject a candidate.
 
-## Candidate journey and the agents at each stage
+---
 
-| Stage | Agent | What it does | Human decision point |
-|---|---|---|---|
-| Requisition | **JD-generation agent** | Drafts inclusive, bias-checked job descriptions from role templates and structured criteria | Recruiter approves/edits JD |
-| Sourcing & screening | **Sourcing/screening agent** | Parses resumes, ranks against *job-related* structured criteria with explanations | Recruiter reviews ranked list |
-| Conversational screening | **Conversational screening agent** | Chat screen (+ optional **voice pre-screen** reusing the Voice AI platform) for availability, eligibility, role fit | Recruiter reviews transcript/flags |
-| Scheduling | **Scheduling agent** | Books interviews across calendars/ATS; handles reschedules and reminders | Recruiter confirms slate |
-| Candidate support | **Candidate-Q&A concierge** | Answers candidate questions 24/7 (role, pay, sites, process, benefits) | — (informational only) |
-| Structured interview | **Interview-scoring ASSIST agent** | Provides structured rubric prompts and note capture; suggests evidence-based scores | Interviewer scores and decides |
-| Oversight | **Fairness/adverse-impact monitor** | Continuously measures selection rates across groups; flags disparity | RAI officer + recruiting leadership act |
-
-### Stage detail
-
-- **JD generation** — Produces role-appropriate, inclusive language; strips exclusionary phrasing; grounds pay/benefit statements in approved content via Azure AI Search. Output is a draft, never auto-posted.
-- **Sourcing/screening & resume ranking** — Ranks candidates against **job-related, validated criteria only** (skills, availability, licensure where required). Every ranking carries an **explanation** ("advanced for: bilingual, weekend availability") so recruiters see the *why*. Protected characteristics and proxies are excluded from features.
-- **Conversational screening (incl. optional voice pre-screen)** — Reuses the Mode A/B voice platform for a short structured pre-screen where appropriate, with explicit notice and consent. It gathers factual, job-related information; it does **not** score personality from voice tone.
-- **Scheduling** — Eliminates recruiter calendar tetris; sends reminders to cut no-shows.
-- **Candidate-Q&A concierge** — A grounded RAG bot improving candidate experience and reducing recruiter interruptions.
-- **Structured-interview scoring ASSIST** — Enforces a consistent, structured interview; captures evidence and *suggests* scores against a rubric. The interviewer always makes the call.
-- **Fairness/adverse-impact monitor** — Runs continuously across the funnel, computing selection rates and four-fifths-rule style checks, feeding the bias-audit process.
-
-## Recruitment funnel flow
+## Candidate Journey — An Agent at Each Stage
 
 ```
-   Requisition
-       |
-       v
- [JD-generation agent] --(draft)--> Recruiter approves --> Post to ATS/job boards
-                                                              |
-                                                              v
-                                                      Applicants (high volume)
-                                                              |
-                                                              v
-                                            +-----------------------------------+
-                                            | Sourcing/Screening agent          |
-                                            | resume parse + explainable rank   |
-                                            +-----------------+-----------------+
-                                                              | ranked + reasons
-                                                              v
-                                                   >>> RECRUITER REVIEWS <<<
-                                                   (human decides who advances)
-                                                              |
-                                                              v
-                                        +-------------------------------------+
-                                        | Conversational screening agent      |
-                                        | chat (+ optional voice pre-screen)  |
-                                        +-------------------+-----------------+
-                                                            | transcript + flags
-                                                            v
-                                                   >>> RECRUITER REVIEWS <<<
-                                                            |
-                                                            v
-                                              +---------------------------+
-                                              | Scheduling agent          |
-                                              +-------------+-------------+
-                                                            v
-                                              +---------------------------+
-                                              | Structured interview      |
-                                              | (ASSIST scoring, human    |
-                                              |  interviewer decides)     |
-                                              +-------------+-------------+
-                                                            v
-                                                   >>> HIRING MGR DECIDES <<<
-                                                   advance / offer / decline
-                                                            |
-   [Candidate-Q&A concierge] --- available 24/7 across ALL stages ---+
-                                                            |
-   [Fairness/Adverse-impact monitor] --- observes EVERY stage --------+
-                                          (flags disparity to RAI officer)
+   SOURCING            SCREENING             SELECTION           DECISION
+      |                    |                     |                  |
+ +----v----+   +----------v---------+   +--------v-------+   +------v------+
+ |   JD    |   | Résumé Ranking     |   | Structured     |   |  Human      |
+ | Gen     |-->| (assist, not auto) |-->| Interview      |-->|  Recruiter/ |
+ | Agent   |   |  + Conversational  |   | Scoring ASSIST |   |  Manager    |
+ +---------+   |  Screening         |   +----------------+   |  DECIDES    |
+              |  (chat / opt. voice)|   | Candidate Fit  |   +-------------+
+              +----------+----------+   | signal         |         ^
+                         |              +----------------+         |
+                    +----v-----+                                   |
+                    |Scheduling|-----------------------------------+
+                    |  Agent   |
+                    +----------+
+   ================ FAIRNESS / ADVERSE-IMPACT MONITOR (continuous) ==========
 ```
 
-## Multi-agent breakdown
+Every stage is wrapped by a **continuous fairness / adverse-impact monitor** and the shared **Compliance/Guardrail** agent.
 
-| Agent | Pattern | Autonomy | Key Azure services |
-|---|---|---|---|
-| JD-generation | Sequential + reflection | Draft only | GPT-4o, AI Search |
-| Sourcing/screening | Concurrent | Rank + explain, no reject | Document Intelligence, embeddings, AI Search |
-| Conversational screening | Supervisor-orchestrator | Collect facts, no scoring judgments | gpt-realtime / GPT-4o, Speech |
-| Scheduling | Action/Tooling hand-off | Autonomous (logistics only) | Azure Functions, ATS/calendar APIs |
-| Candidate-Q&A concierge | Knowledge/RAG | Informational only | AI Search, Content Safety |
-| Interview-scoring ASSIST | Reflection/critic + human-in-loop | Suggest only | GPT-4o, prompt registry |
-| Fairness/adverse-impact monitor | Concurrent oversight | Alert only | Fabric, Purview, evaluation SDK |
+### 1. JD Generation Agent
+Drafts inclusive, bias-checked job descriptions from role templates and hiring-manager inputs; flags exclusionary or non-essential requirements. **Assist only** — recruiters review and approve.
 
-The orchestrator sequences these agents, but **human-in-the-loop gates are hard-wired** at every advance/reject/offer point — the platform cannot skip them.
+### 2. Sourcing & Résumé Ranking Agent
+Ranks and summarizes inbound applicants against **job-related** criteria, with an explainable rationale per candidate. Produces a **ranked shortlist, not a decision** — recruiters see why each candidate ranked where they did and can override.
 
-## Responsible AI and fairness (the core of this use case)
+### 3. Conversational Screening Agent (chat + optional voice pre-screen)
+Conducts structured, consistent pre-screens (availability, eligibility, role-fit questions) via chat, or via an **optional voice pre-screen that reuses the Voice Agent platform** (gpt-realtime + Azure AI Speech). Candidates are told they are interacting with an AI assistant and may request a human.
 
-Employment decisions are legally and ethically consequential. Under the EU AI Act, AI in recruitment and selection is classified **high-risk**, and multiple US jurisdictions impose specific obligations. The platform is engineered so that Afni meets these obligations by design, not by after-the-fact patching.
+### 4. Scheduling Agent
+Coordinates interview slots across recruiters, hiring managers, and candidates; handles reminders, reschedules, and time-zone logic across geographies.
 
-| Regulation / standard | Requirement | How the platform complies |
+### 5. Structured Interview Scoring — ASSIST
+Provides interviewers a **structured rubric and note-taking aid**, and drafts summary scores against defined competencies. **The interviewer owns the score;** the agent never finalizes an outcome.
+
+### 6. Candidate Fit Signal
+A composite, explainable **signal** (not a verdict) summarizing job-related fit to help recruiters prioritize. Every Fit signal ships with its contributing factors so a human can inspect and challenge it.
+
+### 7. Fairness / Adverse-Impact Monitor
+Continuously measures selection rates and outcomes across protected groups and sites, computes adverse-impact ratios, and alerts governance to drift — feeding the required bias audits.
+
+---
+
+## Responsible AI and Fairness (Critical)
+
+Hiring is a **high-risk** use of AI and is governed accordingly. This capability is designed to the following, at minimum:
+
+- **AI assists, humans decide — no autonomous rejection.** Hard platform constraint, not a policy footnote.
+- **EEOC / Uniform Guidelines** — job-relatedness and validation; monitoring for adverse impact (four-fifths rule).
+- **NYC Local Law 144** — independent **bias audit** of automated employment decision tools (AEDTs), published results, and candidate notice before use.
+- **Illinois AI Video Interview Act** — notice, consent, explanation of how AI evaluates video interviews, and deletion on request. (Relevant to AFNI's IL footprint.)
+- **EU AI Act** — employment/recruitment is classified **high-risk**; requires risk management, human oversight, logging, transparency, and conformity practices.
+- **GDPR** (and equivalent) — lawful basis, data minimization, candidate access/erasure rights, and safeguards against solely automated decisions with legal/significant effect (Art. 22).
+- **Notice & consent** — candidates are informed when AI is used, what it assesses, and how to request human review or an accommodation.
+- **Explainability** — every ranking, Fit signal, and score carries a human-readable rationale and contributing factors.
+- **Bias audits & model cards** — periodic third-party-style audits, documented model/system cards, and versioned evaluation on fairness golden sets.
+
+Deterministic guardrails (Content Safety, PII detection/redaction via Purview, protected-attribute exclusion from scoring features) wrap every probabilistic agent.
+
+---
+
+## KPI Table (ILLUSTRATIVE)
+
+| KPI | Baseline (illustrative) | Target (illustrative) |
 |---|---|---|
-| **EEOC / Title VII** | No disparate impact in selection | Fairness monitor + job-related, validated criteria only; humans decide |
-| **NYC Local Law 144** | Independent **bias audit** of automated employment decision tools; candidate notice | Audit-ready logs, disparity metrics, annual third-party bias audit, published summary |
-| **Illinois AI Video Interview Act** | Notice, consent, explanation, deletion, limited sharing for AI-analyzed video | No autonomous video scoring; explicit notice/consent; retention & deletion controls (relevant to IL HQ) |
-| **EU AI Act (high-risk employment)** | Risk management, human oversight, transparency, logging | RAI intake + risk tiering, human-in-loop, model/system cards, full audit trail |
-| **GDPR** | Lawful basis, transparency, right to human review of automated decisions | Consent capture, data minimization, no solely-automated decisions, DSAR support |
+| Time-to-fill | — | −25–40% |
+| Cost-per-hire | — | −15–30% |
+| Funnel conversion (apply → hire) | — | +10–20% |
+| Recruiter screening hours saved | — | −30–50% |
+| Candidate NPS | — | +10–20 pts |
+| Offer-accept rate | — | +5–10 pts |
+| 90-day attrition | — | −10–20% |
+| Adverse-impact ratio (all protected groups) | — | ≥ 0.80 (monitored) |
 
-**Guardrails enforced across all agents:**
+---
 
-- **No autonomous rejection** — models never reject; they rank and explain, humans decide.
-- **Explainability** — every ranking/suggestion carries a plain-language, job-related rationale.
-- **Bias exclusion** — protected attributes and known proxies excluded from features; continuous adverse-impact testing.
-- **Candidate notice & consent** — clear disclosure that AI assists the process, before any AI-assisted step.
-- **Model & system cards** — documented for JD, screening, and scoring agents; versioned in the prompt/model registry with evaluation gates before promotion.
-- **Audit trail** — immutable logs (Purview) of every recommendation, rationale, and human decision.
+## Integration (ATS / HRIS)
 
-## KPI framework
+Hiring Intelligence is an **assist layer over AFNI's existing recruiting stack**, not a replacement:
 
-| KPI | Baseline (illustrative) | Target impact |
-|---|---|---|
-| Time-to-fill | — | 20–40% reduction |
-| Cost-per-hire | — | measurable reduction |
-| Funnel conversion (apply → hire) | — | +uplift via faster response |
-| Recruiter hours saved (screening) | — | 30–50% screening effort reduction |
-| Candidate experience / NPS | — | +uplift (24/7 concierge, faster scheduling) |
-| Offer-accept rate | — | +uplift |
-| 90-day attrition | — | reduction via better-matched hires |
-| Interview-to-hire quality | — | more consistent, structured scoring |
-| **Adverse-impact ratio** | — | within four-fifths guideline; monitored continuously |
+- **ATS** (e.g., Workday Recruiting, iCIMS, Greenhouse, or incumbent) — read applicants and requisitions; write back rankings, notes, Fit signals, and structured scores as **decision support**. Humans action all status changes in the ATS.
+- **HRIS** — role templates, headcount, location, and onboarding handoff.
+- **Integration layer** — Azure API Management + Functions/Logic Apps; connectors kept **generic** so the ATS/HRIS remains swappable.
+- **Voice pre-screen** — reuses the Voice Agent (gpt-realtime + Azure AI Speech + telephony/ACS), avoiding a duplicate speech build.
+- **Data & governance** — Microsoft Purview for lineage and PII controls; Entra ID for identity; audit trails on every agent action.
 
-All figures are illustrative placeholders replaced by Afni actuals during Phase 0 discovery. The adverse-impact ratio is a **guardrail metric**, not an efficiency metric — it gates the program.
+---
 
-## ATS / HRIS integration notes
+## Implementation Approach and Pilot Scope
 
-- **Integration layer stays generic** (mirroring the Voice AI approach): connect to Afni's incumbent ATS/HRIS via APIs (e.g., Workday, iCIMS, Greenhouse, SAP SuccessFactors — no specific incumbent assumed).
-- **Azure Functions + API Management** broker all reads/writes; **Key Vault** holds credentials; **Entra ID** governs identity and least-privilege access.
-- Candidate records, consent status, decision rationale, and audit logs are written back to the ATS so it remains the system of record; analytics land in **Fabric / Data Lake** with **Purview** lineage.
-- PII is detected and protected via **Content Safety + Purview**; retention and deletion policies enforce GDPR and Illinois requirements.
+1. **Foundations (Weeks 0–4).** Use-case risk-tiering (high-risk), ATS/HRIS connectors, fairness golden sets, candidate notice/consent flows, bias-audit plan, model cards.
+2. **Crawl pilot (Months 1–3).** **Chat-based conversational screening + résumé-ranking assist** for **one high-volume role in one geography**; recruiters retain all decisions; fairness monitor live from day one.
+3. **Walk (Months 4–7).** Add **optional voice pre-screen** (Voice Agent reuse), **scheduling**, and **structured interview-scoring assist**; run the first formal **bias audit** (NYC LL144-style) before broader use.
+4. **Run (Months 8–12).** Scale across roles and geographies (US/Mexico/Philippines) with jurisdiction-specific notice/consent and audits; embed continuous fairness reporting into the governance board cadence.
 
-## Suggested pilot scope
+**Pilot success criteria (illustrative):** recruiter screening hours reduced on the pilot role; time-to-fill improvement; candidate NPS lift; **zero autonomous rejections**; adverse-impact ratio ≥ 0.80 across monitored groups with documented audit.
 
-- **One high-volume role family** (recommend frontline contact-center agents) at **1–2 US sites**, aligning with the Crawl-phase HR screening pilot.
-- **In scope:** JD-generation, explainable resume ranking, conversational chat screening, scheduling, and the candidate-Q&A concierge — all with human-in-the-loop gates.
-- **Out of scope for the pilot:** autonomous decisions of any kind; voice pre-screen deferred to the Walk phase once consent flows and the voice platform are proven.
-- **Governance gate before launch:** RAI intake and risk tiering completed, candidate notice/consent finalized with Legal, and the **Local Law 144 bias-audit** process established.
-- **8–12 week pilot**, success measured on time-to-fill, recruiter hours saved, candidate NPS, and — as a hard gate — adverse-impact metrics within acceptable bounds before any expansion.
+---
+
+## Synergy Across the Three Initiatives
+
+- **← Voice Agent:** reuses the speech-to-speech stack for candidate voice pre-screens.
+- **↔ PI Index:** shares the same multi-agent scoring, explainability, and fairness-monitoring patterns; lessons on calibration and appeals transfer directly.
+
+One platform, one multi-agent pattern — AFNI builds it once and reuses it to hire, automate, and measure its workforce.

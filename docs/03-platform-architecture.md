@@ -2,11 +2,11 @@
 
 ## Purpose and Design Principles
 
-This document defines the reference architecture for Afni's enterprise LLMOps platform, built on **Microsoft Azure AI Foundry**. The architecture is designed to support Afni's two flagship use cases — **Voice AI for contact centers** and **AI-driven HR recruitment** — while remaining extensible to future service lines (Acquisition & Growth, Care & Retention, Collections, P&C Insurance including subrogation).
+This document defines the reference architecture for AFNI's enterprise LLMOps platform, built on **Microsoft Azure AI Foundry**. The architecture is owned by the **AFNI Office of GenAI Architecture** and is designed to support AFNI's three flagship initiatives — the **Voice Agent** (real-time voice automation and agent-assist), the **Performance Intelligence Index (PI Index)** (explainable scoring of 100% of interactions), and **Hiring Intelligence** (fair, high-volume recruitment) — while remaining extensible to future service lines (Acquisition & Growth, Care & Retention, Collections, and P&C Insurance including subrogation).
 
 The design follows five principles:
 
-- **One governed platform, many use cases.** A shared, multi-tenant-capable foundation with per-use-case isolation, rather than point solutions.
+- **One governed platform, three products.** A shared, multi-tenant-capable foundation with per-initiative isolation, rather than point solutions. The Voice Agent generates interaction data and real-time automation; the PI Index turns 100% of that data into performance intelligence; Hiring Intelligence reuses the same agents and voice stack to hire the workforce.
 - **Deterministic controls around probabilistic components.** Guardrails, gateways, and policy layers wrap non-deterministic model calls.
 - **Security and governance by default.** Private networking, managed identity, and least-privilege access are baseline, not add-ons.
 - **Everything as code.** Infrastructure, prompts, agents, and evaluations are versioned and promoted through CI/CD.
@@ -26,7 +26,7 @@ The platform is organized into nine logical layers. Each layer has a clear respo
 +---------------------------------------------------------------------------+
 |  1. CHANNELS / EXPERIENCE                                                 |
 |     Voice (CCaaS/SIP, Azure Communication Services) · Web/Chat · Teams    |
-|     · Candidate portal · Agent-assist desktop                             |
+|     · Candidate portal · Agent-assist desktop · Coaching/PI dashboards    |
 +---------------------------------------------------------------------------+
 |  2. ORCHESTRATION / AGENTS                                                |
 |     Azure AI Agent Service · Semantic Kernel / AutoGen                    |
@@ -43,28 +43,29 @@ The platform is organized into nine logical layers. Each layer has a clear respo
 |     Azure AI Search (hybrid + semantic ranker) · Document Intelligence    |
 +---------------------------------------------------------------------------+
 |  6. DATA & STATE                                                          |
-|     Cosmos DB (agent state/memory) · Data Lake / Fabric · Azure SQL       |
+|     Cosmos DB (agent state/memory) · Fabric / Data Lake (PI Index store)  |
+|     · Azure SQL                                                           |
 +---------------------------------------------------------------------------+
 |  7. INTEGRATION                                                           |
 |     Azure Functions · Logic Apps · APIM · connectors to CRM/HRIS/ATS/CCaaS|
 +---------------------------------------------------------------------------+
-|  8'. PLATFORM / DEVOPS                                                    |
+|  8'. PLATFORM / DEVOPS / LLMOPS                                           |
 |     Azure DevOps / GitHub Actions · Bicep/Terraform · Container Apps/AKS  |
 +===========================================================================+
 ```
 
 ### 1. Channels / Experience
-Entry points for callers, candidates, and Afni employees. Voice traffic arrives from the existing CCaaS estate (Genesys, NICE, Five9, Amazon Connect) via SIP/APIs; **Azure Communication Services** provides greenfield voice where no incumbent exists. Web chat, the candidate portal, and the agent-assist desktop connect through the same orchestration APIs.
+Entry points for callers, candidates, agents, and AFNI operations leaders. Voice traffic arrives from the existing CCaaS estate (Genesys, NICE, Five9, Amazon Connect) via SIP/APIs; **Azure Communication Services** provides greenfield voice where no incumbent exists. Web chat, the candidate portal, the agent-assist desktop, and the PI Index coaching/analytics dashboards all connect through the same orchestration APIs.
 
 ### 2. Orchestration / Agents
-The heart of the platform. **Azure AI Agent Service** hosts agents with built-in tool calling, threads, and content safety. **Semantic Kernel** and **AutoGen** (converging into the **Microsoft Agent Framework**) provide the orchestrator/specialist logic. This layer is detailed in `04-multi-agent-systems.md`.
+The heart of the platform. **Azure AI Agent Service** hosts agents with built-in tool calling, threads, and content safety. **Semantic Kernel** and **AutoGen** (converging into the **Microsoft Agent Framework**) provide the orchestrator/specialist logic. The identical pattern serves all three initiatives; detail is in `04-multi-agent-systems.md`.
 
 ### 3. Model Serving & Gateway
-All model traffic passes through **Azure API Management (APIM)** acting as an AI gateway. APIM provides:
+All model traffic passes through **Azure API Management (APIM)** acting as an AI gateway:
 
 | Capability | Function |
 |---|---|
-| Token metering | Per-app/per-use-case token accounting for FinOps chargeback |
+| Token metering | Per-initiative token accounting for FinOps showback (Voice Agent, PI Index, Hiring) |
 | Quotas & rate limits | Protect capacity; enforce PTU/PAYG budgets per consumer |
 | Semantic caching | Cache high-frequency prompts/responses to cut latency and cost |
 | Load balancing / routing | Spread load across Azure OpenAI deployments and regions |
@@ -73,18 +74,18 @@ All model traffic passes through **Azure API Management (APIM)** acting as an AI
 This gateway decouples agents from concrete model deployments, enabling model upgrades and multi-region failover without agent changes.
 
 ### 4. Models & AI Services
-**Azure OpenAI** serves GPT-4o (reasoning/orchestration), GPT-4o-mini (cost-efficient routing/classification), and **gpt-realtime** for sub-second speech-to-speech in voice scenarios. **Azure AI Speech** (STT/TTS, custom neural voice) provides a hybrid/fallback path. **text-embedding-3-large** powers retrieval. Open-weight models (Llama, Phi) from the Foundry catalog are available for cost-sensitive or data-residency-constrained workloads.
+**Azure OpenAI** serves GPT-4o (reasoning/orchestration and PI Index scoring), GPT-4o-mini (cost-efficient routing/classification and high-volume screening), and **gpt-realtime** for sub-second speech-to-speech in Voice Agent scenarios. **Azure AI Speech** (STT/TTS, custom neural voice) provides a hybrid/fallback path. **text-embedding-3-large** powers retrieval. Open-weight models (Llama, Phi) from the Foundry catalog are available for cost-sensitive or data-residency-constrained workloads.
 
 ### 5. Knowledge / RAG
-**Azure AI Search** provides hybrid (keyword + vector) retrieval with the semantic ranker over Afni policy documents, knowledge bases, and HR job requisitions. **Azure AI Document Intelligence** handles ingestion and extraction from PDFs, contracts, and resumes. Vectors reside in AI Search or Cosmos DB depending on latency and co-location needs.
+**Azure AI Search** provides hybrid (keyword + vector) retrieval with the semantic ranker over AFNI policy documents, client knowledge bases, and job requisitions. **Azure AI Document Intelligence** handles ingestion and extraction from PDFs, contracts, and resumes. Vectors reside in AI Search or Cosmos DB depending on latency and co-location needs.
 
 ### 6. Data & State
-**Cosmos DB** stores agent state and conversation memory (low-latency, globally distributed). **Azure Data Lake / Microsoft Fabric** holds analytics, evaluation datasets, and interaction transcripts. **Azure SQL** serves relational needs (dispositions, structured HR records).
+**Cosmos DB** stores agent state and conversation memory (low-latency, globally distributed). **Microsoft Fabric / Azure Data Lake** holds analytics, evaluation datasets, interaction transcripts, and the **PI Index score store** (dimension scores, trends, driver breakdowns). **Azure SQL** serves relational needs (dispositions, structured HR records).
 
 ### 7. Integration
-**Azure Functions** provide event glue; **Logic Apps** and APIM-fronted connectors reach systems of record — CRM, billing, and HRIS/ATS — through secure, audited tool endpoints. The integration layer is deliberately generic to avoid coupling to a specific CCaaS or ATS incumbent.
+**Azure Functions** provide event glue; **Logic Apps** and APIM-fronted connectors reach systems of record — CRM, billing, HRIS/ATS, and QA/coaching platforms — through secure, audited tool endpoints. The integration layer is deliberately generic to avoid coupling to a specific CCaaS or ATS incumbent.
 
-### 8. Platform / DevOps
+### 8. Platform / DevOps / LLMOps
 Infrastructure is defined as code (Bicep/Terraform) and deployed via **Azure DevOps or GitHub Actions**. Runtime hosting uses **Azure Container Apps** for most agent workloads, with **AKS** reserved for high-scale or specialized needs. See `07-llmops-lifecycle.md` for the full pipeline.
 
 ### 9. Security & Governance (cross-cutting)
@@ -104,7 +105,7 @@ Three promotion environments are maintained, each an isolated Foundry hub/projec
 
 ## Network Isolation
 
-All PaaS services (Azure OpenAI, AI Search, Cosmos DB, Key Vault, Storage) are deployed with **Private Endpoints** into a hub-and-spoke **VNet**; public network access is disabled. Traffic between agents, gateway, and models stays on the Microsoft backbone. Ingress is fronted by **Azure Front Door / Application Gateway with WAF**; egress is controlled via **Azure Firewall**. Private DNS zones resolve private endpoints. This satisfies PCI-DSS, HIPAA, and GDPR isolation expectations for regulated Afni client workloads.
+All PaaS services (Azure OpenAI, AI Search, Cosmos DB, Key Vault, Storage) are deployed with **Private Endpoints** into a hub-and-spoke **VNet**; public network access is disabled. Traffic between agents, gateway, and models stays on the Microsoft backbone. Ingress is fronted by **Azure Front Door / Application Gateway with WAF**; egress is controlled via **Azure Firewall**. Private DNS zones resolve private endpoints. This satisfies PCI-DSS, HIPAA, and GDPR isolation expectations for regulated AFNI client workloads.
 
 ## Cloud Alternatives
 
