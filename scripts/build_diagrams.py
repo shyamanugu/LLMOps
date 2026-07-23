@@ -96,6 +96,29 @@ class SVG:
         elif kind=="flow":
             self.els.append(f'<circle cx="{cx-s*0.5}" cy="{cy}" r="{s*0.2}" fill="{color}"/><circle cx="{cx+s*0.5}" cy="{cy-s*0.4}" r="{s*0.2}" fill="{color}"/><circle cx="{cx+s*0.5}" cy="{cy+s*0.4}" r="{s*0.2}" fill="{color}"/>')
             self.els.append(f'<line x1="{cx-s*0.32}" y1="{cy-s*0.05}" x2="{cx+s*0.32}" y2="{cy-s*0.35}" stroke="{color}" stroke-width="2"/><line x1="{cx-s*0.32}" y1="{cy+s*0.05}" x2="{cx+s*0.32}" y2="{cy+s*0.35}" stroke="{color}" stroke-width="2"/>')
+        elif kind=="doc":
+            self.els.append(f'<path d="M{cx-s*0.42},{cy-s*0.6} h{s*0.62} l{s*0.24},{s*0.24} v{s*0.96} h{-s*0.86} z" fill="none" stroke="{color}" stroke-width="2"/>')
+            for dy in (-0.15,0.1,0.35):
+                self.els.append(f'<line x1="{cx-s*0.24}" y1="{cy+s*dy}" x2="{cx+s*0.24}" y2="{cy+s*dy}" stroke="{color}" stroke-width="1.8"/>')
+        elif kind=="lock":
+            self.els.append(f'<rect x="{cx-s*0.42}" y="{cy-s*0.1}" width="{s*0.84}" height="{s*0.7}" rx="{s*0.12}" fill="none" stroke="{color}" stroke-width="2"/>')
+            self.els.append(f'<path d="M{cx-s*0.26},{cy-s*0.1} v{-s*0.22} a{s*0.26},{s*0.26} 0 0 1 {s*0.52},0 v{s*0.22}" fill="none" stroke="{color}" stroke-width="2"/>')
+            self.els.append(f'<circle cx="{cx}" cy="{cy+s*0.22}" r="{s*0.09}" fill="{color}"/>')
+        elif kind=="check":
+            self.els.append(f'<path d="M{cx-s*0.4},{cy} l{s*0.28},{s*0.3} l{s*0.55},{-s*0.6}" fill="none" stroke="{color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>')
+        elif kind=="cloud":
+            self.els.append(f'<path d="M{cx-s*0.5},{cy+s*0.25} a{s*0.3},{s*0.3} 0 0 1 {s*0.15},{-s*0.55} a{s*0.35},{s*0.35} 0 0 1 {s*0.7},{-s*0.05} a{s*0.28},{s*0.28} 0 0 1 {s*0.1},{s*0.62} z" fill="none" stroke="{color}" stroke-width="2"/>')
+        elif kind=="bolt":
+            self.els.append(f'<path d="M{cx+s*0.1},{cy-s*0.6} l{-s*0.4},{s*0.7} h{s*0.28} l{-s*0.12},{s*0.5} l{s*0.5},{-s*0.75} h{-s*0.3} z" fill="{color}"/>')
+        elif kind=="route":
+            self.els.append(f'<circle cx="{cx-s*0.5}" cy="{cy}" r="{s*0.16}" fill="{color}"/>')
+            for dy in (-0.42,0,0.42):
+                self.els.append(f'<circle cx="{cx+s*0.5}" cy="{cy+s*dy}" r="{s*0.14}" fill="{color}"/>')
+                self.els.append(f'<path d="M{cx-s*0.34},{cy} Q{cx},{cy} {cx+s*0.36},{cy+s*dy}" fill="none" stroke="{color}" stroke-width="1.8"/>')
+        elif kind=="grid":
+            for gx in (-0.35,0.05):
+                for gy in (-0.35,0.05):
+                    self.els.append(f'<rect x="{cx+s*gx}" y="{cy+s*gy}" width="{s*0.3}" height="{s*0.3}" rx="2" fill="none" stroke="{color}" stroke-width="1.8"/>')
     def badge(self, cx, cy, kind, bg, r=17, icon_color=WHITE):
         self.els.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{bg}"/>')
         self.icon(cx, cy, kind, icon_color, r=r*0.8)
@@ -119,16 +142,16 @@ def title(d, kicker, ttl, x=60, y=58):
 # ============================================================================
 def d1_platform():
     d=SVG(1640, 1020, WHITE)
-    title(d, "Enterprise LLMOps Platform", "Layered reference architecture on Azure AI Foundry")
+    title(d, "Enterprise GenAI Platform", "Layered reference architecture on Microsoft Foundry")
     layers=[
-        ("Experience & channels", ["Voice / CCaaS","Azure Communication Services","Web & chat","Agent-assist desktop","ATS / HR portals"], CYAN, "mic"),
-        ("Orchestration & agents", ["Azure AI Agent Service","Semantic Kernel","AutoGen · Agent Framework","Orchestrator + specialists"], TEAL, "flow"),
-        ("Models & AI services", ["Azure OpenAI GPT-4o","gpt-realtime (speech-to-speech)","Azure AI Speech","Content Safety"], INDIGO, "brain"),
-        ("Knowledge & RAG", ["Azure AI Search (hybrid+semantic)","AI Document Intelligence","Vector store","Grounding & citations"], "#3E5C99", "db"),
-        ("Data & integration", ["Cosmos DB (state / memory)","Microsoft Fabric / Data Lake","API Management gateway","CRM · HRIS · billing connectors"], "#4A6AA8", "gear"),
-        ("DevOps & LLMOps", ["Prompt flow & registry","AI evaluation SDK","GitHub Actions / Azure DevOps","Container Apps / AKS"], GRAY, "gear"),
-        ("Security & governance", ["Entra ID · Key Vault","Defender for Cloud","Microsoft Purview","Private endpoints / VNet"], NAVY, "shield"),
-        ("Observability & FinOps", ["Azure Monitor · App Insights","OpenTelemetry (GenAI)","Token metering","Cost showback"], "#2E7D7D", "gauge"),
+        ("Experience & channels", ["Voice Live / CCaaS · ACS","Web & chat","Agent-assist desktop","Teams / M365 Copilot","Batch & API"], CYAN, "mic"),
+        ("Orchestration & agents", ["Microsoft Agent Framework","Foundry Agent Service","MCP tools · A2A interop","Durable workflows · memory"], TEAL, "flow"),
+        ("Models & AI services", ["Model Router (cost/quality)","GPT-5.5 · gpt-realtime-1.5","Model catalog + open-weight","Content Safety"], INDIGO, "route"),
+        ("Knowledge & RAG", ["Azure AI Search (hybrid+semantic)","Integrated vectorization","AI Document Intelligence","Grounding & citations"], "#3E5C99", "db"),
+        ("Data platform (at scale)", ["Microsoft Fabric / OneLake","Event Hubs (streaming) + batch","Cosmos DB · vector stores","Purview lineage & DLP"], "#4A6AA8", "grid"),
+        ("GenAIOps & DevOps", ["Agents-as-code (YAML)","Evaluation-in-CI · gates","GitHub Actions / Azure DevOps","Container Apps / AKS · APIM"], GRAY, "gear"),
+        ("Security & governance", ["Entra ID · Key Vault","Defender for Cloud + AI","Microsoft Purview","Private endpoints / VNet"], NAVY, "shield"),
+        ("Observability & FinOps", ["Unified OpenTelemetry tracing","Quality · latency · drift · safety","Token metering","Cost showback"], "#2E7D7D", "gauge"),
     ]
     x=60; w=1520; y=104; lh=108; gap=8
     for name, chips, color, ic in layers:
@@ -471,7 +494,411 @@ def d8_roadmap():
     d.els.append(f'<path d="M1500,{y-23} l24,0 l-8,-8 m8,8 l-8,8" stroke="{NAVY}" stroke-width="3" fill="none"/>')
     d.save("08-roadmap")
 
+def vtext(d,x,y,s,size,color,weight="700",spacing=None):
+    sp=f' letter-spacing="{spacing}"' if spacing else ""
+    d.raw(f'<text x="{x}" y="{y}" transform="rotate(-90 {x} {y})" font-family="{FONT}" font-size="{size}" fill="{color}" text-anchor="middle" font-weight="{weight}"{sp}>{esc(s)}</text>')
+
+# ============================================================================
+# DIAGRAM 9 — Enterprise GenAI Framework overview (HERO: build the factory)
+# ============================================================================
+def d9_framework():
+    d=SVG(1660, 1010, WHITE)
+    title(d, "The Framework", "One reusable platform — onboard any GenAI use case")
+    # cross-cutting rails
+    d.card(60,120,150,820,NAVY,rx=16,stroke=NAVY)
+    d.badge(135,175,"shield","rgba(255,255,255,0.16)",r=22); vtext(d,120,560,"Security & Governance",20,WHITE,"800"); vtext(d,150,560,"Zero Trust · Responsible AI",12.5,CYAN,"600")
+    d.card(1450,120,150,820,"#2E7D7D",rx=16,stroke="#2E7D7D")
+    d.badge(1525,175,"gear","rgba(255,255,255,0.18)",r=22); vtext(d,1510,560,"GenAIOps · Observability",20,WHITE,"800"); vtext(d,1540,560,"CI/CD · FinOps · Evaluation",12.5,"#CFF0F0","600")
+    MX=240; MW=1180
+    # top: use cases
+    d.text(MX,168,"USE CASES — onboarded via the paved road",14,GRAY,weight="800",spacing="1")
+    ucs=[("Voice Agent",TEAL,"mic"),("Performance Intelligence Index",INDIGO,"gauge"),("Hiring Intelligence",AMBER,"people")]
+    tw=(MW-3*20)/4
+    for i,(t,c,ic) in enumerate(ucs):
+        x=MX+i*(tw+20); d.toptab(x,182,tw,96,c,tab=7)
+        d.badge(x+34,182+48,ic,c,r=17); d.tspan_center(x+tw/2+18,182+48,[t] if len(t)<20 else t.split(" ",1),13.5,NAVY,"700")
+    # any future
+    x=MX+3*(tw+20); d.rect(x,182,tw,96,"#F0F3F9",rx=14,stroke="#B9C4DA",sw=2)
+    d.raw(f'<rect x="{x}" y="182" width="{tw}" height="96" rx="14" fill="none" stroke="#8FA0BE" stroke-width="2" stroke-dasharray="7,6"/>')
+    d.tspan_center(x+tw/2,182+48,["+ Any future","use case"],15,"#5A6B86","800")
+    # pattern catalog band
+    py=308
+    d.rect(MX,py,MW,86,LIGHT,rx=12,stroke=LINE)
+    d.text(MX+18,py+30,"GenAI PATTERN CATALOG  ·  beyond chatbots",13,INDIGO,weight="800",spacing="0.5")
+    d.chiprow(MX+18,py+46,["RAG","Agentic workflow","Doc intelligence","Batch analytics","Multimodal","Decision support","Real-time voice","Copilot"],12.5,WHITE,INDIGO,gap=10,h=28)
+    # platform capabilities
+    cy0=428
+    d.text(MX,cy0-6,"REUSABLE PLATFORM CAPABILITIES",14,GRAY,weight="800",spacing="1")
+    caps=[("Orchestration & agents","Agent Framework · durable · memory",TEAL,"flow"),
+          ("Models & Model Router","GPT-5.x · realtime · cost/quality",INDIGO,"route"),
+          ("Knowledge & RAG","AI Search · vectorization",'#3E5C99',"db"),
+          ("Data platform at scale","Fabric / OneLake · streaming",'#4A6AA8',"grid"),
+          ("Tools & interop","MCP tools · A2A agents",PURPLE,"gear")]
+    cw=(MW-4*18)/5
+    for i,(t,sub,c,ic) in enumerate(caps):
+        x=MX+i*(cw+18); d.toptab(x,cy0+12,cw,150,c,tab=7)
+        d.badge(x+cw/2,cy0+62,ic,c,r=22)
+        d.tspan_center(x+cw/2,cy0+108,t.split(" & ") if " & " in t else [t] if len(t)<16 else t.split(" ",1),13.5,NAVY,"700")
+        d.tspan_center(x+cw/2,cy0+140,[sub],10.5,GRAY)
+    # onboarding golden-path strip
+    gy=640
+    d.rect(MX,gy,MW,66,"#EEF3FF",rx=12,stroke="#C9D6F0")
+    d.text(MX+18,gy+27,"PAVED ROAD",12.5,INDIGO,weight="800")
+    steps=["Intake","Tier","Blueprint","Assemble","Evaluate","Deploy","Operate","Improve"]
+    sx=MX+150
+    for i,st in enumerate(steps):
+        d.chip(sx,gy+20,st,12.5,WHITE,INDIGO,h=28)
+        if i<len(steps)-1: d.text(sx+96,gy+40,"›",16,AMBER,"middle","800")
+        sx+=118
+    # base foundation
+    by=730
+    d.card(MX,by,MW,90,INDIGO,rx=16,stroke=INDIGO)
+    d.badge(MX+45,by+45,"cloud","rgba(255,255,255,0.16)",r=20)
+    d.text(MX+80,by+40,"Microsoft Foundry",19,WHITE,weight="800")
+    d.text(MX+80,by+66,"Agent Service · Model Router · unified tracing & evaluation · Content Safety — on Azure",12.5,CYAN)
+    d.text(MX+MW-20,by+52,"build the factory, not just the features",12.5,"#9FB0CC","end",italic=True)
+    # arrows down
+    for i in range(5):
+        x=MX+i*((MW-4*18)/5+18)+((MW-4*18)/5)/2
+        d.arrow(x,gy+66,x,by-2,"#B9C4DA",1.6,head=False)
+    d.text(MX,by+120,"Use cases plug into the platform; each new one inherits security, evaluation, observability and cost controls by default.",12.5,GRAY,italic=True)
+    d.save("09-framework")
+
+# ============================================================================
+# DIAGRAM 10 — Use-case onboarding golden path
+# ============================================================================
+def d10_onboarding():
+    d=SVG(1660, 820, WHITE)
+    title(d, "Use-Case Onboarding", "The paved road — from idea to production in weeks")
+    steps=[("Intake","request & value hypothesis","flow"),("Value & Risk tier","impact × risk → controls","gauge"),
+           ("Blueprint","pick a pattern","grid"),("Assemble","reusable building blocks","gear"),
+           ("Evaluate","gates: quality·safety·cost","check"),("Deploy","canary / blue-green","route"),
+           ("Operate","observe · FinOps","cloud"),("Improve","feedback → datasets","brain")]
+    n=len(steps); bw=176; gap=22; sx=60; y=150; bh=140
+    for i,(t,sub,ic) in enumerate(steps):
+        x=sx+i*(bw+gap); c=TEAL if i<4 else INDIGO
+        d.toptab(x,y,bw,bh,c,tab=7)
+        d.els.append(f'<circle cx="{x+34}" cy="{y+38}" r="15" fill="{c}"/>'); d.text(x+34,y+43,str(i+1),15,WHITE,"middle","800")
+        d.badge(x+bw-38,y+38,ic,c,r=16)
+        d.tspan_center(x+bw/2,y+86,[t] if len(t)<14 else t.split(" ",1),14.5,NAVY,"700")
+        d.text(x+bw/2,y+124,sub,11,GRAY,"middle")
+        if i<n-1: d.arrow(x+bw+3,y+bh/2,x+bw+gap-3,y+bh/2,AMBER,2.6)
+    # building blocks tray feeding "Assemble" (step 4, index 3)
+    ty=400
+    d.text(60,ty-6,"REUSABLE BUILDING BLOCKS  ·  capability catalog",14,GRAY,weight="800",spacing="0.5")
+    blocks=["Agent & workflow templates (YAML)","MCP tool / connector library","Prompt & policy libraries","Guardrail packs","Golden datasets + eval suites","IaC modules","RAG ingestion templates","Dashboards"]
+    d.rect(60,ty+12,1540,110,LIGHT,rx=14,stroke=LINE)
+    cx=90; cyy=ty+30
+    for i,b in enumerate(blocks):
+        w=d.chip(cx,cyy,b,13,WHITE,INDIGO,h=32); cx+=w+14
+        if cx>1500 and i<len(blocks)-1: cx=90; cyy+=44
+    ax=sx+3*(bw+gap)+bw/2
+    d.arrow(ax,ty+12,ax,y+bh+3,GRAY,2.2,dash="5,5")
+    d.text(ax+10,ty+6,"assemble from catalog",11.5,GRAY,italic=True)
+    # improve -> intake loop
+    lx0=sx+7*(bw+gap)+bw/2; lx1=sx+bw/2; ly=y+bh+40
+    d.raw(f'<path d="M{lx0},{y+bh+3} V{ly} H{lx1} V{y+bh+3}" fill="none" stroke="{GREEN}" stroke-width="2.4" stroke-dasharray="6,5" marker-end="url(#ah)"/>')
+    d.text((lx0+lx1)/2,ly-8,"continuous improvement — production feedback becomes the next golden dataset",12.5,GREEN,"middle",italic=True)
+    d.text(60,ty+150,"Security, compliance, evaluation and observability are inherited by default at every step — teams focus on the use case, not the plumbing.",12.5,NAVY,weight="600")
+    d.save("10-onboarding")
+
+# ============================================================================
+# DIAGRAM 11 — GenAI pattern catalog (beyond chatbots)
+# ============================================================================
+def d11_patterns():
+    d=SVG(1660, 900, WHITE)
+    title(d, "Pattern Catalog", "GenAI is far more than chatbots")
+    pats=[("Conversational copilot","chat & voice assist",TEAL,"mic"),
+          ("Agentic workflow","multi-step, tool-using, durable",INDIGO,"flow"),
+          ("Retrieval-augmented (RAG)","grounded answers over knowledge","#3E5C99","db"),
+          ("Document intelligence","extract · classify · validate",PURPLE,"doc"),
+          ("Batch summarization & analytics","100% interaction analysis",AMBER,"grid"),
+          ("Structured extraction","unstructured → structured data",GREEN,"doc"),
+          ("Multimodal","speech · image · document","#4A6AA8","brain"),
+          ("Decision support & forecasting","next-best-action · propensity",ROSE,"gauge"),
+          ("Code & developer assist","tooling · tests · migration","#2E7D7D","gear"),
+          ("Real-time voice","speech-to-speech agents",CYAN,"mic")]
+    cols=5; cw=296; ch=210; gapx=20; gapy=24; sx=60; sy=150
+    for i,(t,sub,c,ic) in enumerate(pats):
+        r=i//cols; cc=i%cols; x=sx+cc*(cw+gapx); y=sy+r*(ch+gapy)
+        d.toptab(x,y,cw,ch,c,tab=8)
+        d.badge(x+42,y+52,ic,c,r=22)
+        d.tspan_center(x+cw/2+20,y+52,t.split(" & ") if " & " in t and len(t)>18 else [t] if len(t)<22 else t.split(" ",1),15,NAVY,"700")
+        d.text(x+24,y+118,sub,12.5,GRAY)
+        d.rect(x+24,y+140,cw-48,40,LIGHT,rx=9)
+        d.text(x+cw/2,y+165,"reusable blueprint + eval suite",11.5,c,"middle","600")
+    d.save("11-patterns")
+
+# ============================================================================
+# DIAGRAM 12 — Enterprise multi-agent runtime
+# ============================================================================
+def d12_runtime():
+    d=SVG(1660, 980, WHITE)
+    title(d, "Enterprise Agent Runtime", "Durable, governed, interoperable orchestration")
+    d.text(830,150,"Orchestration patterns",13,GRAY,"middle","700")
+    d.chiprow(560,164,["sequential","concurrent","group-chat","handoff","Magentic"],12.5,LIGHT,INDIGO,gap=10,h=27)
+    # orchestrator
+    ox,oy,ow,oh=610,210,440,96
+    d.card(ox,oy,ow,oh,NAVY,rx=16,stroke=NAVY)
+    d.badge(ox+50,oy+oh/2,"flow","rgba(255,255,255,0.16)",r=22)
+    d.text(ox+90,oy+40,"ORCHESTRATOR",19,WHITE,weight="800"); d.text(ox+90,oy+66,"Microsoft Agent Framework · agent registry",12.5,CYAN)
+    # memory (left)
+    d.toptab(60,210,300,150,PURPLE)
+    d.badge(100,250,"brain",PURPLE,r=18); d.text(130,238,"Memory",15.5,NAVY,weight="700")
+    for i,m in enumerate(["Session memory","User memory","Procedural memory"]):
+        d.text(90,278+i*26,"• "+m,12.5,INK)
+    d.arrow(360,285,ox-4,285,PURPLE,2.2,dash="5,5")
+    # MCP tools + A2A (right)
+    d.toptab(1300,210,300,150,"#4A6AA8")
+    d.badge(1340,250,"gear","#4A6AA8",r=18); d.text(1370,238,"Tools & interop",15,NAVY,weight="700")
+    for i,m in enumerate(["MCP → CRM · HRIS · billing","A2A → cross-team agents","least-privilege scopes"]):
+        d.text(1330,278+i*26,"• "+m,12,INK)
+    d.arrow(1300,285,ox+ow+4,285,"#4A6AA8",2.2,dash="5,5")
+    # specialists
+    agents=[("Intent / Router",TEAL,"route"),("Knowledge / RAG",INDIGO,"db"),("Action / Tooling","#4A6AA8","gear"),
+            ("Compliance",AMBER,"shield"),("Sentiment",GREEN,"brain"),("Handoff",PURPLE,"people"),("QA & Scoring","#2E7D7D","gauge")]
+    cw2=196; gap=20; tot=7*cw2+6*gap; sx=(1660-tot)/2; ay=400
+    for i,(t,c,ic) in enumerate(agents):
+        x=sx+i*(cw2+gap); d.toptab(x,ay,cw2,110,c,tab=6)
+        d.badge(x+34,ay+55,ic,c,r=17); d.tspan_center(x+cw2/2+16,ay+55,[t] if len(t)<13 else t.split(" / "),13,NAVY,"700")
+        d.arrow(830,306,x+cw2/2,ay-2,GRAY,1.6)
+    # durable workflow strip
+    dy=560
+    d.rect(60,dy,1540,74,"#FBF3E4",rx=14,stroke="#F0DFBF")
+    d.badge(105,dy+37,"gear",AMBER,r=18); d.text(140,dy+32,"Durable execution",15,"#5A3D00",weight="800")
+    d.chiprow(140,dy+45,["checkpointing","pause / resume","retries & idempotency","compensation / saga","human-in-the-loop approvals"],12.5,WHITE,"#8A5A00",gap=12,h=30)
+    # guardrail + tracing band
+    gy=666
+    d.rect(60,gy,1540,150,LIGHT,rx=16,stroke=LINE); d.rect(60,gy,1540,44,NAVY,rx=16); d.rect(60,gy+28,1540,16,NAVY)
+    d.text(830,gy+29,"DETERMINISTIC GUARDRAILS  +  UNIFIED OPENTELEMETRY TRACING (every model call · tool · sub-agent hop · handoff)",13,WHITE,"middle","700")
+    d.chiprow(150,gy+74,["Content Safety / prompt shields","PII redaction","policy (do/ don't say)","groundedness","graduated autonomy","per-hop trace + eval"],13,WHITE,INDIGO,gap=13,h=34)
+    d.text(830,gy+130,"Probabilistic agents, wrapped in deterministic controls — with an audit trail for every action.",12.5,GRAY,"middle",italic=True)
+    d.save("12-agent-runtime")
+
+# ============================================================================
+# DIAGRAM 13 — Security defense-in-depth + OWASP LLM Top 10
+# ============================================================================
+def d13_security():
+    d=SVG(1660, 980, WHITE)
+    title(d, "Security by Design", "Zero Trust defense-in-depth for LLM systems")
+    layers=[("Identity & network","Entra ID · VNet · private endpoints · no public egress",NAVY),
+            ("AI gateway","API Management · auth · rate & cost limits · quotas",INDIGO),
+            ("Input guardrails","prompt shields · isolate untrusted content · validation","#2E5A9E"),
+            ("Orchestration","least-privilege MCP tools · HITL approvals · graduated autonomy",TEAL),
+            ("Output guardrails","output filtering · groundedness · PII redaction","#2E7D7D"),
+            ("Data & vectors","per-source RBAC · encryption · tenant isolation","#4A6AA8"),
+            ("Monitor & respond","Defender for AI · red-team · audit · incident response",GRAY)]
+    x=60; w=760; y=140; lh=112; gap=8
+    for i,(t,sub,c) in enumerate(layers):
+        d.card(x,y,w,lh-gap); d.rect(x,y,14,lh-gap,c,rx=6)
+        d.badge(x+52,y+(lh-gap)/2,"lock",c,r=18)
+        d.text(x+86,y+(lh-gap)/2-8,t,17,NAVY,weight="800"); d.text(x+86,y+(lh-gap)/2+16,sub,12,GRAY)
+        if i<len(layers)-1: d.text(x+w/2,y+lh-gap+3,"▼",12,"#B9C4DA","middle")
+        y+=lh
+    # OWASP panel
+    ox=880; ow=720
+    d.card(ox,140,ow,772,LIGHT,rx=16); d.rect(ox,140,ow,50,NAVY,rx=16); d.rect(ox,166,ow,24,NAVY)
+    d.text(ox+ow/2,166,"OWASP TOP 10 FOR LLM APPLICATIONS (2025) → CONTROL",13.5,WHITE,"middle","800")
+    owasp=[("LLM01 Prompt injection","prompt shields · isolate untrusted content"),
+           ("LLM02 Sensitive info disclosure","PII redaction · output filtering · DLP"),
+           ("LLM03 Supply chain","AI-BOM · model & dependency provenance"),
+           ("LLM04 Data & model poisoning","curated data · lineage · validation"),
+           ("LLM05 Improper output handling","treat output as untrusted · sanitize"),
+           ("LLM06 Excessive agency","least-privilege tools · HITL approvals"),
+           ("LLM07 System-prompt leakage","no secrets in prompts · guardrails"),
+           ("LLM08 Vector / embedding weakness","per-source RBAC on vectors · isolation"),
+           ("LLM09 Misinformation","grounding · citations · eval gates"),
+           ("LLM10 Unbounded consumption","rate & cost limits · quotas · budgets")]
+    yy=210
+    for t,ctl in owasp:
+        d.rect(ox+20,yy,ow-40,54,WHITE,rx=9,stroke=LINE)
+        d.els.append(f'<circle cx="{ox+46}" cy="{yy+27}" r="7" fill="{ROSE}"/>')
+        d.text(ox+66,yy+23,t,13.5,NAVY,weight="700"); d.text(ox+66,yy+43,ctl,12,TEAL,weight="600")
+        yy+=64
+    d.save("13-security")
+
+# ============================================================================
+# DIAGRAM 14 — Data platform at scale
+# ============================================================================
+def d14_data():
+    d=SVG(1660, 840, WHITE)
+    title(d, "Data at Scale", "Enterprise data platform feeding grounded AI")
+    stages=[("Sources","voice · chat · docs · CRM · systems",GRAY,"grid"),
+            ("Ingestion","Event Hubs (stream) + batch",INDIGO,"flow"),
+            ("Lakehouse","Microsoft Fabric / OneLake","#3E5C99","cloud"),
+            ("Processing","chunk · enrich · vectorize · redact PII",TEAL,"gear"),
+            ("Stores","AI Search vectors · Cosmos","#4A6AA8","db"),
+            ("Serving","RAG retrieval · grounding",CYAN,"route"),
+            ("Consumers","agents · PI Index · analytics",GREEN,"brain")]
+    n=len(stages); bw=196; gap=32; sx=60; y=170; bh=170
+    for i,(t,sub,c,ic) in enumerate(stages):
+        x=sx+i*(bw+gap); d.toptab(x,y,bw,bh,c,tab=8)
+        d.badge(x+bw/2,y+56,ic,c,r=23); d.tspan_center(x+bw/2,y+108,[t],16,NAVY,"800")
+        d.tspan_center(x+bw/2,y+140,[sub] if len(sub)<26 else sub.split(" · ",1),11,GRAY)
+        if i<n-1: d.arrow(x+bw+4,y+bh/2,x+bw+gap-4,y+bh/2,AMBER,2.6)
+    # streaming/batch note
+    d.text(sx+bw+gap/2+bw/2,y+bh+34,"batch + streaming lanes · incremental / CDC refresh · partitioned per domain & tenant",12.5,GRAY,"middle",italic=True)
+    # governance band
+    gy=500
+    d.rect(60,gy,1540,90,"#EEF3FF",rx=16,stroke="#C9D6F0")
+    d.badge(110,gy+45,"shield",INDIGO,r=20); d.text(148,gy+40,"Microsoft Purview",16,NAVY,weight="800")
+    d.chiprow(148,gy+55,["data governance","lineage","classification","DLP","retention","PII handling"],13,WHITE,INDIGO,gap=13,h=32)
+    for i in range(n):
+        x=sx+i*(bw+gap)+bw/2
+        if i in (0,3,4,5): d.arrow(x,y+bh+3,x,gy-2,"#C9D6F0",1.4,head=False)
+    d.text(60,gy+130,"Governance and security are applied across the whole pipeline — not bolted on at the end.",12.5,NAVY,weight="600")
+    d.save("14-data-platform")
+
+# ============================================================================
+# DIAGRAM 15 — GenAIOps CI/CD pipeline with validation gates
+# ============================================================================
+def d15_cicd():
+    d=SVG(1700, 860, WHITE)
+    title(d, "GenAIOps CI/CD", "Nothing ships without passing evaluation gates")
+    stages=[("Author","agents & prompts as YAML",TEAL,"doc"),
+            ("Commit / PR","version-controlled",INDIGO,"flow"),
+            ("CI build","package · IaC","#3E5C99","gear"),
+            ("Registry","versioned prompt & model",PURPLE,"db"),
+            ("Deploy","canary / blue-green",AMBER,"route"),
+            ("Production","behind APIM gateway",GREEN,"cloud")]
+    n=len(stages); bw=200; gap=64; sx=60; y=160; bh=120
+    for i,(t,sub,c,ic) in enumerate(stages):
+        x=sx+i*(bw+gap); d.toptab(x,y,bw,bh,c,tab=7)
+        d.badge(x+34,y+52,ic,c,r=17); d.tspan_center(x+bw/2+16,y+52,[t] if len(t)<12 else t.split(" ",1),14.5,NAVY,"700")
+        d.text(x+bw/2,y+96,sub,11,GRAY,"middle")
+        if i<n-1: d.arrow(x+bw+4,y+bh/2,x+bw+gap-4,y+bh/2,GRAY,2.4)
+    # evaluation gates between CI build (2) and Registry (3)
+    gxc=sx+2*(bw+gap)+bw+gap/2
+    d.raw(f'<circle cx="{gxc}" cy="{y+bh/2}" r="20" fill="{ROSE}"/>'); d.icon(gxc,y+bh/2,"check",WHITE,r=15)
+    gy=340
+    d.text(60,gy-2,"EVALUATION GATES  ·  block promotion on failure",14,ROSE,"start","800",spacing="0.5")
+    gates=[("Unit & contract","tool / schema tests",TEAL),("Prompt regression","golden-set vs baseline",INDIGO),
+           ("Groundedness","faithfulness / citations","#3E5C99"),("Safety & red-team","adversarial + Content Safety",ROSE),
+           ("Cost & latency","budgets as gates",AMBER)]
+    gw=296; ggap=16; gsx=(1700-(5*gw+4*ggap))/2
+    for i,(t,sub,c) in enumerate(gates):
+        x=gsx+i*(gw+ggap); d.toptab(x,gy+16,gw,120,c,tab=7)
+        d.els.append(f'<circle cx="{x+34}" cy="{gy+56}" r="15" fill="{c}"/>'); d.icon(x+34,gy+56,"check",WHITE,r=11)
+        d.text(x+60,gy+52,t,14.5,NAVY,weight="700"); d.text(x+60,gy+76,sub,11.5,GRAY)
+        d.rect(x+20,gy+94,gw-40,28,LIGHT,rx=7); d.text(x+gw/2,gy+113,"pass required",11,c,"middle","700")
+    d.arrow(gxc,y+bh+3,gxc,gy+12,ROSE,2.2,dash="5,5")
+    # online eval + feedback loop
+    oy=560
+    d.rect(60,oy,1580,110,"#EEF3FF",rx=16,stroke="#C9D6F0")
+    d.badge(110,oy+55,"gauge",INDIGO,r=20); d.text(148,oy+42,"Post-deploy validation",16,NAVY,weight="800")
+    d.chiprow(148,oy+58,["online A/B","shadow testing","guardrail monitors","drift & quality","auto-rollback on regression","user & QA feedback"],13,WHITE,INDIGO,gap=12,h=32)
+    prodx=sx+5*(bw+gap)+bw/2
+    d.arrow(prodx,y+bh+3,prodx,oy-2,GRAY,2,head=True)
+    # feedback back to author/datasets
+    d.raw(f'<path d="M{60},{oy+55} H30 V{y+bh/2} H{sx-4}" fill="none" stroke="{GREEN}" stroke-width="2.4" stroke-dasharray="6,5" marker-end="url(#ah)"/>')
+    d.text(120,oy+100,"feedback → golden datasets → next iteration (continuous improvement flywheel)",12.5,GREEN,italic=True)
+    d.save("15-genaiops-cicd")
+
+# ============================================================================
+# DIAGRAM 16 — Model strategy & Model Router
+# ============================================================================
+def d16_model():
+    d=SVG(1660, 820, WHITE)
+    title(d, "Model Strategy", "Ride the frontier without rewrites")
+    # catalog (left)
+    d.toptab(60,160,360,470,INDIGO)
+    d.text(240,200,"Model catalog",17,NAVY,"middle","800")
+    models=[("GPT-5.5","frontier · agentic"),("GPT-5.4 / 5.2","reasoning · 272k ctx"),("GPT-5.5 Instant","low-latency chat"),
+            ("gpt-realtime-1.5","speech-to-speech"),("o-series","deep reasoning"),("Open-weight (Llama/Phi)","cost / edge tiers"),
+            ("Fine-tuned / distilled","task-specialized")]
+    for i,(m,s) in enumerate(models):
+        yy=228+i*54; d.rect(84,yy,312,44,WHITE,rx=9,stroke=LINE)
+        d.els.append(f'<circle cx="{108}" cy="{yy+22}" r="6" fill="{INDIGO}"/>')
+        d.text(124,yy+19,m,13.5,NAVY,weight="700"); d.text(124,yy+37,s,11.5,GRAY)
+    # router (center)
+    d.toptab(500,260,340,250,AMBER)
+    d.badge(670,318,"route",AMBER,r=28); d.tspan_center(670,392,["Model","Router"],20,NAVY,"800")
+    d.text(670,436,"routes by task · quality bar · cost · latency",11.5,GRAY,"middle")
+    d.text(670,462,"+ prompt caching",11.5,GRAY,"middle")
+    d.arrow(420,395,498,395,GRAY,2.6)
+    # consumers (right)
+    d.toptab(920,260,340,250,TEAL)
+    d.badge(1090,318,"flow",TEAL,r=26); d.tspan_center(1090,392,["Agents &","use cases"],19,NAVY,"800")
+    d.text(1090,436,"cheapest model that meets",11.5,GRAY,"middle"); d.text(1090,456,"the measured quality bar",11.5,GRAY,"middle")
+    d.arrow(840,395,918,395,GRAY,2.6)
+    # frontier adoption loop
+    ly=580
+    d.rect(60,ly,1540,150,LIGHT,rx=16,stroke=LINE); d.rect(60,ly,1540,44,NAVY,rx=16); d.rect(60,ly+28,1540,16,NAVY)
+    d.text(830,ly+29,"FRONTIER-MODEL ADOPTION LOOP — new models absorbed automatically",13,WHITE,"middle","800")
+    loop=["New model in catalog","Evaluate vs golden sets","Shadow in production","Router promotes if better","Adopt — no app rewrite"]
+    lx=140
+    for i,s in enumerate(loop):
+        w=d.chip(lx,ly+74,s,13,WHITE,INDIGO,h=34);
+        if i<len(loop)-1: d.text(lx+w+8,ly+94,"›",16,AMBER,"middle","800")
+        lx+=w+34
+    d.text(830,ly+130,"AFNI pins to capabilities and evaluations, not to a single model version.",12.5,GRAY,"middle",italic=True)
+    d.save("16-model-strategy")
+
+# ============================================================================
+# DIAGRAM 17 — Performance & scalability
+# ============================================================================
+def d17_perf():
+    d=SVG(1660, 780, WHITE)
+    title(d, "Performance & Scale", "Engineered for sub-second voice and bulk analytics")
+    # latency budget bar
+    d.text(60,168,"LATENCY BUDGET — a voice turn (illustrative ~800 ms)",14,NAVY,weight="800",spacing="0.5")
+    segs=[("Speech-to-text",120,CYAN),("Retrieval (RAG)",90,INDIGO),("Model inference",380,TEAL),("Guardrails",60,AMBER),("Text-to-speech",150,GREEN)]
+    total=sum(s[1] for s in segs); x=60; y=190; W=1540; H=60
+    for t,ms,c in segs:
+        w=W*ms/total; d.rect(x,y,w-3,H,c,rx=8)
+        d.text(x+w/2,y+26,t,12.5,WHITE,"middle","700"); d.text(x+w/2,y+46,f"{ms} ms",12,WHITE,"middle")
+        x+=w
+    d.text(1600,y+H+22,"budget enforced & traced per turn",12,GRAY,"end",italic=True)
+    # levers
+    cards=[("Caching","semantic · prompt · response reuse",TEAL,"db"),
+           ("Model Router","right-size cost vs latency",INDIGO,"route"),
+           ("Elastic scale","provisioned throughput (PTU) + autoscale",AMBER,"cloud"),
+           ("Resilience","fallback models · graceful degradation · load & soak tests",GREEN,"shield")]
+    cw=370; gap=20; sx=60; cy=330
+    for i,(t,sub,c,ic) in enumerate(cards):
+        x=sx+i*(cw+gap); d.toptab(x,cy,cw,200,c,tab=8)
+        d.badge(x+46,cy+56,ic,c,r=22); d.text(x+82,cy+62,t,17,NAVY,weight="800")
+        # wrap sub
+        words=sub.split(" "); line=""; lines=[]
+        for w in words:
+            if len(line+" "+w)>26: lines.append(line); line=w
+            else: line=(line+" "+w).strip()
+        lines.append(line)
+        for j,ln in enumerate(lines): d.text(x+28,cy+118+j*24,ln,13,INK)
+    d.rect(60,570,1540,70,"#EEF3FF",rx=14,stroke="#C9D6F0")
+    d.text(830,613,"Async + streaming responses · batching for bulk (PI Index) · concurrency & backpressure · continuous load testing against SLOs",13,NAVY,"middle","600")
+    d.save("17-performance")
+
+# ============================================================================
+# DIAGRAM 18 — Evaluation framework
+# ============================================================================
+def d18_eval():
+    d=SVG(1660, 820, WHITE)
+    title(d, "Evaluation Framework", "Measured quality — offline, online, and adversarial")
+    cols=[("Offline evaluation",TEAL,"gauge",["Golden datasets","LLM-as-judge","Auto rubric evaluators","Groundedness / faithfulness"]),
+          ("Human & red-team",ROSE,"people",["SME review & calibration","Adversarial red-teaming","Safety / Content Safety","Bias & fairness audits"]),
+          ("Online evaluation",INDIGO,"flow",["A/B experiments","Shadow testing","Guardrail monitors","User & QA feedback"])]
+    cw=470; gap=30; sx=60; y=160; ch=360
+    for i,(t,c,ic,items) in enumerate(cols):
+        x=sx+i*(cw+gap); d.toptab(x,y,cw,ch,c,tab=8)
+        d.badge(x+46,y+54,ic,c,r=22); d.text(x+82,y+60,t,17,NAVY,weight="800")
+        for j,it in enumerate(items):
+            yy=y+112+j*56; d.rect(x+28,yy,cw-56,44,LIGHT,rx=9)
+            d.els.append(f'<circle cx="{x+52}" cy="{yy+22}" r="6" fill="{c}"/>'); d.text(x+70,yy+27,it,13.5,INK,weight="600")
+        d.arrow(x+cw/2,y+ch+4,x+cw/2 if i==1 else (830),570,GRAY,2,head=(i==1))
+    # release gate
+    gy=580
+    d.card(560,gy,540,90,NAVY,rx=16,stroke=NAVY)
+    d.badge(610,gy+45,"check","rgba(255,255,255,0.16)",r=20)
+    d.text(648,gy+40,"Release gate",18,WHITE,weight="800"); d.text(648,gy+66,"regression-blocking · every promotion",12.5,CYAN)
+    d.arrow(560,610,300,610,GRAY,2,head=False); d.arrow(1100,610,1360,610,GRAY,2,head=False)
+    d.raw(f'<path d="M830,{gy+90} V730 H120 V{y+ch/2} H{sx-4}" fill="none" stroke="{GREEN}" stroke-width="2.2" stroke-dasharray="6,5" marker-end="url(#ah)"/>')
+    d.text(200,725,"failures & production signals feed back into golden datasets",12.5,GREEN,italic=True)
+    d.save("18-evaluation")
+
 if __name__=="__main__":
     d1_platform(); d2_agents(); d3_three(); d4_voice()
     d5_piindex(); d6_hiring(); d7_lifecycle(); d8_roadmap()
+    d9_framework(); d10_onboarding(); d11_patterns(); d12_runtime()
+    d13_security(); d14_data(); d15_cicd(); d16_model(); d17_perf(); d18_eval()
     print("done all diagrams")

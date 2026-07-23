@@ -2,13 +2,22 @@
 
 ## Overview
 
-AFNI's GenAI capability is built on a **multi-agent architecture**: a single **orchestrator/supervisor agent** decomposes each interaction and routes work to a fleet of **specialist agents**, each responsible for one well-scoped capability. This pattern is deliberately reused across all three flagship initiatives — the **Voice Agent**, the **Performance Intelligence Index (PI Index)**, and **Hiring Intelligence** — so that AFNI builds, governs, and operates *one* set of agent capabilities rather than three disconnected solutions.
+AFNI's GenAI capability is built on a **multi-agent architecture**: a single **orchestrator/supervisor agent** decomposes each interaction and routes work to a fleet of **specialist agents**, each responsible for one well-scoped capability. This pattern is a reusable building block of the enterprise framework — it is deliberately reused across all three flagship proof-point use cases (the **Voice Agent**, the **Performance Intelligence Index (PI Index)**, and **Hiring Intelligence**) and inherited by every future use case, so that AFNI builds, governs, and operates *one* set of agent capabilities rather than many disconnected solutions.
 
 The guiding principle is **deterministic guardrails around probabilistic agents**: the language models reason and generate, but their behavior is bounded by deterministic routing, policy checks, schema validation, and human-in-the-loop gates that AFNI's compliance and operations teams can inspect and trust.
 
+> This document covers the design pattern. Enterprise-grade operational properties (durable execution, agent registry/versioning, graduated autonomy, sagas/compensation, A2A ecosystems) receive deeper treatment in `19-enterprise-agent-orchestration.md`.
+
+## Platform Foundation
+
+The multi-agent capability runs on two converged pillars of **Microsoft Foundry**:
+
+- **Foundry Agent Service** — the hosted, **durable** runtime for production agents: sandboxed sessions with state and filesystem, framework flexibility, built-in tool calling, integrated Content Safety, memory tiers, and curated **Toolboxes**. Agents can be published to Microsoft Teams / M365 Copilot and exposed as **A2A** endpoints.
+- **Microsoft Agent Framework 1.0** — the GA convergence of **Semantic Kernel** + **AutoGen** (Python and .NET). It provides the orchestration patterns, **durable workflows** (streaming, checkpoint, pause/resume, human-in-the-loop approvals), and **declarative agents-and-workflows-as-code (YAML)** that AFNI version-controls.
+
 ## The Orchestrator / Specialist Pattern
 
-The orchestrator is the only agent that "sees the whole conversation." It classifies intent, selects the next specialist, manages shared state, enforces turn limits, and decides when to conclude or escalate. Specialists are narrow, independently testable, and independently versioned.
+The orchestrator is the only agent that "sees the whole conversation." It classifies intent, selects the next specialist, manages shared state, enforces turn limits, and decides when to conclude or escalate. Specialists are narrow, independently testable, and independently versioned in the agent registry.
 
 ```
                          +---------------------------+
@@ -22,10 +31,10 @@ The orchestrator is the only agent that "sees the whole conversation." It classi
   +-----------+ +-----------+   +-------------+  +------------+  +-----------+
   | Intent/   | | Knowledge/|   | Action/     |  | Compliance/|  | Sentiment/|
   | Router    | | RAG agent |   | Tooling     |  | Guardrail  |  | Emotion   |
-  | agent     | | (AI Search)|  | agent       |  | agent      |  | agent     |
+  | agent     | | (AI Search)|  | agent (MCP) |  | agent      |  | agent     |
   +-----------+ +-----------+   +------+------+  +-----+------+  +-----------+
                                        |               |
-                                       v               v
+                                 (MCP) v               v
                                +-------------+  +--------------+
                                | Systems of  |  | Content      |
                                | record      |  | Safety /     |
@@ -41,9 +50,9 @@ The orchestrator is the only agent that "sees the whole conversation." It classi
 
 | Agent | Responsibility |
 |---|---|
-| **Intent / Router** | Classify caller/candidate intent; decide routing and next-best-action. Typically GPT-4o-mini for low-latency classification. |
+| **Intent / Router** | Classify caller/candidate intent; decide routing and next-best-action. Runs on a low-latency, Model Router-selected classification tier. |
 | **Knowledge / RAG** | Retrieve grounded answers from AFNI policies, client KBs, and requisitions via Azure AI Search (hybrid + semantic ranker). Returns citations. |
-| **Action / Tooling** | Execute transactions against systems of record (CRM, billing, HRIS/ATS) through secure, audited tool/function calls. |
+| **Action / Tooling** | Execute transactions against systems of record (CRM, billing, HRIS/ATS) through secure, audited **MCP** tool/function calls. |
 | **Compliance / Guardrail** | Enforce disclosures, PII redaction, do-not-say / must-say lists, TCPA, PCI pause-and-mask, and fairness rules. Wraps other agents deterministically. |
 | **Sentiment / Emotion** | Detect frustration, confusion, or escalation cues in real time to trigger tone shifts or handoff; contributes the sentiment-trajectory dimension to the PI Index. |
 | **Escalation / Handoff** | Perform warm transfer to a human with full context and a running summary. |
@@ -51,27 +60,44 @@ The orchestrator is the only agent that "sees the whole conversation." It classi
 
 ## Orchestration Patterns
 
-The Microsoft Agent Framework (Semantic Kernel + AutoGen lineage) supports the full set of coordination patterns AFNI needs:
+**Microsoft Agent Framework 1.0** supports the full set of coordination patterns AFNI needs:
 
 - **Sequential** — pipeline execution (e.g., transcribe → intent → RAG → compose reply). Used for the deterministic backbone of every turn.
 - **Concurrent** — run independent specialists in parallel (e.g., Sentiment and Compliance evaluate the same utterance simultaneously) to protect latency budgets. The PI Index runs several dimension-scoring agents concurrently over each interaction.
 - **Hand-off** — one agent transfers control and context to another; the basis for warm human escalation and voice-to-scheduling transitions.
 - **Group-chat** — multiple agents collaborate in a shared thread under the orchestrator's moderation (useful for interview-panel scoring synthesis and PI Index score reconciliation).
+- **Magentic** — manager-led decomposition of complex, open-ended tasks into a dynamic plan of specialist steps, with re-planning as new information arrives (e.g., multi-step subrogation triage or a complex escalation).
 - **Reflection / critic** — a critic agent reviews a draft answer for accuracy, tone, and policy adherence before it is spoken/sent. Improves groundedness on high-stakes replies and on PI Index score rationales.
 - **Human-in-the-loop (HITL)** — a required approval or decision step for consequential actions. HITL is mandatory in Hiring Intelligence (**AI assists, humans decide**) and in PI Index calibration/appeals.
 
-## Tool / Function Calling
+## Durable Workflows
 
-Specialist agents act on the world through **typed tool definitions** exposed by Azure AI Agent Service. Each tool has a strict JSON schema, is fronted by Azure API Management, authenticates via Entra ID managed identity, and is fully audited. Tools include CRM lookups, payment posting (PCI-scoped), knowledge search, ATS scheduling, calendar operations, and PI Index score writes. Schema validation on both arguments and results is a deterministic guardrail: malformed or out-of-policy tool calls are rejected before they reach a system of record.
+Long-running and multi-turn processes run as **durable workflows** in the Agent Framework: execution state is **checkpointed** so a workflow can **pause and resume** across minutes, hours, or a callback, survive process restarts, and insert human approval gates without losing context. This underpins graduated autonomy — for example, a voice interaction that pauses for a supervisor's payment approval, or a subrogation case that waits on an external document before continuing. Retries, idempotency, and saga-style compensation for partially completed multi-tool actions are covered in `19-enterprise-agent-orchestration.md`.
+
+## Tool / Function Calling via MCP
+
+Specialist agents act on the world through **typed tool definitions** exposed over the **Model Context Protocol (MCP)**. Each tool has a strict JSON schema, is served by a curated **MCP server** wrapping a system of record, is fronted by Azure API Management, authenticates via Entra ID managed identity, and is fully audited. Tools include CRM lookups, payment posting (PCI-scoped), knowledge search, ATS scheduling, calendar operations, and PI Index score writes. Schema validation on both arguments and results is a deterministic guardrail: malformed or out-of-policy tool calls are rejected before they reach a system of record. **Least-privilege tool scopes** are enforced per agent to curb excessive agency.
+
+## Agent Interoperability: MCP + A2A
+
+The framework uses two complementary protocols:
+
+- **MCP** — agent-to-**tools**: the de facto standard for exposing connectors, systems of record, and capabilities to an agent.
+- **A2A (Agent-to-Agent, v1.0, Linux Foundation)** — agent-to-**agent** across runtimes and teams: one AFNI agent can delegate to another agent (potentially on a different framework or owned by a different spoke) through a governed A2A endpoint.
+
+Use MCP for tools/connectors and A2A for cross-team, cross-runtime agent collaboration. This is what lets the platform grow into an internal agent ecosystem rather than a set of silos.
 
 ## Memory and State
 
-| Scope | Contents | Store |
-|---|---|---|
-| **Short-term (working)** | Current thread, recent turns, active intent, tool results | In-thread context / Azure AI Agent Service threads |
-| **Long-term (persistent)** | Conversation history, caller/candidate profile, prior dispositions, PI Index history, embeddings | **Azure Cosmos DB** (state + memory), vectors in Cosmos DB / AI Search |
+Foundry Agent Service provides **tiered memory**, so continuity is a platform capability rather than per-app plumbing:
 
-Cosmos DB provides low-latency, globally distributed persistence for agent state and conversation memory, enabling continuity across a caller's multiple contacts, an agent's PI Index trend over time, or a candidate's multi-stage journey while respecting retention and PII policies enforced via Purview.
+| Tier | Contents | Store |
+|---|---|---|
+| **Session (short-term / working)** | Current thread, recent turns, active intent, tool results | In-thread context / Agent Service session state |
+| **User** | Caller/candidate profile, preferences, prior dispositions, PI Index history | **Azure Cosmos DB** (state + memory), vectors in Cosmos DB / AI Search |
+| **Procedural** | Learned procedures, reusable task know-how, curated skills the agent reuses | Agent Service procedural memory |
+
+Cosmos DB provides low-latency, globally distributed persistence enabling continuity across a caller's multiple contacts, an agent's PI Index trend over time, or a candidate's multi-stage journey, while respecting retention and PII policies enforced via Purview.
 
 ## Guardrails Around Agents
 
@@ -80,24 +106,23 @@ Guardrails are layered so that non-deterministic model output is always bounded 
 1. **Input guardrails** — Azure AI Content Safety **prompt shields** (jailbreak/injection defense), PII detection, and topic filtering before the orchestrator acts.
 2. **In-loop guardrails** — the Compliance/Guardrail agent and reflection/critic pattern check every consequential output; tool-call schema validation blocks unsafe actions.
 3. **Output guardrails** — groundedness detection, protected-material checks, and must-say/do-not-say enforcement before a response is delivered.
-4. **Process guardrails** — turn limits, timeouts, HITL approval gates, and full audit logging.
+4. **Process guardrails** — turn limits, timeouts, HITL approval gates, durable-workflow checkpoints, and full OpenTelemetry audit tracing per hop.
 
 ## Frameworks
 
-- **Azure AI Agent Service** — hosted agents, threads, built-in tool calling, and integrated Content Safety. The runtime home for production agents.
-- **Semantic Kernel** — enterprise-grade orchestration, planners, and plugin/tool integration in .NET and Python.
-- **AutoGen** — advanced multi-agent conversation patterns (group-chat, reflection).
-- **Microsoft Agent Framework** — the converged successor unifying Semantic Kernel and AutoGen; AFNI's strategic target framework.
+- **Foundry Agent Service** — hosted, durable agents, threads, built-in tool calling, memory tiers, Toolboxes, and integrated Content Safety. The runtime home for production agents.
+- **Microsoft Agent Framework 1.0** — the converged, GA framework unifying **Semantic Kernel** (enterprise orchestration, planners, plugin/tool integration) and **AutoGen** (advanced multi-agent conversation patterns). AFNI's strategic target framework, in Python and .NET.
+- **Process Framework** — deterministic business-workflow orchestration for structured, rule-bound processes.
 
 ## One Pattern, Three Initiatives
 
-The identical orchestrator/specialist topology serves all three flagships — only the tools, knowledge sources, and policies change. Voice Agent answers callers; PI Index scores interactions; Hiring Intelligence moves candidates.
+The identical orchestrator/specialist topology serves all three proof-point use cases — only the tools, knowledge sources, and policies change. Voice Agent answers callers; PI Index scores interactions; Hiring Intelligence moves candidates.
 
 | Element | Voice Agent (answers callers) | PI Index (scores interactions) | Hiring Intelligence (moves candidates) |
 |---|---|---|---|
 | Intent/Router | Caller intent (billing, care, collections) | Route interaction to scoring dimensions | Candidate intent (apply, status, FAQ) |
 | Knowledge/RAG | Client policies, product KBs | Scoring rubrics, compliance criteria, prior calibrations | Job descriptions, benefits, hiring FAQs |
-| Action/Tooling | CRM, billing, payment (PCI) | Write dimension scores + PI Index to Fabric store | ATS, calendar, requisition updates |
+| Action/Tooling (MCP) | CRM, billing, payment (PCI) | Write dimension scores + PI Index to Fabric store | ATS, calendar, requisition updates |
 | Compliance | TCPA, PCI, HIPAA, disclosures | Fairness across agents/sites, score explainability | EEOC, NYC LL144, IL AI Video Act, GDPR |
 | Sentiment | Real-time tone shift / handoff cues | Sentiment-trajectory dimension per interaction | Candidate-experience signal |
 | HITL gate | Payment commitments, escalations | QA calibration and score appeals | **All hiring decisions — no autonomous rejection** |
