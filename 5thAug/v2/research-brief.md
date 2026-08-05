@@ -284,7 +284,166 @@ tables. Simple English, abbreviations expanded, speaker notes. APIX as the examp
    runs). Kiran is technical — concrete depth is welcome. Use cases: Hiring Intelligence + APIX (in the transcript APIX
    was transcribed as "epics"). Pipelines, not agent-to-agent.
 
+## ENHANCEMENTS (round 2 — from slide-by-slide client feedback). Address every point below.
+
+### E1. Complete component list + reusability (was too thin)
+Show ALL components and mark shared-vs-per-use-case. Shared/reusable platform: source control & CI/CD; prompt
+registry & management; model catalog & routing; evaluation engine & gate; golden-dataset framework (structure);
+observability & tracing; FinOps/cost metering; guardrails engine; data-access & RAG framework; **reusable tool
+catalog (MCP tools)**; orchestration/pipeline runtime; serving & gateway; identity & secrets; feedback capture &
+analytics; agent templates/blueprints. Per use case (new each time): prompt CONTENT, agent/pipeline design, golden
+dataset CONTENT + thresholds, use-case data sources & connectors, use-case-specific tools, guardrail policy tuning,
+dashboards. Emphasise most machinery is shared.
+
+### E2. Repository structure — where use cases / agents / prompts / models sit; scales to N; shared clearly visible
+```
+llmops-platform/
+├─ platform/                         # SHARED — built once, reused by every use case
+│  ├─ common/     prompt_loader.py  model_router.py  tracing.py  guardrails.py  data_access.py
+│  ├─ tools/      search_knowledge/  query_sql/  extract_document/  get_record/   # reusable MCP tools
+│  ├─ evaluators/ ragas_eval.py  deepeval_suite.py  tool_selection.py  judges/
+│  ├─ gateway/    apim-policies/
+│  └─ infra/      bicep modules (container apps, apim, ai search, cosmos, langfuse)
+├─ usecases/
+│  ├─ apix/
+│  │  ├─ prompts/   *.prompt.yaml
+│  │  ├─ agents/    pipeline.agent.yaml
+│  │  ├─ evals/     golden.telesales.jsonl  golden.wcc.jsonl  evaluators.yaml   # thresholds
+│  │  ├─ tools/     (only use-case-specific tools, if any)
+│  │  └─ config/    datasources.yaml  model-overrides.yaml
+│  └─ hiring/       (same shape)
+├─ models.yaml                       # shared task-alias -> deployment
+├─ .github/workflows/                # shared pipelines (pr-checks, eval-full, deploy)
+└─ dashboards/
+```
+Message: `platform/` = shared/reusable; `usecases/<name>/` = per use case, same shape, so the Nth use case just adds
+another folder and reuses everything in `platform/`.
+
+### E3. CI/CD flow — better terminology + more description (per stage)
+Stages (name + what runs): **Author change** → **Pull request** (peer + CODEOWNERS review) → **Automated checks**
+(lint, unit, contract tests) → **Evaluation gate** (golden-set metrics vs baseline; blocks on regression) → **Merge**
+→ **Promotion gates** (dev→test→prod, each needs approver + eval-full pass) → **Canary release** (small traffic %)
+→ **Full rollout or auto-rollback**. Describe each in one line; avoid bare filenames as the only label.
+
+### E4. Prompt registry — how each works, folder, comparison, COST
+- **Git + in-app cache:** prompts live in `usecases/<uc>/prompts/*.prompt.yaml`; app reads at startup and caches;
+  version = git + the YAML `version`; rollback = git revert / point label. Cost: $0 (in the repo).
+- **Langfuse prompt management:** prompts are pushed to Langfuse (self-hosted in our network); it stores versions,
+  has a UI to edit/compare/label (prod/staging) and roll back, and the app fetches by `id + label` at runtime; it
+  ALSO gives tracing + token/cost dashboards. Sync: CI pushes the Git YAML to Langfuse on merge. Cost: MIT-licensed,
+  FREE software; pay only infra to self-host (Container Apps + Postgres/ClickHouse) ≈ **$50–150/mo** (indicative).
+- **Foundry prompt assets:** prompts stored as versioned assets inside an Azure AI Foundry project; accessed via SDK;
+  integrates with Foundry evaluations + tracing; fully managed by Azure. Cost: no separate license; folded into Azure
+  usage (minor).
+- **Comparison table** (dimensions: where prompts live · versioning · compare/rollback UI · runtime fetch · extra
+  features · ops burden · data residency · cost) → **Recommendation:** start **Git + in-app cache** (zero cost,
+  simplest); add **Langfuse** when we want the UI + built-in observability; use **Foundry** if we prefer fully-managed
+  Azure. (Kiran OK with minor cost.)
+
+### E5. Model management — code-level vs pipeline-level (clarify; it's both)
+It is **config-as-code**: `models.yaml` is a file IN the repo (code-level, changed via PR), the **pipeline validates
+and eval-gates** any change (devops-level), and the **app resolves the alias→deployment at runtime** per environment
+(`APP_ENV=prod`). So: not hard-coded in agent code; not a manual portal click; a reviewed, gated config the app reads
+at run time. Show a small flow: repo config → CI eval gate → runtime resolver (per env).
+
+### E6. Evaluation — metric meanings, thresholds, technique COST
+- **Metric meanings table:** metric | what it measures (plain) | scale. (groundedness = every claim supported by
+  retrieved context; context relevance/precision = are retrieved chunks on-point; answer relevance = does it address
+  the ask; coherence/fluency = readability; correctness/similarity = vs reference; tool-selection accuracy = % right
+  tool; task success = % end-to-end correct.)
+- **Thresholds:** set from a **baseline run** (current prod) → gate rule = "no metric drops more than X% below
+  baseline" PLUS **absolute floors** for safety (PII leak rate = 0, unsafe = 0) and a **minimum** for critical metrics
+  (e.g., groundedness ≥ 0.9). Store thresholds in `evaluators.yaml`.
+- **Evaluation-technique COST comparison table:** custom Python (exact/tool checks) = compute only, ~free; Ragas /
+  DeepEval rule-based = ~free, but their LLM-based metrics call a judge model (token cost); **LLM-as-judge** = token
+  cost per case (use a small judge like GPT-5-mini; ~cents to low $ per full run of 200 cases); **LangSmith** =
+  platform license (~$1,500–2,800/mo at scale — expensive); **Azure AI Foundry evaluations** = Azure usage (judge
+  tokens), no license. Driver = judge tokens × dataset size × runs → mitigate: small judge model, subset on PR, full nightly.
+
+### E7. Observability — how COST is tracked across App Insights + Langfuse
+Cost is computed ONCE at emit: each model-call span sets `app.cost_usd = tokens × unit_price` (unit price from a
+price table keyed by deployment). The SAME span goes to both App Insights and Langfuse. **App Insights = the
+aggregation/record source** (query cost by use case/day/model with KQL / a Workbook); **Langfuse = ready-made cost
+dashboards** (per model, per prompt version, per user). No double counting — one attribute, two views. Reconcile
+monthly against **Azure Cost Management** (the actual invoice).
+
+### E8. Guardrails — a LIST with implementation (tool/package)
+Table: guardrail | what it stops | how we implement.
+- Prompt injection / jailbreak → **Azure AI Content Safety – Prompt Shields**.
+- Unsafe content (hate/violence/sexual/self-harm) → **Azure AI Content Safety**.
+- PII detection & redaction → **Azure AI Language PII** or **Microsoft Presidio** (open source).
+- Hallucination / ungrounded claims → **Content Safety Groundedness detection** + our groundedness eval.
+- Off-topic / out-of-scope → system-prompt constraints + a small classifier / **NeMo Guardrails** or **guardrails-ai**.
+- Output format / schema → **JSON schema / Pydantic / guardrails-ai** validation.
+- Secrets / data exfiltration → output scanning + **Microsoft Purview DLP** + regex.
+- Rate / cost abuse → **API Management policies** (quotas, throttling) + budget alerts.
+- Protected material / copyright → **Content Safety protected-material detection**.
+Guardrails run as input checks (before the model) and output checks (before returning/storing).
+
+### E9. Data — beyond RAG (structured + unstructured + docs + reusable tools)
+There is a **data-access layer** with reusable tools, not just RAG:
+- **Unstructured text** → RAG over **Azure AI Search**.
+- **Structured data** → a **SQL / NL2SQL agent + `query_sql` tool** (read-only, parameterised, allow-listed tables).
+- **Documents / files** (PDF, scans, forms, images) → **Azure AI Document Intelligence** to extract → then RAG or
+  structured extraction.
+- **Systems of record** → `get_record` tool via MCP.
+**Reusable predefined tool catalog** (built once in `platform/tools/`): `search_knowledge` (RAG), `query_sql`
+(structured), `extract_document` (files), `get_record` (systems). Use cases compose these; new tools are added to the
+catalog and reused. State plainly: structured data does NOT go through RAG — it uses the SQL tool with guardrails.
+
+### E10. Serving — why Functions, why Foundry Agent Service, canary + gate explained, steps
+- **Container Apps:** hosts the pipeline services (HTTP/orchestration; autoscale; scale-to-zero).
+- **Functions — WHY:** event-driven triggers (e.g., APIX runs when a new transcript lands in Blob, or on a nightly
+  schedule) — serverless, cheap for bursty/scheduled work, no always-on server.
+- **Foundry Agent Service — WHY:** managed hosting for agents (state, memory, tool wiring) so we don't run our own
+  agent server; consider as it matures.
+- **Canary (define it):** release the new version to ~10% of traffic first, watch health + errors + eval signals,
+  then ramp to 100% if healthy, or auto-rollback if not.
+- **Promotion gate (define it):** the condition to move dev→test→prod = a human approver + eval-full passing.
+- Concrete steps: deploy new revision → shift 10% traffic → watch SLOs 15 min → promote to 100% or revert.
+
+### E11. Feedback — describe each step (esp. "triage negatives")
+Capture feedback (thumbs+reason, coach edits, overrides — tied to trace id) → Land it (as scores/events in App
+Insights + Langfuse) → **Triage negatives** = review the low-rated/failed responses and sort them by cause (bad
+retrieval? wrong tool? weak prompt? missing data?) and prioritise → Add to golden dataset (turn confirmed bad cases
+into new test cases with the correct expected answer) → Fix & re-evaluate (change prompt/retrieval/agent, run the
+gate) → Ship.
+
+### E12. Onboarding a new use case — honest (more than 4 things); + hosting COST & capabilities
+Reframe "shared vs per use case": a use case **inherits** the shared platform (CI/CD, gate, tracing, tool catalog,
+gateway, guardrail engine) but must **define its own**: prompts, agent/pipeline design, data sources + connectors,
+retrieval/index setup, tools (reuse from catalog OR build new), guardrail policy, golden dataset + thresholds, eval
+config, dashboards, and often use-case-specific integration/UI. Each use case genuinely differs — it is not "just add
+4 files." **Hosting cost + capabilities table** (service | capability | pricing model | indicative /mo):
+- Azure OpenAI — the models — per token (GPT-5.5 ≈ $5 in/$30 out per 1M; cached input ≈ $0.50; mini/nano far cheaper;
+  PTU ≈ $2,448/mo for sustained) — **biggest, usage-driven variable**.
+- Azure AI Search — RAG index — per search unit — Basic ≈ $74/mo, Standard S1 ≈ $245/mo.
+- Container Apps — run services — consumption, scale-to-zero — ~tens of $/mo small.
+- Functions — event triggers — per execution — ~negligible low volume.
+- Cosmos DB / Azure SQL — state/scores — serverless/provisioned — ~tens of $/mo small.
+- App Insights / Log Analytics — observability — per GB ingested — ~tens of $/mo (volume-dependent).
+- Langfuse (self-host) — LLM observability + prompt mgmt — MIT free + infra — ≈ $50–150/mo.
+- Content Safety — guardrails — per 1k records — minor.
+- API Management — gateway — tiered/consumption — Basic/Standard ~$/mo.
+All **indicative — confirm at a sizing exercise**. Driver: model tokens dominate; the rest is modest fixed cost.
+
+### E13. "How it all fits" (rename from Architecture; richer, more blocks + description)
+Rename to "How it all fits together (end to end)". More blocks/layers: Channels & triggers → API Management gateway →
+Orchestration/pipeline → {Agents → Model Router→models · Data-access tools (RAG / SQL / Docs) · Guardrails} → Systems
+of record; cross-cutting: Observability (App Insights + Langfuse), Evaluation gate (from GitHub CI/CD), Feedback →
+golden datasets. Describe the 4 flows (change, request, telemetry, feedback).
+
+### E14. Summary — deeper, with a before/after comparison
+Before vs After table (dimension | today | with this LLMOps): release safety, prompt changes, quality visibility,
+cost visibility, debugging a bad answer, adding a use case, swapping a model, guardrails. Then the value line.
+
+### Cost figures to reuse (indicative; label "confirm at sizing")
+Azure OpenAI: GPT-5.5 ≈ $5 in / $30 out per 1M tokens, cached input ≈ $0.50; GPT-5-mini/nano much cheaper (nano
+≈ $0.05/$0.40); PTU ≈ $2,448/mo sustained. Azure AI Search: Basic ≈ $74/mo, Standard S1 ≈ $245/mo. Langfuse: MIT
+free, self-host infra ≈ $50–150/mo (Cloud ≈ $100/mo at 1M events). LangSmith: ≈ $1,500–2,800/mo at scale (licensed).
+Container Apps/Functions: consumption, scale-to-zero, low. Content Safety: per-1k-records, minor.
+
 ## Rules
 Decisive implementation (not options). Real artifacts. **Lead every component with "what's different from today."**
-Azure + GitHub. No timelines. Enterprise-grade. APIX example; light on Hiring. Technical depth is welcome. Not
-marketing; must not read as AI-generated.
+Azure + GitHub. No timelines. Enterprise-grade. APIX example; light on Hiring. Technical depth is welcome. Costs are
+indicative, labelled "confirm at sizing." Not marketing; must not read as AI-generated.

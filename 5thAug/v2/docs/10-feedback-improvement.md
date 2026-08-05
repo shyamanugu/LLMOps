@@ -30,7 +30,9 @@ def record_feedback(trace_id, kind, value, reason=None, edit=None):
 
 **Where it lands.** App Insights is the system of record for events; Langfuse holds the scores next to the traces so we can read a low score and jump straight to the full trace. Both are exported into a **Microsoft Fabric lakehouse**, where feedback joins traces, costs, and eval history in one place we can query and slice — by program, by prompt version, by reason code.
 
-**The loop.** This is the part that makes feedback an improvement engine rather than a log:
+## The loop, step by step
+
+This is the part that makes feedback an improvement engine rather than a log. Six steps, each in plain terms:
 
 ```
  capture ─▶ Fabric lakehouse ─▶ triage negatives ─▶ label ─▶ add to golden dataset
@@ -38,12 +40,22 @@ def record_feedback(trace_id, kind, value, reason=None, edit=None):
    ship ◀── re-evaluate (the GATE) ◀── fix (prompt / retrieval / agent) ◀──┘
 ```
 
-1. **Triage negatives.** Weekly, we pull the negatives and overrides from the lakehouse and cluster them by reason and by prompt version. We are looking for patterns — "coaching notes on the telesales program keep citing the wrong moment" — not one-offs.
-2. **Label.** A Subject Matter Expert (SME) confirms what the correct output should have been. For coach edits and recruiter overrides this is largely already there — the human already produced the right answer.
-3. **Add to the golden dataset.** The confirmed cases become new records in `evals/apix/golden.*.jsonl`, in the exact format from doc 06. This is the three-step sourcing in action: SME-authored first, then **real traffic enriches it** with the format and personalisation preferences an SME would never think to write down, then reviewed again. The golden set grows toward what actually goes wrong in production.
-4. **Fix at the right layer.** The trace tells us where the fault is, so we fix the right thing: a **prompt** change (wrong tone, missing instruction), a **retrieval** change (wrong or missing evidence — a chunking or index fix from doc 08), or an **agent** change (wrong tool selected — caught by `tool_selection.py`). Cheapest correct lever first.
-5. **Re-evaluate — the gate.** The fix is a pull request, so it runs the same evaluation gate as every other change (`pr-checks.yml`): the newly added failing cases plus the full golden set must pass their thresholds. A fix that helps the reported case but hurts others cannot merge.
-6. **Ship.** Through the normal canary/rollback deploy (doc 09). The loop closes: the case that failed in production is now a permanent guardrail against regression.
+1. **Capture and land.** Feedback comes in the four ways above, each tied to a trace id, and lands as App Insights events and Langfuse scores, both flowing into the Fabric lakehouse. This is the raw material — nothing is acted on yet, but everything is now joinable to the exact response that caused it.
+
+2. **Triage negatives.** This is the step that matters most, so here is exactly what it means. "Triage" is the same idea as in a hospital: look at everything that came in, work out what is actually wrong with each case, and decide what to deal with first. Concretely: we pull the low-rated and failed responses — the thumbs-down, the heavy coach edits, the recruiter overrides, the abandoned outputs — and we **read them**, using the trace to see what happened inside each one. Then we **sort each bad case by its root cause**:
+   - **Bad retrieval** — the model was given the wrong or missing evidence (a chunking, indexing, or search problem, doc 08).
+   - **Wrong tool** — the agent called the wrong tool, or the right tool with wrong arguments (visible in the trace, measured by `tool_selection.py`, doc 06).
+   - **Weak prompt** — retrieval and tools were fine, but the instruction produced the wrong tone, format, or missed something it should have caught.
+   - **Missing data** — the answer needed information the system simply does not have yet (a source not connected, a field not captured).
+   Then we **prioritise**: which cause is hurting the most cases, or the most important cases, gets fixed first. The output of triage is not a vague "quality is down" — it is a ranked list like "forty telesales coaching notes failed, thirty of them from bad retrieval on one program; fix that first." We do this on a regular cadence (weekly), clustering by reason code and prompt version so we act on patterns, not one-offs.
+
+3. **Label.** For each bad case we are going to act on, a Subject Matter Expert (SME) confirms what the correct output *should* have been. For coach edits and recruiter overrides this is largely already done — the human already produced the right answer when they edited or overrode it. For thumbs-down cases the SME writes or approves the expected result. This is what turns a complaint into a test with a known-good answer.
+
+4. **Add to the golden dataset.** The confirmed cases become new records in `usecases/apix/evals/golden.*.jsonl`, in the exact format from doc 06. This is the three-step sourcing in action: SME-authored first, then **real traffic enriches it** with the format and personalisation preferences an SME would never think to write down, then reviewed again. The golden set grows toward what actually goes wrong in production, so the gate keeps getting stricter about real failures.
+
+5. **Fix at the right layer, then re-evaluate — the gate.** Triage already told us the cause, so we fix the matching layer and nothing else: a **prompt** change for weak-prompt cases, a **retrieval** change for bad-retrieval cases, an **agent** change for wrong-tool cases, or a **data-source connection** for missing-data cases. Cheapest correct lever first. The fix is a pull request, so it runs the same evaluation gate as every other change (`pr-checks.yml`): the newly added failing cases *plus* the full golden set must pass their thresholds. A fix that helps the reported case but hurts others cannot merge — that is the safety net.
+
+6. **Ship.** Through the normal canary/rollback deploy (doc 09). The loop closes: the case that failed in production is now a permanent test case in the golden set, a standing guard against the same failure coming back.
 
 ## When fine-tuning enters
 
@@ -57,4 +69,4 @@ When we do fine-tune:
 
 ## What changes
 
-**What changes:** feedback stops being anecdotal and becomes structured signal tied to a trace id, captured four ways, and landed in a queryable Fabric lakehouse. "Someone changed a prompt" becomes a defined loop — triage, label, add to golden set, fix at the right layer, re-evaluate at the gate, ship — where every production failure becomes a permanent test. Fine-tuning moves from a tempting first idea to a last, gated, human-approved step. **Migration step:** add the trace id to APIX responses and stand up the `/feedback` endpoint plus the coach-edit capture; the first week of real edits seeds the golden set faster than SME authoring alone, and the loop is running from there.
+**What changes:** feedback stops being anecdotal and becomes structured signal tied to a trace id, captured four ways, and landed in a queryable Fabric lakehouse. "Someone changed a prompt" becomes a defined loop — capture, triage negatives by root cause, label, add to golden set, fix at the right layer, re-evaluate at the gate, ship — where every production failure becomes a permanent test. Fine-tuning moves from a tempting first idea to a last, gated, human-approved step. **Migration step:** add the trace id to APIX responses and stand up the `/feedback` endpoint plus the coach-edit capture; the first week of real edits seeds the golden set faster than SME authoring alone, and the loop is running from there.

@@ -1,92 +1,130 @@
 # End-to-End & Azure Hosting Plan
 
-This document wires the whole platform together in one diagram, then lays out the Azure hosting plan as a bill of services, states what is shared across use cases versus what is per-use-case, and consolidates the "today → our setup → what changes" delta for every component in one table. It closes with what we need from you to proceed.
+This document wires the whole platform together in one diagram and walks the four flows through it, lays out the Azure hosting plan as a bill of services **with indicative cost and capabilities**, states honestly what a new use case inherits versus what it must define itself, and closes with a before/after summary and what we need to proceed.
 
-## The end-to-end wiring
+## How it all fits together (end to end)
 
-GitHub holds everything as code and runs the gate. Azure runs it, behind one API Management front door, per environment. Telemetry flows to App Insights and Langfuse, then to a Fabric lakehouse, and feedback flows back into the `/evals` folder in GitHub — closing the loop.
+GitHub holds everything as code and runs the gate. Azure runs it, behind one API Management front door, per environment. Telemetry flows to App Insights and Langfuse, then to a Fabric lakehouse, and feedback flows back into the `evals/` folder in GitHub — closing the loop.
 
 ```
-  ┌─────────────────────────────── GitHub (source of truth) ───────────────────────────────┐
-  │  prompts/  agents/  evals/  models.yaml  src/  infra/  dashboards/                        │
-  │  Actions:  pr-checks.yml (unit + eval-subset GATE)  ·  eval-full.yml  ·  deploy.yml       │
-  └───────────────┬──────────────────────────────────────────────────────▲──────────────────┘
-                  │ OIDC federated login · gated envs · canary + rollback  │ new golden cases
-                  ▼                                                        │ (feedback -> /evals)
-  ┌──────────────────────── Azure  (dev ─▶ test ─▶ prod, landing zone) ────┼──────────────────┐
-  │                                                                        │                  │
-  │   caller ─▶  API Management  ── quotas · token metering · cache · auth (one entry point)   │
-  │                    │                                                                       │
-  │   events ─▶ Azure Functions (new transcript / new candidate)                               │
-  │                    ▼                                                                       │
-  │            Container Apps                                                                   │
-  │            ┌───────────────┐   calls    ┌────────────┐  ┌────────────┐  ┌───────────────┐  │
-  │            │ orchestrator  │──────┬────▶ │ Azure      │  │ Azure AI   │  │ Content Safety│  │
-  │            │ + pipeline    │      ├────▶ │ OpenAI     │  │ Search     │  │ + PII redact  │  │
-  │            │ agents (steps)│      └────▶ │ (models)   │  │ (RAG index)│  └───────────────┘  │
-  │            └───────┬───────┘             └────────────┘  └────────────┘                     │
-  │                    │ state / traces                                                         │
-  │                    ├──────────────▶ Cosmos DB (runs, outputs, trace ids)                    │
-  │                    ▼                                                                        │
-  │            OpenTelemetry spans ─▶ Application Insights (system of record)                    │
-  │                                 ─▶ Langfuse (LLM lens, self-hosted container)                │
-  │                                          │                                                   │
-  │                                          ▼                                                   │
-  │                                 Microsoft Fabric lakehouse  ── traces + feedback + cost ─────┘
-  │                                          │  triage -> label -> golden cases
-  └──────────────────────────────────────────┘  (back to GitHub /evals, top of diagram)
+  ┌──────────────────────────────── GitHub (source of truth) ─────────────────────────────────┐
+  │  platform/ (shared)   usecases/<uc>/ (prompts·agents·evals·tools·config)   models.yaml       │
+  │  Actions:  pr-checks.yml (unit + eval-subset GATE) · eval-full.yml · deploy.yml (canary)      │
+  └───────────────┬──────────────────────────────────────────────────────────▲──────────────────┘
+        (1) CHANGE│ OIDC login · gated envs · promotion gate · canary + rollback │ new golden cases
+                  ▼                                                            (4) FEEDBACK loop
+  ┌─────────────── Azure  (dev ─▶ test ─▶ prod, landing zone) ──────────────────┼──────────────────┐
+  │                                                                             │                  │
+  │  CHANNELS & TRIGGERS                                                         │                  │
+  │   caller / app ─▶┐        events (new transcript in Blob · nightly) ─▶ Azure Functions          │
+  │                  ▼                                                           │                  │
+  │            API Management (APIM)  ── quotas · token metering · cache · auth (ONE entry point)    │
+  │                  │                                                                               │
+  │                  ▼   ORCHESTRATION / PIPELINE  (Container Apps)                                  │
+  │            ┌──────────────────────────────────────────────────────────────────────────────┐    │
+  │            │  orchestrator + pipeline steps (agents)                                        │    │
+  │            │    ├─ AGENTS ─▶ Model Router (models.yaml) ─▶ Azure OpenAI (GPT-5.x, embed)    │    │
+  │            │    ├─ DATA-ACCESS TOOLS ─▶ search_knowledge (RAG / AI Search)                  │    │
+  │            │    │                     ─▶ query_sql (NL2SQL / Azure SQL, read-only)          │    │
+  │            │    │                     ─▶ extract_document (Document Intelligence)           │    │
+  │            │    │                     ─▶ get_record (system of record via MCP)              │    │
+  │            │    └─ GUARDRAILS ─▶ Content Safety (in/out) + PII redaction                    │    │
+  │            └───────────────┬──────────────────────────────────────────────┬─────────────────┘    │
+  │                            │ writes / reads                                │ authoritative reads  │
+  │                            ▼                                               ▼                      │
+  │                   Cosmos DB / Azure SQL (runs, outputs, scores)     SYSTEMS OF RECORD              │
+  │                                                                                                   │
+  │  ── cross-cutting ─────────────────────────────────────────────────────────────────────────────  │
+  │  (3) OBSERVABILITY: OpenTelemetry spans ─▶ Application Insights (record) + Langfuse (LLM lens)     │
+  │      EVAL GATE:     from GitHub CI/CD — blocks any change that regresses the golden set            │
+  │      FEEDBACK:      App Insights + Langfuse ─▶ Fabric lakehouse ─▶ triage ─▶ golden cases ─────────┘
+  └───────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Read it as one sentence: a change enters GitHub, must pass the evaluation gate, deploys through OIDC into the right Azure environment behind APIM, runs on Container Apps against Azure OpenAI / AI Search / Content Safety with state in Cosmos DB, emits traces to App Insights and Langfuse and then to Fabric, where feedback is triaged into new golden cases that go back to `/evals` — and the gate gets stricter each cycle.
+### The four flows
 
-## Azure hosting plan — bill of services
+1. **Change flow (build/deploy).** An author edits a prompt, model alias, agent design, tool, or eval config in GitHub. `pr-checks.yml` runs unit/contract tests and the **evaluation gate** (golden-set subset vs baseline). On merge, `eval-full.yml` runs the full golden set. `deploy.yml` promotes dev → test → prod through the **promotion gate** (approver + `eval-full` pass) and releases with a **10% canary** watched against SLOs, auto-rolling-back on regression.
 
-Grouped by layer, so it is clear what each service is for and where each piece runs.
+2. **Request flow (runtime).** A caller hits APIM, or a Function fires on a new transcript / nightly schedule and calls the orchestrator. The orchestrator runs the pipeline steps; agents resolve their model through the router, pull data through the data-access tools (RAG, SQL, documents, records), and pass through guardrails on the way in and out. Outputs and run state land in Cosmos DB / Azure SQL; authoritative live values come from systems of record via `get_record`.
 
-| Layer | Azure service | Purpose |
-|---|---|---|
-| Source & CI/CD | GitHub + GitHub Actions | Repo of record; the three workflows; OIDC to Azure, no stored keys |
-| Landing zone | Management groups, resource groups, VNet | Three isolated environments (dev/test/prod), network boundary |
-| Gateway | API Management (APIM) | One entry point; quotas, rate limits, token metering, response caching, auth |
-| Compute — pipeline | Azure Container Apps | Each pipeline step a scale-to-zero container; revisions for canary/rollback |
-| Compute — triggers | Azure Functions | Event triggers (new transcript, new candidate) |
-| Models | Azure OpenAI | Chat + embedding deployments, resolved via `models.yaml` aliases |
-| Retrieval / RAG | Azure AI Search | Vector + keyword index, indexers, index aliases (blue-green) |
-| Data ingest | Microsoft Fabric Data Factory + Blob Storage / SQL | Sources of record; heavy transforms before indexing |
-| Guardrails | Azure AI Content Safety | Input/output category checks around every model call |
-| State | Azure Cosmos DB | Pipeline runs, outputs, trace ids |
-| Observability | Application Insights (Azure Monitor) + self-hosted Langfuse | System of record for traces/events; LLM lens + prompt registry |
-| Analytics & feedback | Microsoft Fabric lakehouse | Joins traces, cost, feedback; source of golden-set enrichment |
-| Secrets & identity | Key Vault + Managed Identity / Entra ID | Secrets, federated credentials, service-to-service auth |
-| Infra as code | Bicep (in `infra/`) | Every service above provisioned from the repo |
+3. **Telemetry flow (observability).** Every model call, tool call, and agent step emits an OpenTelemetry span carrying tokens, cost, prompt id/version, tool name, and tool-correctness. The same span goes to **Application Insights** (system of record for querying and alerts) and **Langfuse** (ready-made LLM/cost dashboards). Both feed the **Fabric lakehouse**.
 
-## Shared platform vs per-use-case
+4. **Feedback flow (improvement).** Thumbs, coach edits, and overrides — tied to the trace id — land as events, are triaged in Fabric by cause (bad retrieval, wrong tool, weak prompt, missing data), and the confirmed bad cases become new golden cases committed back to `usecases/<uc>/evals/` in GitHub. The gate gets stricter each cycle.
 
-| Shared platform (built once, reused) | Per-use-case (a subfolder / config) |
-|---|---|
-| GitHub Actions workflows, OIDC, environments | `prompts/<use-case>/*.prompt.yaml` |
-| `src/common/` — prompt loader, model router, tracing | `agents/<use-case>/pipeline.agent.yaml` |
-| APIM gateway, landing zone, networking | `evals/<use-case>/golden.*.jsonl` + `evaluators.yaml` |
-| Container Apps environment, deploy/canary machinery | Its Azure AI Search index + indexer + chunking config |
-| Azure OpenAI resource, `models.yaml` structure | The environment aliases it uses in `models.yaml` |
-| Content Safety, PII redaction, Cosmos DB | Its ingest source (transcripts vs JDs/rubrics) |
-| App Insights, Langfuse, Fabric lakehouse | Its feedback capture points (coach edit vs recruiter override) |
+## Onboarding a new use case — what it inherits vs what it must define
 
-The rule: a new use case (a third or fourth beyond APIX and Hiring) is new content under `prompts/`, `agents/`, `evals/`, and one AI Search index — **not** new infrastructure. Everything in the left column is stood up once.
+It is tempting to say a new use case is "just add four files." That is not honest, and it sets the wrong expectation. A new use case **inherits** a large shared platform, but it genuinely has to **define its own** substance, because every use case differs in its data, its task, and its definition of a good answer.
 
-## Consolidated: Today → Our setup → What changes
+**What a new use case inherits (built once, reused — the shared platform):**
 
-| Component | Today (to confirm) | Our setup | What changes |
+- Source control, CI/CD, the evaluation gate, OIDC, and gated environments.
+- Prompt registry and loader, model catalog and router.
+- Observability and tracing, FinOps/cost metering.
+- The guardrails engine, the data-access framework, and the **reusable tool catalog** (`search_knowledge`, `query_sql`, `extract_document`, `get_record`).
+- Orchestration/pipeline runtime, the APIM gateway, identity and secrets, feedback capture and analytics.
+
+**What a new use case must define itself (new every time):**
+
+- **Prompts** — the actual prompt content and structure for its task.
+- **Agent / pipeline design** — the ordered steps, what each step does, how they hand off.
+- **Data sources + connectors** — where its data lives and how we connect to it.
+- **Retrieval / index setup** — its own AI Search index, chunking rules, filters (for the RAG parts).
+- **Tools** — reuse from the catalog where they fit, **and build new ones** where its data access is genuinely different.
+- **Guardrail policy** — which guardrails apply and how they are tuned for its content and risk.
+- **Golden dataset + thresholds** — its own ground truth and its own pass/fail bars.
+- **Eval config** — which metrics and evaluators run for it.
+- **Dashboards** — the views its owners watch.
+- **Integration / UI** — often a use-case-specific surface or system integration.
+
+So the honest message is: the **machinery** is shared and does not get rebuilt, but the **substance** — prompts, design, data, retrieval, tools, guardrail policy, golden data, eval config, dashboards, and usually integration — is real work that differs each time. A use case is not a copy-paste of four files; it is new content and design sitting on top of a platform that saves it from rebuilding the plumbing.
+
+## Azure hosting plan — cost and capabilities
+
+Grouped by layer, so it is clear what each service does, how it is priced, and roughly what it costs. **All figures are indicative — confirm at a sizing exercise.** The one thing to hold onto: **model tokens dominate the bill**; the rest is modest, mostly fixed, cost.
+
+| Service | Capability | Pricing model | Indicative /mo |
 |---|---|---|---|
-| Source control & CI/CD | Code in Git; a prompt edit ships like any code change, no gate | Monorepo + three GitHub Actions workflows; OIDC; gated environments | Every change passes the evaluation gate before deploy |
-| Prompts | Prompt text buried in code files | One versioned YAML per prompt (`id, version, template, eval_refs`) + runtime registry | New YAML artifact; eval gate on every change; rollback/compare by version |
-| Models | Model names hard-coded per agent | `models.yaml` task-alias → deployment; resolver in code | Model swap becomes a reviewed config change through the gate; one shared config |
-| Evaluation | Manual spot-checks | Golden datasets + Ragas + DeepEval + custom `tool_selection.py`, thresholds in `evaluators.yaml` | Evaluation runs as a release gate at every change, not ad hoc |
-| Observability | Plain logs | OpenTelemetry spans per model/tool/agent call → App Insights + Langfuse | Every request traced end to end with tokens, cost, tool correctness |
-| Guardrails | Little or none | Content Safety in/out + PII redaction around each model call | Safety and PII handling become a fixed step, not optional |
-| Data & RAG | Direct reads; keyword search; manual re-index | Ingest → clean/redact → chunk → embed → AI Search index; schedule + CDC; index aliases | Governed hybrid retrieval; automatic refresh; blue-green re-index |
-| Serving | One process; direct calls; replace-all deploys | Container Apps per step behind APIM; Functions for triggers | Independent scaling, one governed front door, canary + auto-rollback |
-| Feedback | Anecdotal, untied to responses | Trace id + `/feedback` → App Insights/Langfuse → Fabric → golden set → gate | A defined improvement loop; production failures become permanent tests |
+| **Azure OpenAI** | The models (chat + embeddings) | Per token; or reserved Provisioned Throughput Units (PTU) for sustained load | GPT-5.5 ≈ $5 in / $30 out per 1M tokens (cached input ≈ $0.50); mini/nano far cheaper (nano ≈ $0.05/$0.40); **PTU ≈ $2,448/mo** sustained. **Biggest, usage-driven variable.** |
+| **Azure AI Search** | RAG index (vector + keyword) | Per search unit / tier | Basic ≈ **$74/mo**; Standard S1 ≈ **$245/mo** |
+| **Azure Container Apps** | Run the pipeline services | Consumption, scale-to-zero | ~tens of $/mo (small) |
+| **Azure Functions** | Event triggers | Per execution | ~negligible at low volume |
+| **Cosmos DB / Azure SQL** | State, outputs, scores | Serverless / provisioned | ~tens of $/mo (small) |
+| **App Insights / Log Analytics** | Observability | Per GB ingested | ~tens of $/mo (volume-dependent) |
+| **Langfuse (self-hosted)** | LLM observability + prompt management | MIT-licensed software (free) + infra to self-host | ≈ **$50–150/mo** infra |
+| **Azure AI Content Safety** | Guardrails | Per 1,000 records | minor |
+| **API Management** | Gateway | Tiered / consumption | Basic/Standard ~$/mo |
+
+**Reading the table:** everything except Azure OpenAI is a modest, fairly predictable fixed cost — a few tens to low hundreds of dollars a month per service. Azure OpenAI is the one that moves with usage, and within it the model tokens (input + output) are the driver. That is why the platform meters cost per call (`app.cost_usd` on every span) and why a model swap goes through the evaluation gate: cost control is mostly about token control. For sustained, predictable load, PTU (≈ $2,448/mo) trades per-token billing for reserved throughput. Reconcile monthly against Azure Cost Management (the actual invoice). Again: **indicative, confirm at sizing.**
+
+## Shared platform vs per-use-case (at a glance)
+
+| Shared platform (built once, reused) | Per-use-case (defined new each time) |
+|---|---|
+| CI/CD workflows, OIDC, environments, evaluation gate | Prompt content (`usecases/<uc>/prompts/*.prompt.yaml`) |
+| `platform/common/` — prompt loader, model router, tracing, guardrails | Agent / pipeline design (`usecases/<uc>/agents/`) |
+| Reusable tool catalog (`search_knowledge`, `query_sql`, `extract_document`, `get_record`) | Use-case tools: reuse from catalog **or build new** |
+| APIM gateway, landing zone, networking | Its data sources + connectors; its retrieval/index + chunking |
+| Container Apps env, deploy/canary/promotion machinery | Its guardrail policy tuning |
+| Azure OpenAI resource, `models.yaml` structure, model router | Its golden dataset + thresholds; its eval config |
+| Content Safety, PII redaction, Cosmos DB, feedback capture | Its dashboards; often its integration / UI |
+
+The rule: a new use case is new **content and design** on top of shared **infrastructure** — not new plumbing, but genuinely more than four files.
+
+## Summary — before vs after
+
+| Dimension | Today | With this LLMOps setup |
+|---|---|---|
+| Release safety | Replace-all deploy; roll back by hand | 10% canary watched on SLOs; automatic rollback; promotion gate (approver + eval-full) |
+| Prompt changes | Prompt text buried in code; ships like any code, no check | Versioned YAML prompt; evaluation gate on every change; rollback/compare by version |
+| Quality visibility | Manual spot-checks | Golden-dataset evaluation as a gate at every change; groundedness/tool-selection tracked |
+| Cost visibility | Guesswork from the invoice | Cost metered per call on every span; per model / prompt / use case; reconciled to Azure Cost Management |
+| Debugging a bad answer | Read plain logs, guess | One trace id end-to-end: model calls, tool calls, tokens, retrieval, tool-correctness |
+| Adding a use case | Re-solve everything from scratch | Inherit the shared platform; define its own prompts, design, data, tools, guardrails, golden set, dashboards |
+| Swapping a model | Edit hard-coded model names in agent code | One-line change in `models.yaml`, reviewed, must pass the evaluation gate |
+| Guardrails | Little or none | Content Safety in/out + PII redaction as a fixed step around every model call; policy tuned per use case |
+| Data access | Direct reads; keyword search; structured data stuffed into the prompt | RAG for text, read-only NL2SQL for structured facts, Document Intelligence for files, `get_record` for live systems |
+
+**The value line:** the same pipelines the teams run today, but every change is evaluated before it ships, every request is traced and costed, every bad answer becomes a permanent test, and the next use case reuses the platform instead of rebuilding it. That is the difference between "prompts in Git" and enterprise-grade LLMOps.
 
 ## What we need to proceed
 
@@ -95,7 +133,7 @@ No dates — just the inputs that unblock the build:
 - **Azure subscription and landing-zone access** with rights to create the resource groups and services in the bill above, and to register the GitHub OIDC federated credential.
 - **Confirmation of the "today" assumptions** per component — especially how APIX prompts and model choices are set now, so the migration steps are accurate.
 - **A GitHub organisation/repo** for the monorepo, with the ability to set branch protection, CODEOWNERS, and GitHub Environments with required reviewers.
-- **Access to the APIX data sources** — the transcript blob container / SQL table and metadata — for the first indexer.
+- **Access to the APIX data sources** — the transcript blob container / SQL table and metadata, plus the tables to allow-list for `query_sql` — for the first indexer and the first structured tool.
 - **SME time** to author the first golden datasets for APIX (telesales and one more program), the seed the whole gate depends on.
 - **A named reviewer** for the test and prod environment approvals.
-- **Sign-off on the minor recurring cost** for self-hosted Langfuse and (later, if adopted) Foundry prompt assets.
+- **Sign-off on the indicative recurring cost** (model tokens dominate; the rest is modest fixed cost) and on self-hosted Langfuse and (later, if adopted) Foundry prompt assets — all to be confirmed at a sizing exercise.

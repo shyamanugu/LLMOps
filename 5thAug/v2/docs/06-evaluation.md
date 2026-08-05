@@ -1,6 +1,6 @@
 # Evaluation (How We Actually Evaluate)
 
-This is the document Kiran pushed hardest on. The earlier material said we would evaluate but never said *how*. So this one is concrete: what the golden dataset is, the exact metric groups, the real code that produces each score, and how those scores become a gate that can block a merge. APIX is the running example. The tool-selection part uses a Hiring Intelligence example (Applicant Tracking System tools), because that is the clearest case of an agent picking the wrong tool.
+This is the document Kiran pushed hardest on. The earlier material said we would evaluate but never said *how*. So this one is concrete: what the golden dataset is, the exact metric groups, the real code that produces each score, what each score actually means, how the thresholds are set, what each evaluation technique costs, and how those scores become a gate that can block a merge. APIX is the running example. The tool-selection part uses a Hiring Intelligence example (Applicant Tracking System tools), because that is the clearest case of an agent picking the wrong tool.
 
 ## Today, our setup, what changes
 
@@ -52,6 +52,20 @@ We score four groups. Each group answers a different question and is produced by
 - **Agent behavior** is about *whether it took the right action* — did it call the right tool with the right arguments. This is not a RAG question at all, and it is the group Ragas and DeepEval do not cover.
 
 Non-RAG use cases exist (a pure scoring step with no retrieval), and any step that calls tools needs agent-behavior metrics regardless of RAG. That is why four groups, not one.
+
+## What each metric actually means
+
+Kiran asked for the metrics in plain words, not jargon. Every metric below returns a number between 0 and 1, where 1 is best. Higher is always better, so a threshold reads "must be at least X."
+
+| Metric | What it measures, in plain words | Scale |
+|---|---|---|
+| **Groundedness** | Every claim in the answer is backed by the retrieved context. Nothing invented. This is the "do not make up moments" rule, measured. | 0 to 1 (1 = fully supported) |
+| **Context relevance / precision** | Of the chunks we retrieved and fed the model, how many were actually on-point for the question. Catches retrieval pulling in junk. | 0 to 1 (1 = all retrieved chunks on-point) |
+| **Answer relevance** | Does the answer address what was actually asked, rather than drifting to a related-but-different point. | 0 to 1 (1 = directly on the ask) |
+| **Coherence / fluency** | Does it read well — clear, ordered, readable, correct language. A quality-of-writing score, separate from whether it is correct. | 0 to 1 (1 = clean, readable) |
+| **Correctness / similarity** | How close the answer is to the reference (golden) answer in meaning. Compared against ground truth, not just judged in isolation. | 0 to 1 (1 = matches reference) |
+| **Tool-selection accuracy** | Fraction of cases where the agent chose the right tool for the job. The core agent-behavior number. | 0 to 1 (1 = right tool every time) |
+| **Task success** | End-to-end: did the whole pipeline produce a correct, complete result for the case, across all steps. | 0 to 1 (1 = fully correct end-to-end) |
 
 ## The HOW — real mechanisms
 
@@ -130,24 +144,50 @@ For subjective quality that a fixed check cannot capture — is this coaching no
 
 **LangSmith** also does evaluation plus observability in one product, and it is capable. We are not defaulting to it because it is **not open source — it needs a license**. Our default stack (Ragas, DeepEval, custom Python, self-hosted Langfuse) keeps evaluation in our own repository and network with no per-seat license. LangSmith stays on the table if the team wants a managed option later.
 
-## The CI gate
+## How the thresholds are defined
 
-Thresholds live in `evaluators.yaml` next to the golden data. This declares which metrics run and the bar each must clear:
+A threshold that someone picks out of the air is worthless — too low and it never fails, too high and it blocks every change. We set them from evidence, in two parts.
+
+**1. A baseline run of current production.** Before any change, we run the whole golden set against what is live today and record the score for every metric. That recorded set of numbers is the baseline. The gate rule is relative to it:
+
+> **No metric may drop more than X% below its baseline.** (We start with X = 2%.)
+
+This is the main rule because it catches the real danger — a change that quietly makes things worse. It does not demand a fixed absolute score the current system may not even hit; it demands you do not go backwards.
+
+**2. Absolute floors and minimums, on top of the relative rule.** Two things must never be allowed to slide, no matter what the baseline was:
+
+- **Absolute floors for safety — these are zero and stay zero.** PII (Personally Identifiable Information) leak rate = 0. Unsafe-content rate = 0. There is no "2% worse than baseline" tolerance on a safety failure; any leak fails the gate outright.
+- **Absolute minimums for critical metrics.** Some metrics have a floor below which the output is not fit to ship even if the baseline happened to be low — for example **groundedness must be at least 0.9**. This protects against a bad baseline dragging the bar down.
+
+So a change passes only if it clears **both** the relative rule (no metric more than X% below baseline) **and** the absolute floors and minimums. All of this lives in `evaluators.yaml` next to the golden data, so the bar is versioned and reviewed like any other config:
 
 ```yaml
 # evals/apix/evaluators.yaml
 suite: apix
 datasets: [golden.telesales.jsonl, golden.wcc.jsonl]
+
 metrics:
-  groundedness:      { tool: ragas,     min: 0.85 }
+  groundedness:      { tool: ragas,     min: 0.90 }   # absolute minimum — critical metric
   context_relevance: { tool: ragas,     min: 0.80 }
+  answer_relevance:  { tool: ragas,     min: 0.80 }
   coaching_quality:  { tool: deepeval,  min: 0.70 }
   score_band_hit:    { tool: custom,    min: 0.90 }   # execution / task-path
   tool_accuracy:     { tool: custom,    min: 0.95 }   # agent behavior
   arg_correctness:   { tool: custom,    min: 0.90 }
+
+safety_floors:                                        # absolute — must be exactly 0
+  pii_leak_rate:     { tool: custom,    max: 0.0 }
+  unsafe_rate:       { tool: content_safety, max: 0.0 }
+
 gate:
-  fail_under: baseline   # block if any metric drops below its recorded baseline
+  relative: no_metric_below_baseline_by: 0.02         # no metric > 2% under its baseline
+  baseline: recorded_from_prod                        # baseline captured from current prod
+  block_on: [relative, min, safety_floors]            # all three must pass to merge
 ```
+
+`min` is the absolute minimum for a metric; `max` is the absolute ceiling for a bad-thing rate (safety). `relative` is the "do not go backwards" rule against the recorded baseline. A change has to satisfy all of them.
+
+## The CI gate
 
 The pull-request workflow runs these. This is the gate from the CI/CD backbone doc:
 
@@ -161,6 +201,27 @@ The pull-request workflow runs these. This is the gate from the CI/CD backbone d
 `--subset changed` runs only the evaluators for the prompts and agents touched in the pull request, so the pull-request gate is fast. The full golden set runs on merge and nightly (`eval-full.yml`). A non-zero exit fails the required check, and the merge button stays disabled. There is no path to production that skips this.
 
 **Per-agent and end-to-end.** We evaluate each pipeline step on its own *and* the whole pipeline top to bottom, because **a pipeline can pass end-to-end while one step quietly degrades.** If the scoring step gets slightly worse but the report-writing step compensates, the final output might still clear the bar while the scoring step is now unreliable. Per-agent evaluation catches the step-level regression before it compounds. Both run in the gate.
+
+## What each evaluation technique costs
+
+Kiran asked what evaluation itself costs to run. It is not free, but the cost is driven by one thing — how often we call a judge model — and that is controllable. The table below is per technique. All dollar figures are indicative; confirm at sizing.
+
+| Technique | How it is charged | Indicative cost |
+|---|---|---|
+| **Custom Python** (exact checks, tool-selection, task-path) | Compute only — plain code, no model calls | ~Free (runs on the CI runner) |
+| **Ragas / DeepEval — rule-based metrics** | Compute only | ~Free |
+| **Ragas / DeepEval — LLM-based metrics** (faithfulness, G-Eval, etc.) | Each metric calls a judge model → token cost | Token cost per case (see LLM-as-judge) |
+| **LLM-as-judge** (the underlying mechanism above) | Judge model tokens per case | Small judge (e.g. GPT-5-mini) ≈ cents to low single-digit dollars per 200-case run |
+| **LangSmith** | Platform license (per seat / usage tier) | ≈ $1,500–2,800/mo at scale — licensed, the expensive option |
+| **Azure AI Foundry evaluations** | Azure usage — judge tokens only, no separate license | Judge token cost, folded into Azure spend |
+
+**The one driver: judge tokens × dataset size × number of runs.** Custom Python and rule-based metrics are effectively free. The cost appears only where an LLM judges an output, and it multiplies by how big the golden set is and how often the suite runs. Three mitigations keep it small:
+
+- **Use a small judge model** (GPT-5-mini class), not a frontier model, for grading. Judging is easier than generating.
+- **Subset on pull requests** — `--subset changed` judges only the changed prompts/agents, so day-to-day cost is tiny.
+- **Full golden set nightly**, when a slightly larger token bill does not slow anyone down.
+
+Net: at a 200-case golden set with a small judge, a full run is a few cents to low single-digit dollars; PR runs cost a fraction of that. LangSmith is the only line item with a real recurring license, which is why our default stack avoids it.
 
 ## Online evaluation
 
