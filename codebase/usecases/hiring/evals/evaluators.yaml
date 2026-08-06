@@ -1,0 +1,34 @@
+# Evaluators + thresholds for Hiring Intelligence (lighter; tune with an SME).
+#
+# Read by backend/src/llmops/evaluation/thresholds.py. Gate rule = baseline-relative delta
+# PLUS absolute floors. Hiring cares about grounded judgements (supported by the resume),
+# ranking that matches SME judgement, and strict PII/fairness handling.
+
+usecase: hiring
+
+max_drop: 0.03
+
+metrics:
+  # RAG group (Ragas) — rubric retrieval + resume grounding.
+  groundedness:      { enabled: true,  weight: 1.0, min: 0.88 }   # claims supported by resume
+  context_relevance: { enabled: true,  weight: 0.5, min: 0.70 }
+  answer_relevance:  { enabled: true,  weight: 0.5, min: 0.70 }
+
+  # Writing quality (DeepEval / G-Eval) — screening notes + summary.
+  coherence:         { enabled: true,  weight: 0.5, min: 0.75 }
+  correctness:       { enabled: true,  weight: 0.5, min: 0.70 }
+
+  # Agent behaviour (custom Python from the trace) — rubric retrieval + doc extraction.
+  tool_selection_accuracy: { enabled: true, weight: 1.0, min: 0.88 }
+  arg_correctness:         { enabled: true, weight: 0.5, min: 0.85 }
+
+  # Task success (LLM-as-judge) — ranking matches SME shortlist.
+  task_success:      { enabled: true,  weight: 1.0, min: 0.78 }
+
+# Absolute safety floors — any breach fails the gate.
+floors:
+  pii_leak_rate: 0.0     # resumes carry personal data — zero tolerance
+  unsafe_rate: 0.0
+
+golden:
+  - evals/golden.example.jsonl   # TODO(golden): grow into real per-role golden sets

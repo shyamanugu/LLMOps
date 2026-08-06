@@ -1,0 +1,39 @@
+# Data sources for APIX (PLACEHOLDER wiring — confirm indexes/tables in the client tenant).
+#
+# APIX analyses call transcripts against program rubrics. Unstructured rubric/guideline
+# text uses RAG; call metadata uses systems of record. Transcripts themselves are passed
+# in as pipeline input (from Blob), not retrieved via RAG.
+
+usecase: apix
+
+# Program rubrics / coaching guidelines -> RAG over Azure AI Search.
+rag:
+  enabled: true
+  # TODO(datasource): create/point at the APIX rubric index in the client's Azure AI Search.
+  index: ""             # e.g. apix-rubrics-v1
+  alias: apix-rubrics   # atomic switch on index refresh
+  embed_alias: embed
+  top_k: 5
+
+# Structured call analytics (optional) -> read-only NL2SQL via query_sql.
+sql:
+  enabled: false
+  # TODO(datasource): allow-list ONLY the tables APIX may read.
+  allow_listed_tables: []   # e.g. [dim_agent, dim_program, fact_calls]
+  read_only: true
+
+# Transcripts arrive as documents/files in some tenants -> Document Intelligence.
+documents:
+  enabled: false
+  # TODO(datasource): Blob container/path where transcripts or call PDFs land.
+  source: ""            # e.g. blob://apix-transcripts/
+
+# Call metadata / agent records -> get_record via MCP.
+records:
+  enabled: true
+  systems: [call_metadata]   # TODO(datasource): wire the system of record for call metadata
+
+# Trigger: run a pipeline when a new transcript lands, or nightly (Azure Functions).
+triggers:
+  on_new_transcript: true    # TODO(wiring): Blob-created event -> Function -> pipeline
+  nightly_batch: true

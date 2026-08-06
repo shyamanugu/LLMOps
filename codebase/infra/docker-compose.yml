@@ -1,0 +1,87 @@
+# Local development stack for the LLMOps platform.
+#
+#   docker compose -f infra/docker-compose.yml up --build
+#
+# Brings up: backend (FastAPI), frontend (Console), Langfuse (self-hosted
+# observability + prompt registry) and its Postgres. Azure services (OpenAI,
+# Search, Cosmos, Content Safety, Doc Intelligence) are NOT emulated — point the
+# backend at real dev resources via backend/.env, or the adapters degrade to
+# mocks (see ARCHITECTURE_SPEC §6). No production secrets belong in this file;
+# the values below are local-only dev defaults.
+
+name: llmops-dev
+
+services:
+  # ------------------------------------------------------------------ backend
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    image: llmops-backend:dev
+    env_file:
+      - ../backend/.env            # LLMOPS_* settings (git-ignored)
+    environment:
+      LLMOPS_ENVIRONMENT: dev
+      LLMOPS_LANGFUSE_HOST: http://langfuse:3000
+      LLMOPS_MODELS_CONFIG_PATH: /app/platform/models.yaml
+    volumes:
+      # Mount config-as-code so edits to models/tools/evaluators are live.
+      - ../platform:/app/platform:ro
+    ports:
+      - "8000:8000"
+    depends_on:
+      langfuse:
+        condition: service_started
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------- frontend
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    image: llmops-frontend:dev
+    environment:
+      # The SPA calls the backend through this base URL (see api/client.ts).
+      VITE_API_BASE: http://localhost:8000/api/v1
+    ports:
+      - "5173:80"                  # nginx serves the built SPA on :80
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------- langfuse
+  langfuse:
+    image: langfuse/langfuse:2      # self-hosted observability + prompt registry
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://langfuse:langfuse@langfuse-db:5432/langfuse
+      NEXTAUTH_URL: http://localhost:3000
+      # Local-only dev secrets. Generate real ones for any shared environment.
+      NEXTAUTH_SECRET: dev-nextauth-secret-change-me            # TODO(secret): local dev only
+      SALT: dev-salt-change-me                                  # TODO(secret): local dev only
+      ENCRYPTION_KEY: 0000000000000000000000000000000000000000000000000000000000000000  # TODO(secret): 64 hex chars, local dev only
+      TELEMETRY_ENABLED: "false"
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  # -------------------------------------------------------------- langfuse db
+  langfuse-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: langfuse   # local-only dev credential
+      POSTGRES_DB: langfuse
+    volumes:
+      - langfuse-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse -d langfuse"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  langfuse-pgdata:

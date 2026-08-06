@@ -1,0 +1,2 @@
+{"id":"template-001","input":{"example_field":"replace with real input"},"grading":{"must_include":["example expectation"],"expected_score_band":[70,90]},"meta":{"source":"sme_authored","note":"PLACEHOLDER row — replace with real golden cases"}}
+{"id":"template-002","input":{"example_field":"another input"},"grading":{"must_not_include":["hallucinated detail"],"must_cite_evidence":true},"meta":{"source":"sme_authored","note":"PLACEHOLDER row — replace with real golden cases"}}

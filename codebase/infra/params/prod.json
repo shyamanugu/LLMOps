@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "_comment": "Parameters for the PROD environment. Deploy with: az deployment group create -g <rg-prod> -f infra/main.bicep -p @infra/params/prod.json. Prod hardens the network posture (private) and larger SKUs.",
+  "parameters": {
+    "namePrefix": { "value": "llmops" },
+    "environmentName": { "value": "prod" },
+    "location": { "value": "eastus2" },
+    "acrName": { "value": "" },
+    "_acrName_TODO": "TODO(env): set your production ACR name.",
+    "privateNetworking": { "value": true },
+    "_privateNetworking_note": "Disables public access on OpenAI/Search/Cosmos/Storage/Content Safety; pair with private endpoints + VNet integration (see module TODOs).",
+    "tags": {
+      "value": {
+        "costCenter": "TODO",
+        "owner": "platform-team",
+        "dataClassification": "confidential"
+      }
+    }
+  }
+}

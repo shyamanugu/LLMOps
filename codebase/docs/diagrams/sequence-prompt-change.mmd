@@ -1,0 +1,35 @@
+%% Sequence — a prompt change flowing from author to production (with the eval gate).
+%% Render with mermaid.live or: mmdc -i sequence-prompt-change.mmd -o sequence-prompt-change.svg
+sequenceDiagram
+    autonumber
+    actor Dev as Engineer
+    participant Repo as Git (usecases/<uc>/prompts/*.prompt.yaml)
+    participant PR as Pull Request
+    participant CO as CODEOWNER reviewer
+    participant Checks as pr-checks (lint+unit+eval subset)
+    participant Full as eval-full (golden set)
+    participant Deploy as deploy.yml (OIDC, environments)
+    participant Reg as Runtime registry (Git cache / Langfuse / Foundry)
+    participant App as Pipeline runtime
+
+    Dev->>Repo: edit prompt YAML (bump version, changelog)
+    Dev->>PR: open pull request
+    PR->>CO: request review (path-owned by CODEOWNERS)
+    PR->>Checks: automated checks + eval subset gate
+    Checks-->>PR: pass/fail (blocks on regression)
+    CO-->>PR: approve
+    PR->>Repo: merge to main
+    Repo->>Full: eval-full on merge (full golden set)
+    Repo->>Reg: CI pushes prompt YAML to registry (if Langfuse/Foundry)
+    Full-->>Deploy: pass -> trigger deploy
+    Deploy->>Deploy: dev (auto)
+    Deploy->>Deploy: test (needs approver + eval-full)
+    Deploy->>Deploy: prod (needs approver + eval-full)
+    Deploy->>App: canary 10% -> watch SLOs 15m
+    alt healthy
+        Deploy->>App: shift traffic to 100%
+        App->>Reg: load_prompt(id, label=prod) -> new version live
+    else unhealthy
+        Deploy->>App: revert revision (rollback)
+        Note over Reg: label 'prod' still points at previous version
+    end

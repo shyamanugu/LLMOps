@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLMOps Platform — Manual Setup Checklist</title>
+<style>
+  :root{--navy:#1F3A5F;--teal:#2A9D8F;--ink:#22303C;--mute:#6B7480;--line:#DCE2EA;--bg:#F6F8FB;--ok:#2E9E5B;--amber:#B5740B}
+  *{box-sizing:border-box}body{font-family:"Segoe UI",system-ui,sans-serif;color:var(--ink);margin:0;background:var(--bg);line-height:1.5}
+  header{background:linear-gradient(135deg,#16283f,#1F3A5F);color:#fff;padding:26px 32px}
+  header h1{margin:0 0 4px;font-size:24px}header p{margin:0;color:#B9C4D4;font-size:14px}
+  .wrap{max-width:1000px;margin:0 auto;padding:24px 32px}
+  .bar{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:10px 32px;display:flex;align-items:center;gap:14px;z-index:5}
+  .bar .track{flex:1;height:10px;background:#E7ECF2;border-radius:6px;overflow:hidden}
+  .bar .fill{height:100%;background:var(--teal);width:0}
+  .bar b{font-size:13px;color:var(--navy)}
+  .bar button{font-size:12px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;color:var(--mute)}
+  section{background:#fff;border:1px solid var(--line);border-radius:12px;margin:16px 0;overflow:hidden}
+  section>h2{margin:0;padding:14px 18px;background:#EEF2F7;font-size:15px;color:var(--navy);border-bottom:1px solid var(--line)}
+  section>h2 small{float:right;color:var(--mute);font-weight:400}
+  ul{list-style:none;margin:0;padding:6px 0}
+  li{display:flex;gap:12px;padding:9px 18px;align-items:flex-start;border-top:1px solid #F0F3F7}
+  li:first-child{border-top:none}
+  li input{margin-top:3px;width:17px;height:17px;flex:none;accent-color:var(--teal)}
+  li .t{flex:1}li .t b{color:var(--navy)}
+  li code{background:#F1F4F8;border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:12.5px;color:#1b3a5f}
+  .why{display:block;color:var(--mute);font-size:12.5px;margin-top:2px}
+  .done{background:#F3FAF6}.done .t b{text-decoration:line-through;color:var(--mute)}
+  .note{background:#FFF8EC;border-left:3px solid var(--amber);padding:10px 14px;margin:10px 18px;font-size:13px;border-radius:4px}
+  footer{color:var(--mute);font-size:12px;text-align:center;padding:24px}
+  @media print{.bar button{display:none}header{-webkit-print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<header>
+  <h1>LLMOps Platform — Manual Setup Checklist</h1>
+  <p>Everything you create by hand to stand up the framework in the client Azure + GitHub environment. Check items off — your progress is saved in this browser. Code placeholders to finish are in <b>todo.html</b>.</p>
+</header>
+<div class="bar">
+  <b id="pct">0%</b><div class="track"><div class="fill" id="fill"></div></div>
+  <span id="count" style="font-size:12px;color:#6B7480"></span>
+  <button onclick="resetAll()">Reset</button><button onclick="window.print()">Print</button>
+</div>
+<div class="wrap">
+
+  <div class="note"><b>Before you start:</b> you need an Azure subscription with permission to create resources and assign roles, and a GitHub repository with permission to configure Environments and OIDC. Prefer <b>Managed Identity</b> over keys everywhere. Region: pick one with your required Azure OpenAI models available.</div>
+
+  <section><h2>1 · Azure foundation <small>resource group &amp; identity</small></h2><ul>
+    <li><input type="checkbox"><span class="t"><b>Create a resource group</b> per environment (e.g. <code>rg-llmops-dev</code>, <code>-test</code>, <code>-prod</code>).<span class="why">Keeps environments isolated; matches the dev/test/prod promotion model.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Create a user-assigned Managed Identity</b> (or use the Container App system identity).<span class="why">The app authenticates to Azure OpenAI, Search, Cosmos, Key Vault with this — no keys in code.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Create a Log Analytics workspace.</b><span class="why">Backing store for Application Insights + Container Apps logs.</span></span></li>
+  </ul></section>
+
+  <section><h2>2 · Azure OpenAI &amp; model deployments <small>the models</small></h2><ul>
+    <li><input type="checkbox"><span class="t"><b>Create an Azure OpenAI resource.</b> Note the endpoint.<span class="why">Set as <code>LLMOPS_AZURE_OPENAI_ENDPOINT</code>.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Deploy the models</b> and record the <i>deployment names</i>: a reasoning model, a small/cheap model, a realtime voice model, and an embedding model.<span class="why">Put the deployment names into <code>platform/models.yaml</code> (aliases reason / bulk / judge / voice / embed).</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Confirm quota / rate limits</b> (tokens per minute) are enough, or request an increase.<span class="why">Quota approval can take time — do it early.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Assign the identity</b> the <code>Cognitive Services OpenAI User</code> role on the resource.</span></li>
+  </ul></section>
+
+  <section><h2>3 · Supporting Azure services</h2><ul>
+    <li><input type="checkbox"><span class="t"><b>Azure AI Search</b> (RAG index). Create a service (Basic ≈ $74/mo or Standard). Assign <code>Search Index Data Contributor</code>/<code>Reader</code>.<span class="why"><code>LLMOPS_AZURE_SEARCH_ENDPOINT</code>. Backs <code>search_knowledge</code>.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Azure AI Document Intelligence</b> (file extraction).<span class="why"><code>LLMOPS_DOCUMENT_INTELLIGENCE_ENDPOINT</code>. Backs <code>extract_document</code>.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Azure AI Content Safety</b> (guardrails).<span class="why"><code>LLMOPS_CONTENT_SAFETY_ENDPOINT</code>. Backs the guardrail engine (Prompt Shields, categories).</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Azure Cosmos DB</b> (agent state + feedback). Create a database <code>llmops</code>.<span class="why"><code>LLMOPS_COSMOS_ENDPOINT</code>. Assign the data-plane role to the identity.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Azure Storage account</b> (transcripts, golden datasets, blobs).</span></li>
+    <li><input type="checkbox"><span class="t"><b>Azure Key Vault</b> — store any secrets (Search key if used, Langfuse keys). Assign <code>Key Vault Secrets User</code>.</span></li>
+    <li><input type="checkbox"><span class="t"><b>Application Insights</b> (linked to the Log Analytics workspace).<span class="why"><code>LLMOPS_APPLICATIONINSIGHTS_CONNECTION_STRING</code>. System of record for traces + cost.</span></span></li>
+  </ul></section>
+
+  <section><h2>4 · Compute, gateway &amp; registry</h2><ul>
+    <li><input type="checkbox"><span class="t"><b>Azure Container Registry (ACR).</b><span class="why">CI pushes backend + frontend images here.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Azure Container Apps environment</b> (per environment).<span class="why">Hosts the backend API and the frontend. Deploy via <code>infra/</code> Bicep or the deploy workflow.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Azure API Management</b> (the gateway).<span class="why">Apply the policies in <code>platform/gateway/apim-policies/</code> (rate limit, quota, JWT validation).</span></span></li>
+  </ul></section>
+
+  <section><h2>5 · Langfuse (self-hosted observability + prompt registry)</h2><ul>
+    <li><input type="checkbox"><span class="t"><b>Deploy Langfuse</b> as a Container App + <b>Azure Database for PostgreSQL</b> (Bicep module <code>langfuse.bicep</code>), or run locally via <code>infra/docker-compose.yml</code> for dev.<span class="why">MIT-licensed, ~$50–150/mo infra. Keeps LLM data in your network.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Create a Langfuse project</b> and copy the <b>public + secret keys</b>.<span class="why"><code>LLMOPS_LANGFUSE_HOST/PUBLIC_KEY/SECRET_KEY</code>.</span></span></li>
+  </ul></section>
+
+  <section><h2>6 · GitHub setup</h2><ul>
+    <li><input type="checkbox"><span class="t"><b>Create the repository</b> and push this <code>codebase/</code> content.</span></li>
+    <li><input type="checkbox"><span class="t"><b>Create an Entra ID app registration</b> for GitHub OIDC and add a <b>federated identity credential</b> for the repo/environments.<span class="why">Lets Actions log in to Azure with no stored secret.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Add repo variables:</b> <code>AZ_CLIENT_ID</code>, <code>AZ_TENANT_ID</code>, <code>AZ_SUB_ID</code>, ACR name, resource-group names.</span></li>
+    <li><input type="checkbox"><span class="t"><b>Create GitHub Environments</b> <code>dev</code>, <code>test</code>, <code>prod</code> and set <b>required reviewers</b> on test + prod.<span class="why">This is the promotion gate.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Assign the OIDC identity</b> Contributor (or scoped roles) on the resource groups.</span></li>
+    <li><input type="checkbox"><span class="t"><b>Confirm branch protection</b> requires <code>pr-checks</code> (the evaluation gate) to pass before merge.</span></li>
+  </ul></section>
+
+  <section><h2>7 · Configuration files to fill</h2><ul>
+    <li><input type="checkbox"><span class="t">Set the deployment names in <code>platform/models.yaml</code> to match your Azure OpenAI deployments.</span></li>
+    <li><input type="checkbox"><span class="t">Copy <code>backend/.env.example</code> → <code>backend/.env</code> and fill endpoints (dev only).</span></li>
+    <li><input type="checkbox"><span class="t">Set <code>frontend/.env</code> → <code>VITE_API_BASE</code> to the backend URL.</span></li>
+    <li><input type="checkbox"><span class="t">Fill each use case's <code>usecases/&lt;name&gt;/config/datasources.yaml</code> (search index names, DB tables, systems).</span></li>
+    <li><input type="checkbox"><span class="t">Review <code>platform/evaluators/defaults.yaml</code> thresholds; adjust per use case in <code>usecases/&lt;name&gt;/evals/evaluators.yaml</code>.</span></li>
+    <li><input type="checkbox"><span class="t">Finish the code placeholders in <b>todo.html</b> (the <code># TODO(wiring)</code> markers).</span></li>
+  </ul></section>
+
+  <section><h2>8 · Golden datasets (with the SMEs)</h2><ul>
+    <li><input type="checkbox"><span class="t"><b>Author the first golden dataset</b> per use case (and per program for APIX: Telesales + WCC), ~50–200 cases, in <code>usecases/&lt;name&gt;/evals/golden.*.jsonl</code>.<span class="why">This is the evaluation gate. Start SME-authored; grow from real traffic later.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b>Set thresholds</b> in the use case's <code>evaluators.yaml</code> from a baseline run.</span></li>
+  </ul></section>
+
+  <section><h2>9 · First run &amp; deploy</h2><ul>
+    <li><input type="checkbox"><span class="t"><b>Local dev:</b> <code>docker compose -f infra/docker-compose.yml up</code> (backend + frontend + Langfuse + Postgres).</span></li>
+    <li><input type="checkbox"><span class="t"><b>Run the backend tests:</b> <code>cd backend &amp;&amp; make test</code>.</span></li>
+    <li><input type="checkbox"><span class="t"><b>Run the evaluation gate locally:</b> <code>python backend/evals/run.py --usecase apix --subset all</code>.</span></li>
+    <li><input type="checkbox"><span class="t"><b>Provision infra:</b> deploy <code>infra/main.bicep</code> (or let the deploy workflow do it).</span></li>
+    <li><input type="checkbox"><span class="t"><b>First deploy:</b> merge to <code>main</code> → the deploy workflow builds, gates, and promotes dev → test → prod (canary).</span></li>
+    <li><input type="checkbox"><span class="t"><b>Open the Console</b> and confirm Dashboard, Traces, Costs, Evaluations render.</span></li>
+  </ul></section>
+
+  <div class="note"><b>Then onboard a use case:</b> run the prompts in <code>copilot_prompts.py</code> (the <code>USE_CASE_PROMPTS</code> section) via GitHub Copilot to generate <code>usecases/apix</code> and <code>usecases/hiring</code> content. The framework is already done.</div>
+
+</div>
+<footer>LLMOps Platform · manual setup checklist · progress stored locally in your browser.</footer>
+<script>
+  const KEY="llmops_checklist_v1";
+  const boxes=[...document.querySelectorAll('li input[type=checkbox]')];
+  boxes.forEach((b,i)=>{b.dataset.i=i;});
+  function save(){localStorage.setItem(KEY,JSON.stringify(boxes.map(b=>b.checked)))}
+  function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||"[]");boxes.forEach((b,i)=>{b.checked=!!s[i]})}catch(e){}}
+  function upd(){let n=boxes.filter(b=>b.checked).length;const pct=Math.round(n/boxes.length*100);
+    document.getElementById('fill').style.width=pct+'%';document.getElementById('pct').textContent=pct+'%';
+    document.getElementById('count').textContent=n+' / '+boxes.length;
+    boxes.forEach(b=>b.closest('li').classList.toggle('done',b.checked));}
+  boxes.forEach(b=>b.addEventListener('change',()=>{save();upd();}));
+  function resetAll(){localStorage.removeItem(KEY);boxes.forEach(b=>b.checked=false);upd();}
+  load();upd();
+</script>
+</body></html>

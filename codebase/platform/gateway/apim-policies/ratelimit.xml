@@ -1,0 +1,52 @@
+<!--
+  APIM rate-limit + quota policy fragment for the LLMOps backend.
+
+  Apply at the API (or product) scope. Protects the LLM backend and its
+  downstream Azure OpenAI capacity from abuse and runaway cost. Limits are keyed
+  by caller identity (JWT subject) so one tenant cannot starve others; falls back
+  to client IP for unauthenticated preflight.
+
+  Include this alongside inbound.xml, or merge its <inbound> children into the
+  operation policy. Named values: {{rate-calls}} {{rate-window}} {{quota-calls}}
+  {{quota-period}} may be used to externalise the numbers per environment.
+-->
+<policies>
+  <inbound>
+    <base />
+
+    <!-- Derive a stable rate-limit key: prefer the authenticated subject. -->
+    <set-variable name="rlKey"
+      value="@{
+        var sub = context.User?.Id;
+        return string.IsNullOrEmpty(sub) ? context.Request.IpAddress : sub;
+      }" />
+
+    <!-- Short-window burst protection: 60 calls / 60s per caller. -->
+    <rate-limit-by-key calls="60" renewal-period="60"
+                       counter-key="@((string)context.Variables["rlKey"])"
+                       increment-condition="@(context.Response.StatusCode < 500)"
+                       remaining-calls-header-name="x-ratelimit-remaining"
+                       total-calls-header-name="x-ratelimit-limit"
+                       retry-after-header-name="retry-after" />
+
+    <!-- Daily quota: 10,000 calls / 24h per caller (cost + capacity guard). -->
+    <quota-by-key calls="10000" renewal-period="86400"
+                  counter-key="@((string)context.Variables["rlKey"])"
+                  increment-condition="@(context.Response.StatusCode < 500)" />
+  </inbound>
+  <backend><base /></backend>
+  <outbound><base /></outbound>
+  <on-error>
+    <base />
+    <!-- Surface a clear 429 with retry guidance for throttled callers. -->
+    <choose>
+      <when condition="@(context.LastError.Reason == "RateLimitExceeded" || context.LastError.Reason == "QuotaExceeded")">
+        <return-response>
+          <set-status code="429" reason="Too Many Requests" />
+          <set-header name="Content-Type" exists-action="override"><value>application/json</value></set-header>
+          <set-body>{"error":"rate_limited","detail":"Request rate or daily quota exceeded. Retry after the indicated delay."}</set-body>
+        </return-response>
+      </when>
+    </choose>
+  </on-error>
+</policies>

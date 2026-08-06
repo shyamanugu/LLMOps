@@ -1,0 +1,45 @@
+%% Component diagram — the 12 platform components and how they interconnect.
+%% Render with mermaid.live or: mmdc -i component.mmd -o component.svg
+graph LR
+    subgraph plane[Control plane]
+        api["11. Serving & gateway<br/>api/ + platform/gateway"]
+        console["12. Console<br/>frontend/"]
+    end
+
+    subgraph build[Change plane - GitHub]
+        scm["01. Source control & CI/CD<br/>.github/workflows"]
+        gate["04. Evaluation engine & gate<br/>evaluation/"]
+    end
+
+    subgraph runtime[Runtime plane]
+        orch["09. Orchestration / pipeline<br/>orchestration/"]
+        prompts["02. Prompt registry<br/>prompts/"]
+        models["03. Model catalog & routing<br/>models/"]
+        guard["06. Guardrails engine<br/>guardrails/"]
+        data["07. Data-access<br/>data_access/"]
+        tools["08. Reusable tool catalog (MCP)<br/>tools/"]
+    end
+
+    subgraph crosscut[Cross-cutting]
+        obs["05. Observability & cost<br/>observability/"]
+        feedback["10. Feedback & analytics<br/>feedback/"]
+    end
+
+    console --> api
+    api --> orch
+    scm --> gate
+    gate --> orch
+    gate --> models
+    orch --> prompts
+    orch --> models
+    orch --> guard
+    orch --> data
+    orch --> tools
+    data --> tools
+    prompts --> models
+    orch -.emits spans.-> obs
+    models -.emits cost.-> obs
+    tools -.emits spans.-> obs
+    api --> feedback
+    feedback -.negatives.-> gate
+    obs -.trace context.-> feedback

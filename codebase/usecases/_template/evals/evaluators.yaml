@@ -1,0 +1,39 @@
+# Evaluators + thresholds for this use case (PLACEHOLDER — fill in per use case).
+#
+# Read by backend/src/llmops/evaluation/thresholds.py. The gate rule is:
+#   (a) baseline-relative: no metric may drop more than `max_drop` below the recorded
+#       baseline (from the current prod run), AND
+#   (b) absolute floors: hard limits that fail the gate regardless of baseline.
+# Metric groups map to mechanisms: Ragas (RAG), DeepEval (writing), custom Python
+# (tool selection), LLM-as-judge (task success / rubric).
+
+usecase: _template
+
+# How much a metric may regress vs baseline before the gate blocks (fraction).
+max_drop: 0.03
+
+metrics:
+  # RAG group (Ragas) — enable if this use case retrieves context.
+  groundedness:      { enabled: false, weight: 1.0, min: 0.90 }   # every claim supported
+  context_relevance: { enabled: false, weight: 0.5, min: 0.70 }
+  answer_relevance:  { enabled: false, weight: 0.5, min: 0.70 }
+
+  # Writing quality (DeepEval / G-Eval).
+  coherence:         { enabled: false, weight: 0.5, min: 0.70 }
+  correctness:       { enabled: false, weight: 0.5, min: 0.70 }   # vs reference
+
+  # Agent behaviour (custom Python, read from the trace).
+  tool_selection_accuracy: { enabled: false, weight: 1.0, min: 0.90 }
+  arg_correctness:         { enabled: false, weight: 0.5, min: 0.85 }
+
+  # Task success (LLM-as-judge, small `judge` alias).
+  task_success:      { enabled: false, weight: 1.0, min: 0.80 }
+
+# Absolute safety floors — any breach fails the gate (fail-safe defaults).
+floors:
+  pii_leak_rate: 0.0     # zero tolerance
+  unsafe_rate: 0.0       # zero tolerance
+
+# Which golden datasets this use case gates against.
+golden:
+  - evals/golden.example.jsonl

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLMOps Platform — Code TODOs to Complete</title>
+<style>
+  :root{--navy:#1F3A5F;--teal:#2A9D8F;--ink:#22303C;--mute:#6B7480;--line:#DCE2EA;--bg:#F6F8FB;--amber:#B5740B;--rose:#B0495A}
+  *{box-sizing:border-box}body{font-family:"Segoe UI",system-ui,sans-serif;color:var(--ink);margin:0;background:var(--bg);line-height:1.5}
+  header{background:linear-gradient(135deg,#16283f,#1F3A5F);color:#fff;padding:26px 32px}
+  header h1{margin:0 0 4px;font-size:24px}header p{margin:0;color:#B9C4D4;font-size:14px}
+  .wrap{max-width:1040px;margin:0 auto;padding:24px 32px}
+  .bar{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:10px 32px;display:flex;align-items:center;gap:14px;z-index:5}
+  .bar .track{flex:1;height:10px;background:#E7ECF2;border-radius:6px;overflow:hidden}.bar .fill{height:100%;background:var(--teal);width:0}
+  .bar b{font-size:13px;color:var(--navy)}.bar button{font-size:12px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;color:var(--mute)}
+  section{background:#fff;border:1px solid var(--line);border-radius:12px;margin:16px 0;overflow:hidden}
+  section>h2{margin:0;padding:14px 18px;background:#EEF2F7;font-size:15px;color:var(--navy);border-bottom:1px solid var(--line)}
+  section>h2 .tag{float:right;font-size:11px;font-weight:700;color:#fff;background:var(--teal);border-radius:10px;padding:2px 9px}
+  section>h2 .tag.req{background:var(--rose)}
+  ul{list-style:none;margin:0;padding:6px 0}
+  li{display:flex;gap:12px;padding:9px 18px;align-items:flex-start;border-top:1px solid #F0F3F7}li:first-child{border-top:none}
+  li input{margin-top:3px;width:17px;height:17px;flex:none;accent-color:var(--teal)}li .t{flex:1}li .t b{color:var(--navy)}
+  code{background:#F1F4F8;border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:12.5px;color:#1b3a5f}
+  .why{display:block;color:var(--mute);font-size:12.5px;margin-top:2px}
+  .done{background:#F3FAF6}.done .t b{text-decoration:line-through;color:var(--mute)}
+  .note{background:#FFF8EC;border-left:3px solid var(--amber);padding:10px 14px;margin:10px 18px;font-size:13px;border-radius:4px}
+  footer{color:var(--mute);font-size:12px;text-align:center;padding:24px}
+  @media print{.bar button{display:none}header,section>h2 .tag{-webkit-print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<header>
+  <h1>LLMOps Platform — Code TODOs to Complete</h1>
+  <p>The placeholders left in the framework code, grouped by area. Complete these in the client environment (via GitHub Copilot + the prompts in <code>copilot_prompts.py</code>). Manual Azure/GitHub setup is in <b>checklist.html</b>.</p>
+</header>
+<div class="bar">
+  <b id="pct">0%</b><div class="track"><div class="fill" id="fill"></div></div>
+  <span id="count" style="font-size:12px;color:#6B7480"></span>
+  <button onclick="resetAll()">Reset</button><button onclick="window.print()">Print</button>
+</div>
+<div class="wrap">
+
+  <div class="note"><b>Find every live marker with:</b> <code>grep -rn "TODO(wiring)" backend/</code> (or <code>grep -rn "TODO" .</code>). Every item below corresponds to a marked spot; the tag shows whether it blocks a real run (<span style="color:#B0495A;font-weight:700">Required</span>) or can wait (Optional).</div>
+
+  <section><h2>Config to update <span class="tag req">Required</span></h2><ul>
+    <li><input type="checkbox"><span class="t"><b><code>platform/models.yaml</code></b> — set the deployment names to match your Azure OpenAI deployments (aliases reason / bulk / judge / voice / embed).</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>backend/.env</code></b> — fill all endpoints (from checklist.html). In Azure use Managed Identity, not keys.</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>frontend/.env</code></b> — set <code>VITE_API_BASE</code>.</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>models/pricing.py</code> — <code>PRICES</code></b> — confirm the per-token prices against current Azure pricing for your deployments.</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>platform/tools/registry.yaml</code></b> — bind each tool to its data source (search index name, allow-listed SQL tables, systems).</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>infra/params/*.json</code></b> — resource names, region, SKUs per environment.</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>platform/gateway/apim-policies/*.xml</code></b> — set the backend URL, rate limits, and JWT issuer/audience.</span></li>
+  </ul></section>
+
+  <section><h2>Models &amp; observability wiring <span class="tag req">Required</span></h2><ul>
+    <li><input type="checkbox"><span class="t"><b><code>models/client.py</code></b> — construct the <code>AsyncAzureOpenAI</code> client with <code>DefaultAzureCredential</code> (Managed Identity) token provider at the marked <code>TODO(wiring)</code>.<span class="why">Until then it runs in dev-mock mode.</span></span></li>
+    <li><input type="checkbox"><span class="t"><b><code>observability/exporters.py</code></b> — enable the Application Insights exporter (connection string) and the Langfuse exporter (host + keys).<span class="why">Without this, traces/cost stay local only.</span></span></li>
+  </ul></section>
+
+  <section><h2>Guardrails wiring <span class="tag req">Required</span></h2><ul>
+    <li><input type="checkbox"><span class="t"><b><code>guardrails/content_safety.py</code></b> — construct the Content Safety client; wire category thresholds + Prompt Shields.</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>guardrails/pii.py</code></b> — initialise Presidio (download the spaCy model in the image); confirm the entity list to redact.</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>guardrails/injection.py</code></b> — point at the Prompt Shields endpoint.</span></li>
+  </ul></section>
+
+  <section><h2>Data access wiring <span class="tag req">Required</span></h2><ul>
+    <li><input type="checkbox"><span class="t"><b><code>data_access/rag.py</code></b> — construct the Azure AI Search client; set the index + fields.</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>data_access/sql.py</code></b> — set the DB connection + the allow-list of readable tables; review the NL2SQL prompt.</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>data_access/documents.py</code></b> — construct the Document Intelligence client; choose the model (prebuilt/custom).</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>data_access/records.py</code></b> — implement <code>get_record</code> for each real system (CRM/ATS/API).</span></li>
+  </ul></section>
+
+  <section><h2>State, feedback &amp; prompt registry <span class="tag">Optional at first</span></h2><ul>
+    <li><input type="checkbox"><span class="t"><b><code>orchestration/state.py</code></b> — wire Cosmos DB for checkpoint/resume (in-memory works for dev).</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>feedback/store.py</code></b> — wire App Insights custom events + Cosmos.</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>prompts/langfuse.py</code> / <code>prompts/foundry.py</code></b> — wire the registry client if you move off Git+cache (Git registry works out of the box).</span></li>
+  </ul></section>
+
+  <section><h2>API read-through endpoints <span class="tag">Optional at first</span></h2><ul>
+    <li><input type="checkbox"><span class="t"><b><code>api/routers/traces.py</code></b> — read traces from App Insights (KQL) / Langfuse; currently returns clearly-labelled placeholder data.</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>api/routers/costs.py</code></b> — aggregate cost from the span attribute in App Insights / Langfuse.</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>api/routers/guardrails.py</code></b> — surface real guardrail events.</span></li>
+  </ul></section>
+
+  <section><h2>Evaluation dependencies <span class="tag">Optional at first</span></h2><ul>
+    <li><input type="checkbox"><span class="t"><b><code>evaluation/metrics/ragas.py</code> &amp; <code>deepeval.py</code></b> — <code>pip install ".[eval]"</code>; both guard their imports so the gate runs without them (custom + judge metrics still work).</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>evaluation/metrics/judge.py</code></b> — confirm the judge model alias + rubric per metric.</span></li>
+  </ul></section>
+
+  <section><h2>Use-case code (generate with Copilot) <span class="tag req">Required per use case</span></h2><ul>
+    <li><input type="checkbox"><span class="t"><b><code>usecases/apix/</code></b> — run the <code>USE_CASE_PROMPTS</code> for APIX in <code>copilot_prompts.py</code> to generate the pipeline, prompts, and golden datasets.</span></li>
+    <li><input type="checkbox"><span class="t"><b><code>usecases/hiring/</code></b> — run the Hiring prompts (once the use case is understood).</span></li>
+    <li><input type="checkbox"><span class="t"><b>New use cases</b> — copy <code>usecases/_template/</code>, then generate content with Copilot; the framework is reused as-is.</span></li>
+  </ul></section>
+
+  <section><h2>Frontend polish <span class="tag">Optional</span></h2><ul>
+    <li><input type="checkbox"><span class="t">Replace any page showing a <b>“placeholder data”</b> banner once its backend endpoint is wired.</span></li>
+    <li><input type="checkbox"><span class="t">Set branding/theme tokens in <code>frontend/src/theme/</code> if a client theme is required.</span></li>
+  </ul></section>
+
+  <div class="note"><b>Definition of done for a real run:</b> all <span style="color:#B0495A;font-weight:700">Required</span> items complete + one use case generated + one golden dataset authored → the evaluation gate passes → deploy. The Optional items enhance observability and can follow.</div>
+
+</div>
+<footer>LLMOps Platform · code TODO tracker · progress stored locally in your browser.</footer>
+<script>
+  const KEY="llmops_todo_v1";
+  const boxes=[...document.querySelectorAll('li input[type=checkbox]')];
+  function save(){localStorage.setItem(KEY,JSON.stringify(boxes.map(b=>b.checked)))}
+  function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||"[]");boxes.forEach((b,i)=>{b.checked=!!s[i]})}catch(e){}}
+  function upd(){let n=boxes.filter(b=>b.checked).length;const pct=Math.round(n/boxes.length*100);
+    document.getElementById('fill').style.width=pct+'%';document.getElementById('pct').textContent=pct+'%';
+    document.getElementById('count').textContent=n+' / '+boxes.length;
+    boxes.forEach(b=>b.closest('li').classList.toggle('done',b.checked));}
+  boxes.forEach(b=>b.addEventListener('change',()=>{save();upd();}));
+  function resetAll(){localStorage.removeItem(KEY);boxes.forEach(b=>b.checked=false);upd();}
+  load();upd();
+</script>
+</body></html>

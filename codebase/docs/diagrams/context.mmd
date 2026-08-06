@@ -1,0 +1,43 @@
+%% C4-style System Context — the LLMOps platform and who/what it touches.
+%% Render: https://mermaid.live or the Mermaid CLI (mmdc -i context.mmd -o context.svg)
+graph TB
+    subgraph people[People]
+        eng["Application / ML Engineer<br/>(authors prompts, agents, evals)"]
+        rev["Reviewer / CODEOWNER<br/>(approves changes, promotions)"]
+        ops["Platform / SRE<br/>(runs, monitors, tunes)"]
+        sme["Subject-Matter Expert<br/>(writes golden data, rates output)"]
+        enduser["End User of a use case<br/>(APIX coach, Hiring recruiter)"]
+    end
+
+    platform["LLMOps Platform<br/>(this monorepo)<br/>Reusable framework + control-plane<br/>Console (React) + API (FastAPI)<br/>Sequential agent pipelines"]
+
+    subgraph azure[Azure]
+        aoai["Azure OpenAI<br/>(models: reason/bulk/judge/voice/embed)"]
+        search["Azure AI Search<br/>(RAG index)"]
+        docintel["Azure AI Document Intelligence<br/>(file extraction)"]
+        safety["Azure AI Content Safety<br/>(guardrails, Prompt Shields)"]
+        cosmos["Cosmos DB<br/>(pipeline state, feedback)"]
+        appinsights["Application Insights / Log Analytics<br/>(traces, cost, metrics — system of record)"]
+        apim["API Management<br/>(gateway: quotas, throttling)"]
+        keyvault["Key Vault + Entra ID<br/>(secrets, Managed Identity)"]
+    end
+
+    github["GitHub<br/>(source control + Actions CI/CD<br/>OIDC federated login, Environments)"]
+    langfuse["Langfuse (self-hosted)<br/>(LLM lens: traces, cost, prompt registry)"]
+
+    eng -->|"push prompt/model/agent changes"| github
+    rev -->|"review + promotion approval"| github
+    github -->|"deploy (OIDC, gated, canary)"| platform
+    ops -->|"monitor + operate"| platform
+    sme -->|"golden data, ratings"| platform
+    enduser -->|"requests"| apim --> platform
+
+    platform --> aoai
+    platform --> search
+    platform --> docintel
+    platform --> safety
+    platform --> cosmos
+    platform --> appinsights
+    platform --> langfuse
+    platform -->|"Managed Identity"| keyvault
+    github -->|"eval gate calls models"| aoai

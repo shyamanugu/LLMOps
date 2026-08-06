@@ -1,0 +1,266 @@
+# Deploy — build images and promote through dev -> test -> prod.
+#
+# One image is built per service (backend, frontend), pushed to ACR, and the
+# SAME immutable digest is deployed to each environment in turn. Promotion is
+# gated by GitHub Environments: `test` and `prod` require reviewers (configure
+# in repo Settings > Environments). Prod deploys via canary — a new revision
+# takes 10% traffic, is verified, then 100%, with automatic rollback on failure.
+#
+# Auth is OIDC (no stored credentials). ACR push uses the federated Azure login
+# + `az acr login` (token), so no registry password is stored either.
+
+name: deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "infra/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Deploy an existing image tag instead of building a new one"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  id-token: write        # OIDC to Azure
+  packages: read
+
+concurrency:
+  # Never run two deploys of the same ref at once; a running prod rollout wins.
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # Registry + resource names. Prefer Actions *variables* over hardcoding.
+  ACR_NAME: ${{ vars.ACR_NAME }}                 # e.g. acrllmops (login server = <name>.azurecr.io)  # TODO(env)
+  BACKEND_IMAGE: llmops/backend
+  FRONTEND_IMAGE: llmops/frontend
+
+jobs:
+  # =====================================================================
+  # 1. Build + push both images once. Tag = commit SHA (immutable) + latest.
+  # =====================================================================
+  build:
+    runs-on: ubuntu-latest
+    environment: dev              # build uses the dev subscription/ACR
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve image tag
+        id: meta
+        run: |
+          TAG="${{ inputs.image_tag }}"
+          [ -z "$TAG" ] && TAG="sha-${GITHUB_SHA::12}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}          # TODO(env)
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}           # TODO(env)
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}  # TODO(env)
+
+      - name: ACR login (token via Managed Identity, no password stored)
+        run: az acr login --name "$ACR_NAME"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build & push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          provenance: true
+          sbom: true
+          tags: |
+            ${{ env.ACR_NAME }}.azurecr.io/${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.tag }}
+            ${{ env.ACR_NAME }}.azurecr.io/${{ env.BACKEND_IMAGE }}:latest
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
+
+      - name: Build & push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          provenance: true
+          sbom: true
+          tags: |
+            ${{ env.ACR_NAME }}.azurecr.io/${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.tag }}
+            ${{ env.ACR_NAME }}.azurecr.io/${{ env.FRONTEND_IMAGE }}:latest
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,scope=frontend,mode=max
+
+  # =====================================================================
+  # 2. DEV — auto-deploy the fresh digest (simple full-traffic update).
+  # =====================================================================
+  deploy-dev:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy backend + frontend (dev)
+        env:
+          RG: ${{ vars.RESOURCE_GROUP }}                 # TODO(env)
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          set -euo pipefail
+          az containerapp update -g "$RG" -n "${{ vars.BACKEND_APP }}" \
+            --image "${ACR_NAME}.azurecr.io/${BACKEND_IMAGE}:${TAG}"
+          az containerapp update -g "$RG" -n "${{ vars.FRONTEND_APP }}" \
+            --image "${ACR_NAME}.azurecr.io/${FRONTEND_IMAGE}:${TAG}"
+
+  # =====================================================================
+  # 3. TEST — requires reviewers (GitHub Environment protection).
+  # =====================================================================
+  deploy-test:
+    needs: [build, deploy-dev]
+    runs-on: ubuntu-latest
+    environment: test            # add required reviewers in repo settings
+    steps:
+      - uses: actions/checkout@v4
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy backend + frontend (test)
+        env:
+          RG: ${{ vars.RESOURCE_GROUP }}
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          set -euo pipefail
+          az containerapp update -g "$RG" -n "${{ vars.BACKEND_APP }}" \
+            --image "${ACR_NAME}.azurecr.io/${BACKEND_IMAGE}:${TAG}"
+          az containerapp update -g "$RG" -n "${{ vars.FRONTEND_APP }}" \
+            --image "${ACR_NAME}.azurecr.io/${FRONTEND_IMAGE}:${TAG}"
+      - name: Smoke test (test env)
+        env:
+          BASE_URL: ${{ vars.TEST_BASE_URL }}            # TODO(env)
+        run: |
+          curl -fsS "${BASE_URL}/api/v1/health" | tee /dev/stderr | grep -q '"status"'
+
+  # =====================================================================
+  # 4. PROD — requires reviewers + CANARY rollout with rollback.
+  #    New revision -> 10% traffic -> verify -> 100%. On failure, revert
+  #    all traffic to the previously-active revision.
+  # =====================================================================
+  deploy-prod:
+    needs: [build, deploy-test]
+    runs-on: ubuntu-latest
+    environment: prod            # add required reviewers in repo settings
+    env:
+      RG: ${{ vars.RESOURCE_GROUP_PROD }}               # TODO(env)
+      APP: ${{ vars.BACKEND_APP_PROD }}                  # TODO(env)
+      FRONTEND_APP: ${{ vars.FRONTEND_APP_PROD }}        # TODO(env)
+      TAG: ${{ needs.build.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_PROD }}     # TODO(env): prod federated identity
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID_PROD }}  # TODO(env)
+
+      # Record the currently-active revision so we can roll back to it.
+      - name: Capture current (stable) revision
+        id: current
+        run: |
+          set -euo pipefail
+          STABLE=$(az containerapp revision list -g "$RG" -n "$APP" \
+            --query "reverse(sort_by([?properties.active], &properties.createdTime))[0].name" -o tsv)
+          echo "stable=$STABLE" >> "$GITHUB_OUTPUT"
+          echo "Stable revision: $STABLE"
+
+      # Create the new (canary) revision by copying the app with the new image.
+      # In single-revision mode this would replace; we require multiple-revision
+      # mode so both can receive traffic. `revision copy` produces a new revision.
+      - name: Create canary revision (new image)
+        id: canary
+        run: |
+          set -euo pipefail
+          az containerapp revision copy -g "$RG" -n "$APP" \
+            --image "${ACR_NAME}.azurecr.io/${BACKEND_IMAGE}:${TAG}"
+          CANARY=$(az containerapp revision list -g "$RG" -n "$APP" \
+            --query "reverse(sort_by([], &properties.createdTime))[0].name" -o tsv)
+          echo "canary=$CANARY" >> "$GITHUB_OUTPUT"
+          echo "Canary revision: $CANARY"
+
+      # Send 10% of traffic to canary, remainder stays on stable.
+      - name: Shift 10% traffic to canary
+        run: |
+          set -euo pipefail
+          az containerapp ingress traffic set -g "$RG" -n "$APP" \
+            --revision-weight \
+              "${{ steps.current.outputs.stable }}=90" \
+              "${{ steps.canary.outputs.canary }}=10"
+
+      # Verify the canary is healthy before full promotion. On any failure the
+      # step exits non-zero and triggers the rollback step below.
+      - name: Verify canary
+        id: verify
+        env:
+          BASE_URL: ${{ vars.PROD_BASE_URL }}            # TODO(env)
+        run: |
+          set -euo pipefail
+          # Give the canary a moment to warm up, then probe repeatedly.
+          for i in $(seq 1 12); do
+            if curl -fsS "${BASE_URL}/api/v1/health" | grep -q '"status"'; then
+              echo "Canary healthy (attempt $i)"; ok=1; break
+            fi
+            echo "Canary not ready yet (attempt $i)"; sleep 10
+          done
+          [ "${ok:-0}" = "1" ] || { echo "Canary failed health verification"; exit 1; }
+          # TODO(verify): add SLO checks (error rate, p95 latency) from App
+          # Insights here before promoting to 100%.
+
+      # Promote: 100% traffic to canary.
+      - name: Promote canary to 100%
+        if: steps.verify.outcome == 'success'
+        run: |
+          set -euo pipefail
+          az containerapp ingress traffic set -g "$RG" -n "$APP" \
+            --revision-weight "${{ steps.canary.outputs.canary }}=100"
+
+      # Rollback: if the canary or promotion failed, send all traffic back to the
+      # previously-stable revision and deactivate the bad canary.
+      - name: Rollback to stable
+        if: failure()
+        run: |
+          set -euo pipefail
+          echo "::error::Canary rollout failed — rolling back to ${{ steps.current.outputs.stable }}"
+          az containerapp ingress traffic set -g "$RG" -n "$APP" \
+            --revision-weight "${{ steps.current.outputs.stable }}=100" || true
+          if [ -n "${{ steps.canary.outputs.canary }}" ]; then
+            az containerapp revision deactivate -g "$RG" -n "$APP" \
+              --revision "${{ steps.canary.outputs.canary }}" || true
+          fi
+          exit 1
+
+      # Frontend has no canary requirement (static SPA) — straight update.
+      - name: Deploy frontend (prod)
+        if: steps.verify.outcome == 'success'
+        run: |
+          set -euo pipefail
+          az containerapp update -g "$RG" -n "$FRONTEND_APP" \
+            --image "${ACR_NAME}.azurecr.io/${FRONTEND_IMAGE}:${TAG}"

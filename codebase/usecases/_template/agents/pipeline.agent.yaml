@@ -1,0 +1,40 @@
+# Pipeline definition for this use case (PLACEHOLDER — fill in per use case).
+#
+# A SEQUENTIAL pipeline (not agent-to-agent): ordered steps, each mapping to a prompt,
+# a set of tools, and a model alias. The orchestration runtime
+# (backend/src/llmops/orchestration/pipeline.py) loads this file and runs the steps in
+# order, carrying data forward through the shared PipelineContext. Each step records an
+# agent span; each model call records a model span with tokens + cost.
+
+name: _template.pipeline
+description: TODO(pipeline) describe what this pipeline does end to end.
+
+# Inputs the pipeline expects (validated at run time).
+inputs: []            # e.g. [transcript_id, program]
+
+steps:
+  # TODO(pipeline): replace with real steps. Each step:
+  #   id            unique step id
+  #   agent         logical agent name
+  #   prompt_id     the prompt this step uses (must exist in prompts/*.prompt.yaml)
+  #   model_alias   reason | bulk | judge | voice | embed  (resolved via models.yaml)
+  #   tools         reusable tools this step may call (from platform/tools/registry.yaml)
+  #   outputs       keys this step writes into the shared context
+  - id: step_one
+    agent: TODO_agent_name
+    prompt_id: TODO.prompt_id
+    model_alias: bulk
+    tools: []          # e.g. [search_knowledge, get_record]
+    outputs: []        # e.g. [intermediate_result]
+
+  - id: step_two
+    agent: TODO_agent_name
+    prompt_id: TODO.prompt_id
+    model_alias: reason
+    tools: []
+    outputs: []
+
+# Guardrail policy for this pipeline (input checks before the model, output before return).
+guardrails:
+  input: [content_safety, injection, pii]
+  output: [pii, schema_validation, content_safety]
