@@ -1,0 +1,4 @@
+# Azure Functions Python worker + the framework's base deps.
+azure-functions
+python-dotenv>=1.0
+# The function imports the framework/ and usecases/ folders from the repo (deployed alongside).

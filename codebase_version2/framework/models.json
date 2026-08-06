@@ -1,0 +1,17 @@
+{
+  "_comment": "Task alias -> Azure OpenAI deployment name, per environment. Swapping a model is a change to THIS file, reviewed by pull request and gated by evaluation. App code asks for an alias (e.g. 'reason'), never a raw model name.",
+  "environments": {
+    "prod": {
+      "reason": "gpt-5.2",
+      "bulk": "gpt-5-mini",
+      "judge": "gpt-5-mini",
+      "embed": "text-embedding-3-large"
+    },
+    "dev": {
+      "reason": "gpt-5-mini",
+      "bulk": "gpt-5-mini",
+      "judge": "gpt-5-mini",
+      "embed": "text-embedding-3-large"
+    }
+  }
+}

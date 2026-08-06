@@ -1,0 +1,7 @@
+{
+  "_comment": "The evaluation gate for this use case. Each metric has a minimum average score (0..1). If any average across the golden dataset falls below its threshold, the gate fails and the change is blocked. Start from a baseline and tighten over time.",
+  "thresholds": {
+    "grounded": 0.6,
+    "contains": 0.9
+  }
+}

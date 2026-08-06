@@ -1,0 +1,11 @@
+{
+  "id": "example_qa.answer",
+  "version": 1,
+  "labels": ["prod"],
+  "model_alias": "reason",
+  "variables": ["question", "context"],
+  "template": "You are a helpful support assistant. Answer the question using ONLY the context below. If the context does not contain the answer, say you don't know. Do not invent details.\n\nQuestion: {{question}}\n\nContext: {{context}}",
+  "changelog": [
+    "v1: initial version — answer strictly from retrieved context"
+  ]
+}
