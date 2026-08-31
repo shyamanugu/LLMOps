@@ -322,13 +322,14 @@
         <summary>05. Observability</summary>
         <div class="component-body">
           <ul class="items">
-            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Application Insights resource created</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Log Analytics workspace linked</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Tracing SDK integrated (OpenTelemetry) — trace/span/agent-session model</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span><code>app.cost_usd</code> computed once per model-call span</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>KQL queries / Workbook built: cost by usecase/day/model</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Langfuse tracing wired (if applicable)</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Application Insights authored as Bicep — not yet deployed</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span class="tag safe">safe</span>Log Analytics workspace authored as Bicep — two-step deploy with App Insights</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Tracing model implemented: StepEvent/PipelineEvent + Tracer protocol (Null/InMemory/AzureMonitor). See ADR 0010.</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span><code>cost_usd</code> computed once per model-call span — reads component 03's pricing.yaml</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>KQL queries / Workbook built — deferred until Application Insights is deployed with real data</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>N/A — Langfuse not chosen for Prompt Management (ADR 0006)</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Wired into Orchestration (08) via ModelStep.tracer / Pipeline.tracer</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>README.md written</span></label></li>
           </ul>
         </div>
       </details>

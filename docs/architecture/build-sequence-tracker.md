@@ -11,7 +11,7 @@ Source of truth for "what's done, what's next." Component folder numbers (`01`�
 | 5 | Data & Tools | `07-data-tools` | ✅ Done (code) | See ADR 0007. Per-client Search index (shared service), STT/TTS pipeline tools, generic HttpApiTool connector. Wired into Orchestration's `ToolRegistry`, closing the "Tools" seam. Not yet deployed — no Azure resource provisioned. |
 | 6 | Evaluation Gate | `04-evaluation-gate` | ✅ Done (code) | See ADR 0008. Golden dataset + 3 evaluators (exact_match, schema, llm_judge) + threshold-based gate. `system_under_test` is a plain callable, no dependency on Orchestration. Not wired to CI/CD (09, doesn't exist yet) — plan documented in its README. Not yet deployed — no Azure resource of its own. |
 | 7 | Guardrails | `06-guardrails` | ✅ Done (code) | See ADR 0009. 5 free heuristic checks (PII, blocklist, prompt injection, secret leak, max length) + optional Azure Content Safety check, combined via `CompositeGuardrail`. Wired into Orchestration's `ModelStep.guardrail`, closing that seam. Not yet deployed — Content Safety resource is optional and unprovisioned. |
-| 8 | Observability | `05-observability` | ⬜ Not started | |
+| 8 | Observability | `05-observability` | ✅ Done (code) | See ADR 0010. StepEvent/PipelineEvent + NullTracer/InMemoryTracer/AzureMonitorTracer; compute_cost() reads component 03's pricing.yaml. Added `tracer` param to Orchestration's ModelStep/Pipeline — the one seam that needed genuinely new code in 08, not an existing parameter. Not yet deployed — Log Analytics/App Insights unprovisioned. |
 | 9 | Feedback Loop | `11-feedback` | ⬜ Not started | |
 | 10 | CI/CD | `09-cicd` | ⬜ Not started | |
 | 11 | Serving & Hosting | `10-serving-hosting` | ⬜ Not started | |

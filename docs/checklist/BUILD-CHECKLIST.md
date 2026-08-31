@@ -101,13 +101,14 @@ Must be resolved (or explicitly queued) before infra work starts.
 - [x] `README.md` written
 
 ### 05. Observability
-- [ ] Application Insights resource created ✅
-- [ ] Log Analytics workspace linked ✅
-- [ ] Tracing SDK integrated (OpenTelemetry) — trace/span/agent-session model
-- [ ] `app.cost_usd` computed once per model-call span
-- [ ] KQL queries / Workbook built: cost by usecase/day/model
-- [ ] Langfuse tracing wired if component 02 uses Langfuse
-- [ ] `README.md` written
+- [ ] Application Insights resource authored as Bicep (`infra/application-insights.bicep` + `infra/log-analytics.bicep`) — not yet deployed
+- [x] Log Analytics workspace authored as Bicep — two-step deploy (workspace, then workspace-based App Insights)
+- [x] Tracing model implemented: `StepEvent`/`PipelineEvent` + `Tracer` protocol (`NullTracer`, `InMemoryTracer`, `AzureMonitorTracer` via opencensus). See ADR 0010.
+- [x] `cost_usd` computed once per model-call span — `compute_cost()` reads component 03's `pricing.yaml`
+- [ ] KQL queries / Workbook built: cost by usecase/day/model — deferred until Application Insights is actually deployed and has real data
+- [ ] N/A — Langfuse was not chosen for Prompt Management (see ADR 0006, git-backed storage instead)
+- [x] Wired into Orchestration (08) — `ModelStep.tracer` / `Pipeline.tracer`, the one seam that needed new parameters in 08 itself
+- [x] `README.md` written
 
 ### 06. Guardrails
 - [ ] Azure AI Content Safety resource authored as Bicep (`infra/azure-content-safety.bicep`) — not yet deployed, optional (only needed if a usecase enables it)
