@@ -110,12 +110,14 @@ Must be resolved (or explicitly queued) before infra work starts.
 - [ ] `README.md` written
 
 ### 06. Guardrails
-- [ ] Azure AI Content Safety resource created ✅
-- [ ] Input checks implemented: prompt-injection detection, PII scrub
-- [ ] Output checks implemented: safety categories, schema validation
-- [ ] Guardrail policy made configurable per usecase
-- [ ] RBAC: MI → Cognitive Services User 🔒, interim: API key via Key Vault ✅
-- [ ] `README.md` written
+- [ ] Azure AI Content Safety resource authored as Bicep (`infra/azure-content-safety.bicep`) — not yet deployed, optional (only needed if a usecase enables it)
+- [x] Input checks implemented: `PromptInjectionGuardrail` (heuristic), `PIIGuardrail` (flag by default), `BlocklistGuardrail`, `MaxLengthGuardrail`
+- [x] Output checks implemented: `PIIGuardrail` (block by default), `SecretLeakGuardrail`, `BlocklistGuardrail`, `MaxLengthGuardrail`, optional `AzureContentSafetyGuardrail` (harm categories)
+- [x] Guardrail policy made configurable per usecase — `config/guardrails.yaml`, resolved by `build_guardrail(usecase, environment)`. See ADR 0009.
+- [ ] RBAC: MI → Cognitive Services User 🔒 (Phase 0 queue), interim: API key via `.env.local` ✅
+- [x] Wired into Orchestration (08) — `ModelStep.guardrail` accepts a `CompositeGuardrail` from here
+- [x] `README.md` written
+- Not built (see ADR 0009): redaction (protocol only supports allow/block), Content Safety Prompt Shields (unverified SDK shape), topic/scope restriction, rate limiting (belongs to Serving & Hosting, 10)
 
 ### 07. Data & Tools
 - [x] Data isolation model decided: **per-client index on one shared Azure AI Search service** (not a shared index with a filter) — enforced in code via `client_index_registry.py`, never a raw index name. See ADR 0007.

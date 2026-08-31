@@ -1,0 +1,32 @@
+# Per-usecase, per-environment guardrail policy. A usecase not listed here
+# gets the `defaults` block. This is the reusability mechanism: onboarding a
+# new usecase's guardrail policy is a config entry, not a code change — same
+# shape as every other component in this platform. See
+# docs/decisions/0009-guardrails-scope.md.
+
+defaults:
+  pii:
+    # Per-category mode: block | flag | off. Unlisted categories fall back to
+    # the directional default below (flag on input, block on output) — PII a
+    # customer volunteers about themselves is often legitimate input; PII the
+    # model repeats or invents in output is a stronger signal to block.
+    input_mode: {}
+    output_mode: {}
+  blocklist:
+    # Empty by default — what's "banned" is a usecase/business decision, this
+    # platform ships no opinion of its own.
+    terms: []
+  prompt_injection:
+    enabled: true
+  secret_leak:
+    enabled: true
+  max_length:
+    max_input_chars: null
+    max_output_chars: null
+  azure_content_safety:
+    # Off by default — requires AZURE_CONTENT_SAFETY_ENDPOINT/API_KEY in
+    # .env.local and a provisioned resource. See infra/azure-content-safety.bicep.
+    enabled: false
+    severity_threshold: 4
+
+usecases: {}

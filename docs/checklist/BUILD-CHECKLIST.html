@@ -337,12 +337,14 @@
         <summary>06. Guardrails</summary>
         <div class="component-body">
           <ul class="items">
-            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Azure AI Content Safety resource created</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Input checks implemented: prompt-injection detection, PII scrub</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Output checks implemented: safety categories, schema validation</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Guardrail policy made configurable per usecase</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>RBAC: MI → Cognitive Services User (interim: API key via Key Vault)</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Azure AI Content Safety authored as Bicep — not yet deployed, optional</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Input checks implemented: PromptInjectionGuardrail, PIIGuardrail (flag by default), BlocklistGuardrail, MaxLengthGuardrail</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Output checks implemented: PIIGuardrail (block by default), SecretLeakGuardrail, BlocklistGuardrail, MaxLengthGuardrail, optional AzureContentSafetyGuardrail</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Guardrail policy made configurable per usecase — config/guardrails.yaml (ADR 0009)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>RBAC: MI → Cognitive Services User (interim: API key via .env.local)</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Wired into Orchestration (08) via ModelStep.guardrail</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>README.md written</span></label></li>
+            <li><label><em>Not built (ADR 0009): redaction, Content Safety Prompt Shields, topic/scope restriction, rate limiting (belongs to Serving &amp; Hosting, 10)</em></label></li>
           </ul>
         </div>
       </details>
