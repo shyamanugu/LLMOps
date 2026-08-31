@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AFNI LLMOps Platform — Build Checklist</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --panel: #ffffff;
+    --text: #1b1f24;
+    --muted: #5b6472;
+    --border: #dde1e6;
+    --accent: #2f6fed;
+    --safe: #1a7f4b;
+    --safe-bg: #e6f6ee;
+    --locked: #b3541e;
+    --locked-bg: #fdeee0;
+    --ext: #7a4fc4;
+    --ext-bg: #f1eaf9;
+    --done: #1a7f4b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a;
+      --panel: #1d2025;
+      --text: #e7e9ec;
+      --muted: #9aa3ad;
+      --border: #33383f;
+      --accent: #5a8dff;
+      --safe: #4ad395;
+      --safe-bg: #123526;
+      --locked: #ff9f56;
+      --locked-bg: #3a2712;
+      --ext: #c19bf5;
+      --ext-bg: #2a2138;
+      --done: #4ad395;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161a; --panel: #1d2025; --text: #e7e9ec; --muted: #9aa3ad; --border: #33383f;
+    --accent: #5a8dff; --safe: #4ad395; --safe-bg: #123526; --locked: #ff9f56; --locked-bg: #3a2712;
+    --ext: #c19bf5; --ext-bg: #2a2138; --done: #4ad395;
+  }
+  :root[data-theme="light"] {
+    --bg: #f5f6f8; --panel: #ffffff; --text: #1b1f24; --muted: #5b6472; --border: #dde1e6;
+    --accent: #2f6fed; --safe: #1a7f4b; --safe-bg: #e6f6ee; --locked: #b3541e; --locked-bg: #fdeee0;
+    --ext: #7a4fc4; --ext-bg: #f1eaf9; --done: #1a7f4b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 28px 20px 80px; }
+  header { margin-bottom: 20px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .subtitle { color: var(--muted); font-size: 0.92rem; margin: 0 0 16px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .badge { font-size: 0.78rem; padding: 3px 9px; border-radius: 20px; font-weight: 600; white-space: nowrap; }
+  .badge.safe { background: var(--safe-bg); color: var(--safe); }
+  .badge.locked { background: var(--locked-bg); color: var(--locked); }
+  .badge.ext { background: var(--ext-bg); color: var(--ext); }
+
+  .progress-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+    position: sticky;
+    top: 12px;
+    z-index: 10;
+  }
+  .progress-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .progress-top strong { font-size: 1.1rem; }
+  .progress-top span { color: var(--muted); font-size: 0.85rem; }
+  .bar-track { background: var(--border); border-radius: 8px; height: 10px; overflow: hidden; }
+  .bar-fill { background: var(--accent); height: 100%; width: 0%; transition: width 0.25s ease; }
+  .toolbar { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .toolbar input[type="text"] {
+    flex: 1; min-width: 160px;
+    padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text); font-size: 0.85rem;
+  }
+  button {
+    font-size: 0.8rem; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text); cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+
+  details.phase {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  details.phase > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 0.98rem;
+  }
+  details.phase > summary::-webkit-details-marker { display: none; }
+  details.phase > summary::before {
+    content: "▸";
+    display: inline-block;
+    margin-right: 8px;
+    transition: transform 0.15s ease;
+    color: var(--muted);
+  }
+  details.phase[open] > summary::before { transform: rotate(90deg); }
+  .phase-count { font-weight: 500; font-size: 0.78rem; color: var(--muted); }
+
+  details.component {
+    border-top: 1px solid var(--border);
+  }
+  details.component > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 10px 16px 10px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--text);
+  }
+  details.component > summary::-webkit-details-marker { display: none; }
+  details.component > summary::before {
+    content: "▸";
+    display: inline-block;
+    margin-right: 8px;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+  }
+  details.component[open] > summary::before { transform: rotate(90deg); }
+
+  .phase-body, .component-body { padding: 4px 16px 14px 16px; }
+  .component-body { padding-left: 30px; }
+
+  ul.items { list-style: none; margin: 0; padding: 0; }
+  ul.items li {
+    padding: 7px 6px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+  }
+  ul.items li:hover { background: var(--bg); }
+  ul.items li label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+  ul.items li input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; width: 16px; height: 16px; accent-color: var(--accent); }
+  ul.items li.checked label { color: var(--muted); text-decoration: line-through; }
+
+  .tag { font-size: 0.72rem; font-weight: 700; padding: 1px 6px; border-radius: 6px; margin-right: 4px; white-space: nowrap; }
+  .tag.safe { background: var(--safe-bg); color: var(--safe); }
+  .tag.locked { background: var(--locked-bg); color: var(--locked); }
+  .tag.ext { background: var(--ext-bg); color: var(--ext); }
+
+  table.req { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.82rem; }
+  table.req th, table.req td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; }
+  table.req th { background: var(--bg); }
+
+  .hidden { display: none !important; }
+
+  @media print {
+    .progress-panel .toolbar { display: none; }
+    details { open: true; }
+    body { background: white; color: black; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>AFNI LLMOps Platform — Build Checklist</h1>
+    <p class="subtitle">Documentation-first build tracker. PPT gets updated only after Phase 3 is complete. Progress is saved locally in this browser.</p>
+    <div class="legend">
+      <span class="badge safe">✅ Contributor-safe — do now</span>
+      <span class="badge locked">🔒 Needs elevated access — request &amp; track</span>
+      <span class="badge ext">🌐 External dependency — ticket / quota / decision</span>
+    </div>
+  </header>
+
+  <div class="progress-panel">
+    <div class="progress-top">
+      <strong id="overallLabel">0 / 0 complete</strong>
+      <span id="overallPct">0%</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="overallBar"></div></div>
+    <div class="toolbar">
+      <input type="text" id="filterBox" placeholder="Filter items (e.g. 'RBAC', 'Key Vault', 'README')">
+      <button id="expandAll">Expand all</button>
+      <button id="collapseAll">Collapse all</button>
+      <button id="printBtn">Print / PDF</button>
+      <button id="resetBtn">Reset progress</button>
+    </div>
+  </div>
+
+  <!-- PHASE 0 -->
+  <details class="phase" open>
+    <summary>Phase 0 — Access &amp; Permissions Audit <span class="phase-count"></span></summary>
+    <div class="phase-body">
+      <ul class="items">
+        <li><label><input type="checkbox" class="chk"><span>Confirm current Azure role: Contributor at [subscription / resource group] — record exact scope</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Confirm Entra ID permissions: can this account register App Registrations? (Y/N)</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Identify who holds Owner / User Access Administrator on the target subscription</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Identify who holds Application Administrator / Global Administrator in Entra ID</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Confirm existing Azure Policy assignments (naming, region restriction, allowed resource types, tagging)</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Confirm AFNI's resource naming convention (or propose one)</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Confirm AFNI's tagging taxonomy (cost center, environment, owner, project)</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Confirm network model: existing hub-spoke VNet vs. build from scratch; private endpoint policy</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Confirm who owns cost/budget alerts today</span></label></li>
+      </ul>
+      <p style="font-size:0.85rem;color:var(--muted);margin-top:14px;"><strong>Permission Request Queue</strong> — hand off to Azure Owner / Entra ID admin:</p>
+      <table class="req">
+        <tr><th>#</th><th>What</th><th>Why</th><th>Scope</th><th>Action</th></tr>
+        <tr><td>1</td><td>RBAC: MI → Key Vault Secrets User</td><td>Secretless Container App access</td><td>RG</td><td>Role assignment</td></tr>
+        <tr><td>2</td><td>RBAC: MI → Storage Blob Data Contributor</td><td>RAG ingestion writes</td><td>RG</td><td>Role assignment</td></tr>
+        <tr><td>3</td><td>RBAC: MI → Cognitive Services OpenAI User</td><td>Model calls without API keys</td><td>RG</td><td>Role assignment</td></tr>
+        <tr><td>4</td><td>RBAC: MI → Search Index Data Contributor</td><td>RAG index writes</td><td>RG</td><td>Role assignment</td></tr>
+        <tr><td>5</td><td>RBAC: MI → Cosmos DB Data Contributor</td><td>Feedback store writes</td><td>RG</td><td>Role assignment</td></tr>
+        <tr><td>6</td><td>Entra ID App Registration + Federated Credential</td><td>GitHub OIDC → Azure</td><td>Tenant</td><td>App registration</td></tr>
+        <tr><td>7</td><td>Cost Management Contributor</td><td>Budgets as code</td><td>Subscription</td><td>Role assignment</td></tr>
+        <tr><td>8</td><td>Azure OpenAI model quota</td><td>Enough throughput for prod</td><td>Subscription</td><td>Support ticket</td></tr>
+        <tr><td>9</td><td>Policy exception review</td><td>Unblock needed SKU/region</td><td>RG</td><td>Policy exception</td></tr>
+      </table>
+      <p style="font-size:0.82rem;color:var(--muted);">Interim fallback: use Key Vault Access Policies (not RBAC) for secrets/connection strings — Contributor-safe, unblocks work while requests are pending. Log every workaround in <code>docs/architecture/permissions-log.md</code>.</p>
+    </div>
+  </details>
+
+  <!-- PHASE 1 -->
+  <details class="phase">
+    <summary>Phase 1 — Documentation-First Workflow Setup <span class="phase-count"></span></summary>
+    <div class="phase-body">
+      <ul class="items">
+        <li><label><input type="checkbox" class="chk"><span>Create <code>docs/decisions/</code> for Architecture Decision Records (ADRs)</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Create ADR template (<code>docs/decisions/0000-template.md</code>)</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Create <code>docs/architecture/azure-resource-map.md</code></span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Create <code>docs/architecture/permissions-log.md</code></span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Create <code>docs/architecture/reusability-scorecard.md</code></span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Commit this checklist (.md + .html) to the repo</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Team agreement: PPT updates only after Phase 3 is complete</span></label></li>
+      </ul>
+    </div>
+  </details>
+
+  <!-- PHASE 2 -->
+  <details class="phase" open>
+    <summary>Phase 2 — Component Build <span class="phase-count"></span></summary>
+    <div class="phase-body">
+
+      <details class="component">
+        <summary>01. Repo &amp; Foundation</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Resource group name + region confirmed, matches AFNI convention</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Tags applied: environment, owner, cost-center, project=llmops</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>User-assigned Managed Identity created</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>RBAC: MI → Key Vault / Storage / OpenAI / Search / Cosmos</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Key Vault created; Access Policy model chosen to start (migrate to RBAC once approved)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span><code>models.yaml</code> scaffold committed</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="component">
+        <summary>02. Prompt Management</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk" checked><span>Registry decision made: git-backed YAML + in-code registry (Contributor-safe, $0) — Foundry prompt assets deferred until Foundry RBAC approved (ADR 0006)</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Prompt YAML schema finalized (name, version, description, model_capability, input_variables, output_schema, template)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Schema validated with a linter/CI check — deferred to CI/CD (09)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>First prompt authored for Usecase #1 (APIX) — demo prompt exists under tests/fixtures/, real usecase prompts pending</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Shared fragment library built (safety preamble, JSON-output instruction)</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Wired into Orchestration (08) via ModelStep.prompt_name + prompt_registry</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="component">
+        <summary>03. Model Management</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Azure OpenAI / AI Foundry resource confirmed or provisioned</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag ext">ext</span>Model quota confirmed available</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Required model deployments created (reason / bulk aliases)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span><code>models.yaml</code> populated per environment</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Runtime resolver implemented + unit tested</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>RBAC: MI → Cognitive Services OpenAI User (interim: API key in Key Vault)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="component">
+        <summary>04. Evaluation Gate</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk"><span>Golden dataset schema finalized (.jsonl)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Golden dataset authored for Usecase #1 — SME-sourced, 50–200 cases per program</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Baseline run captured on current production output</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Metrics implemented: groundedness, tool-selection, PII leak, safety</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Thresholds defined in <code>evaluators.yaml</code></span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Container Apps Job created for eval runner</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>CI wired: PR subset + nightly full run</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="component">
+        <summary>05. Observability</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Application Insights resource created</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Log Analytics workspace linked</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Tracing SDK integrated (OpenTelemetry) — trace/span/agent-session model</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span><code>app.cost_usd</code> computed once per model-call span</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>KQL queries / Workbook built: cost by usecase/day/model</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Langfuse tracing wired (if applicable)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="component">
+        <summary>06. Guardrails</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Azure AI Content Safety resource created</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Input checks implemented: prompt-injection detection, PII scrub</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Output checks implemented: safety categories, schema validation</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Guardrail policy made configurable per usecase</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>RBAC: MI → Cognitive Services User (interim: API key via Key Vault)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="component">
+        <summary>07. Data &amp; Tools</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Azure AI Search created — SKU sized to expected index volume</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Azure SQL / existing AFNI DB access confirmed — read-only, parameterized queries only</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Blob Storage account created for documents</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Document Intelligence resource created if needed</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span><strong>BPO-specific:</strong> data isolation model decided — shared index with client_id filter vs. per-client index</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Tools implemented: search_knowledge, query_sql, extract_document, get_record</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>MCP server wrapper implemented and tested</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>RBAC: MI → Search/Storage/SQL data roles (interim: connection strings via Key Vault)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="component">
+        <summary>08. Orchestration / Agent Runtime</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Container Apps environment created</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Agent/pipeline code containerized (Dockerfile)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Secrets wired via Key Vault reference (not plaintext env vars)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Health check endpoint implemented</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="component">
+        <summary>09. CI/CD</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk"><span>GitHub Actions workflows created: pr-eval-gate.yml, deploy.yml, nightly-eval.yml</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>GitHub → Azure auth via OIDC federated credential (preferred, passwordless)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>Confirm whether Service Principal + client secret is even permitted, if OIDC blocked</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Branch protection rules configured (GitHub repo admin, not Azure)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="component">
+        <summary>10. Serving &amp; Hosting</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk"><span>Container Apps multi-revision strategy configured</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Canary split configured (~10% → ramp to 100%)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>APIM instance identified — new or existing shared platform instance (confirm ownership)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>APIM policies: quota, rate limit, auth validation</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Promotion gate: manual approval + full eval pass required</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="component">
+        <summary>11. Feedback Loop</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Cosmos DB (or Azure SQL) created for feedback store</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Feedback capture schema implemented, tied to trace_id</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Triage workflow defined (Workbook or lightweight UI)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>"Confirmed bad case → golden dataset" process documented</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>RBAC: MI → Cosmos DB Data Contributor (interim: connection string via Key Vault)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="component">
+        <summary>12. FinOps / Cost Management</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk"><span>Budget alerts configured — verify Cost Management Contributor is included in current access</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Cost export to Storage/Workbook configured</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Tagging enforced for allocation: project, usecase, environment</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Monthly reconciliation process documented (vs. actual Azure invoice)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="component">
+        <summary>13. Governance &amp; Onboarding</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk"><span><code>usecases/_template/</code> scaffold finalized</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Onboarding runbook written: step-by-step for adding usecase N</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>"Inherited vs. Defined" matrix kept current</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="component">
+        <summary>14. Security &amp; Compliance</summary>
+        <div class="component-body">
+          <ul class="items">
+            <li><label><input type="checkbox" class="chk"><span>Key Vault access model decided and documented</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>All RBAC requests cross-referenced against Phase 0 queue — none silently pending</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Data residency confirmed per client contract</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>PII handling policy documented (cross-ref component 06)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Diagnostic settings enabled on every resource → Log Analytics</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+          </ul>
+        </div>
+      </details>
+
+    </div>
+  </details>
+
+  <!-- PHASE 3 -->
+  <details class="phase">
+    <summary>Phase 3 — Reusability Proof <span class="phase-count"></span></summary>
+    <div class="phase-body">
+      <ul class="items">
+        <li><label><input type="checkbox" class="chk"><span>Usecase #1 (APIX) fully onboarded and live end-to-end through the pipeline</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Usecase #2 (Hiring Intelligence) onboarded using only prompts, agent/pipeline config, golden dataset, data-source config</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Zero platform code changes required for Usecase #2 — exceptions logged as "platform gaps" and fixed generically</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Reusability scorecard completed: % platform reused vs. % net-new, per usecase</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Time-to-onboard measured for Usecase #2</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Findings written to <code>docs/architecture/reusability-scorecard.md</code></span></label></li>
+      </ul>
+    </div>
+  </details>
+
+  <!-- PHASE 4 -->
+  <details class="phase">
+    <summary>Phase 4 — Documentation Consolidation → PPT Update <span class="phase-count"></span></summary>
+    <div class="phase-body">
+      <ul class="items">
+        <li><label><input type="checkbox" class="chk"><span>All 14 component README.md files finalized, accurate to what was actually built</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>All ADRs finalized</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Reusability scorecard finalized</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Cost actuals captured — replace "indicative" figures in original deck</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Original PPT structure and framing preserved — content updated, not redesigned</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Updated PPT drafted, cross-checked against .md source of truth</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Client-ready version reviewed and approved</span></label></li>
+      </ul>
+    </div>
+  </details>
+
+</div>
+
+<script>
+(function () {
+  var STORAGE_KEY = 'afni-llmops-checklist-v1';
+
+  var checkboxes = Array.prototype.slice.call(document.querySelectorAll('.chk'));
+  checkboxes.forEach(function (cb, i) { cb.dataset.id = 'item-' + i; });
+
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) { state = {}; }
+
+  function applyState() {
+    checkboxes.forEach(function (cb) {
+      cb.checked = !!state[cb.dataset.id];
+      cb.closest('li').classList.toggle('checked', cb.checked);
+    });
+    updateProgress();
+  }
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function updateProgress() {
+    var total = checkboxes.length;
+    var done = checkboxes.filter(function (cb) { return cb.checked; }).length;
+    var pct = total ? Math.round((done / total) * 100) : 0;
+    document.getElementById('overallLabel').textContent = done + ' / ' + total + ' complete';
+    document.getElementById('overallPct').textContent = pct + '%';
+    document.getElementById('overallBar').style.width = pct + '%';
+
+    document.querySelectorAll('details.phase').forEach(function (phase) {
+      var boxes = phase.querySelectorAll('.chk');
+      var d = phase.querySelectorAll('.chk:checked').length;
+      var t = boxes.length;
+      var badge = phase.querySelector('.phase-count');
+      if (badge) badge.textContent = t ? '(' + d + '/' + t + ')' : '';
+    });
+  }
+
+  checkboxes.forEach(function (cb) {
+    cb.addEventListener('change', function () {
+      state[cb.dataset.id] = cb.checked;
+      cb.closest('li').classList.toggle('checked', cb.checked);
+      saveState();
+      updateProgress();
+    });
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function () {
+    if (!confirm('Reset all checklist progress? This cannot be undone.')) return;
+    state = {};
+    saveState();
+    applyState();
+  });
+
+  document.getElementById('expandAll').addEventListener('click', function () {
+    document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+  });
+  document.getElementById('collapseAll').addEventListener('click', function () {
+    document.querySelectorAll('details.component').forEach(function (d) { d.open = false; });
+  });
+  document.getElementById('printBtn').addEventListener('click', function () {
+    document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+    window.print();
+  });
+
+  document.getElementById('filterBox').addEventListener('input', function (e) {
+    var q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll('ul.items > li').forEach(function (li) {
+      var match = !q || li.textContent.toLowerCase().indexOf(q) !== -1;
+      li.classList.toggle('hidden', !match);
+    });
+    if (q) {
+      document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+    }
+  });
+
+  applyState();
+})();
+</script>
+</body>
+</html>

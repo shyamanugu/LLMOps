@@ -1,0 +1,62 @@
+# Orchestration
+
+## What this is
+The engine that runs a pipeline of steps, threading shared state between them and calling models through Model Management (03) along the way. This is where "agents → model router → tools · guardrails" (from the platform architecture) actually executes.
+
+**Current scope: a Python library, not a deployed service.** See `docs/decisions/0005-orchestration-library-first.md` for why, and the Future Deployment Path section below for how it eventually becomes one.
+
+## What exists vs. what's a seam
+Prompt Management (02) is wired in now. Three components this would eventually integrate with still don't exist: Data & Tools (07), Guardrails (06), Observability (05). Rather than fake them, this component defines clean extension points for those:
+
+| Concern | Built now | Real implementation arrives with |
+|---|---|---|
+| Prompt source | `ModelStep.prompt_name` + `prompt_registry`, resolved via Prompt Management's `PromptRegistry` (falls back to a raw `prompt_template` string for quick one-off steps) | Done — Component 02 |
+| Tools | `Tool` protocol + empty `ToolRegistry` | Component 07 |
+| Guardrails | `GuardrailCheck` protocol + no-op `PassthroughGuardrail` | Component 06 |
+| Tracing | `session_id` generated per run, threaded through `State`, emitted nowhere | Component 05 |
+
+## File layout
+```
+src/orchestration/
+├── state.py          # State: session_id + shared values dict
+├── step.py             # Step protocol; ModelStep — builds prompt, resolves + calls a model, applies guardrail checks
+├── pipeline.py          # Pipeline: ordered Steps, run(state, environment)
+├── model_client.py       # provider factory bridging component 03's resolver to an actual callable client
+├── tools.py               # Tool protocol + ToolRegistry (empty until component 07)
+└── guardrails.py           # GuardrailCheck protocol + PassthroughGuardrail (until component 06)
+
+tests/
+├── __init__.py
+├── fakes.py                                  # FakeModelProvider — canned responses, no live Azure call
+├── fixtures/prompts/draft_reply.yaml           # demo prompt for the Prompt Management integration test
+├── test_pipeline.py                            # 2-step demo, raw prompt_template, proves state threads end-to-end
+└── test_pipeline_with_prompt_registry.py        # same demo shape, sourcing its prompt from Prompt Management instead
+```
+
+## Prerequisites
+- Component 03 (Model Management) present as a sibling folder — this component imports it directly (see `docs/decisions/0004-python-package-naming.md`)
+- Component 02 (Prompt Management) present as a sibling folder, same reason — required only if a step uses `prompt_name` instead of `prompt_template`
+
+## Local development
+```bash
+pip install -r requirements.txt
+pytest
+```
+Both demo pipelines (classify sentiment → draft a response referencing it) run fully offline against `FakeModelProvider` — no `.env.local`, no deployed Azure OpenAI resource needed to prove the engine works.
+
+## Future Deployment Path
+Not built yet — documented now so the plan exists ahead of the work, per ADR 0005.
+
+1. **Wrap the engine in a thin FastAPI app** once a real usecase or Serving & Hosting (10) defines the actual endpoint(s) needed (e.g., `POST /pipelines/{name}/run`). The wrapper stays thin — it should only translate HTTP in/out, never contain pipeline logic itself.
+2. **Containerize** with a standard Python slim-image Dockerfile: install `requirements.txt`, copy `src/`, run via `uvicorn`.
+3. **Deploy to Azure Container Apps**, in the resource group established by component 01, following the same naming convention (`ca-llmops-<environment>-<region>-<instance>`).
+4. **Canary rollout** (component 10, Serving & Hosting) — new revision takes ~10% of traffic, watched against health/eval signals, ramps to 100% or auto-rolls-back.
+5. **CI/CD** (component 09) builds the container image and runs the evaluation gate (component 04) before any deploy — a pipeline change is a reviewed, gated release, same principle as a model swap.
+6. **Managed Identity** (from component 01) is attached to the Container App once its RBAC role assignments are approved (Phase 0 queue) — until then, any credential this service needs follows the same `.env.local` interim pattern as Model Management.
+
+## Dependencies
+- Depends on: component 01 (naming/tagging convention, future Managed Identity), component 03 (model resolution), component 02 (prompt resolution, when `prompt_name` is used)
+- Depended on by: every usecase, once one is onboarded; eventually Serving & Hosting (10) and CI/CD (09)
+
+## Cost notes
+No cost while this remains a library — nothing is deployed. Once containerized, cost follows Container Apps consumption pricing (vCPU/memory-seconds), not a fixed monthly charge.

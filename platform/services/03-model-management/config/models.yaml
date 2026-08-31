@@ -1,0 +1,34 @@
+# Config-as-code model resolution. Every alias below is a stable contract that
+# orchestration code depends on — the underlying provider/deployment can change
+# without touching a single line of application code.
+#
+# Deployment names are placeholders until AFNI's approved model list is confirmed.
+# `voice` has no deployment yet — see docs/decisions/0003-model-management-scope.md.
+
+environments:
+  dev:
+    models:
+      reason:    { provider: azure_openai, deployment: gpt-4o,                 kind: chat }
+      bulk:      { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
+      nano:      { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
+      embedding: { provider: azure_openai, deployment: text-embedding-3-large, kind: embedding }
+      judge:     { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
+      voice:     { provider: azure_openai, deployment: null,                   kind: realtime }
+
+  test:
+    models:
+      reason:    { provider: azure_openai, deployment: gpt-4o,                 kind: chat }
+      bulk:      { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
+      nano:      { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
+      embedding: { provider: azure_openai, deployment: text-embedding-3-large, kind: embedding }
+      judge:     { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
+      voice:     { provider: azure_openai, deployment: null,                   kind: realtime }
+
+  prod:
+    models:
+      reason:    { provider: azure_openai, deployment: gpt-4o,                 kind: chat }
+      bulk:      { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
+      nano:      { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
+      embedding: { provider: azure_openai, deployment: text-embedding-3-large, kind: embedding }
+      judge:     { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
+      voice:     { provider: azure_openai, deployment: null,                   kind: realtime }

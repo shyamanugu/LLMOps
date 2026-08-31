@@ -3,6 +3,8 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+.ruff_cache/
+.pytest_cache/
 
 # Node (sharp used only to rasterize diagrams locally)
 node_modules/
@@ -17,3 +19,12 @@ Thumbs.db
 
 # Office lock/temp files
 .~lock.*
+
+# Environment configuration
+# .env is intentionally NOT ignored — see docs/decisions/0001-repo-foundation-approach.md.
+# It contains placeholder values only. Do not add a real secret to it, and do not
+# re-add a blanket ignore rule here without reading that decision first.
+#
+# .env.local IS ignored — real credentials (e.g. Azure OpenAI API key) go here,
+# created locally by each developer, never committed.
+.env.local
