@@ -429,11 +429,12 @@
         <summary>12. FinOps / Cost Management</summary>
         <div class="component-body">
           <ul class="items">
-            <li><label><input type="checkbox" class="chk"><span>Budget alerts configured — verify Cost Management Contributor is included in current access</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Cost export to Storage/Workbook configured</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Tagging enforced for allocation: project, usecase, environment</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Monthly reconciliation process documented (vs. actual Azure invoice)</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span class="tag safe">safe</span>Budget alerts authored (monthly amount, 50%/80%/forecasted-100% thresholds) — access to create one is unconfirmed, deployment attempt will answer it (ADR 0014)</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span class="tag safe">safe</span>Cost export authored (daily CSV to Blob Storage) — Workbook deferred, reference KQL query instead</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Tagging enforced for allocation — reuses component 01's schema</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Monthly reconciliation process documented — deferred until a real export has run</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>README.md written</span></label></li>
+            <li><label><em>Distinct from Observability's LLM-token cost tracking — this is Azure infrastructure billing; no Python package, Bicep + query only</em></label></li>
           </ul>
         </div>
       </details>

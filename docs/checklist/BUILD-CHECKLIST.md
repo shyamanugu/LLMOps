@@ -166,11 +166,12 @@ Must be resolved (or explicitly queued) before infra work starts.
 - No Orchestration (08) change — feedback is collected out of band, not during a Step's run (see ADR 0011)
 
 ### 12. FinOps / Cost Management
-- [ ] Budget alerts configured — confirm Cost Management Contributor is included in current access 🔒/✅ (verify)
-- [ ] Cost export to Storage/Workbook configured
-- [ ] Tagging enforced for allocation: project, usecase, environment
-- [ ] Monthly reconciliation process documented (vs. actual Azure invoice)
-- [ ] `README.md` written
+- [x] Budget alerts authored (`infra/budget.bicep` — monthly amount, 50%/80%/forecasted-100% thresholds) — not yet deployed; whether current access permits budget creation is still unconfirmed 🔒/✅, deployment attempt will answer it. See ADR 0014.
+- [x] Cost export authored (`infra/cost-export.bicep`, daily CSV to Blob Storage) — Workbook deliberately deferred (unverified serializedData schema); a reference KQL query exists instead
+- [x] Tagging enforced for allocation: reuses component 01's schema (`environment`, `project`, `owner`, `costCenter`, `businessUnit`)
+- [ ] Monthly reconciliation process documented (vs. actual Azure invoice) — deferred until a real export has actually run and can be checked against an invoice
+- [x] `README.md` written
+- Distinct from Observability (05)'s LLM-token cost tracking — this is Azure infrastructure billing, not per-model-call cost; no Python package, Bicep + query only (like 09)
 
 ### 13. Governance & Onboarding
 - [ ] `usecases/_template/` scaffold finalized
