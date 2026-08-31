@@ -1,2 +1,0 @@
-{"id":"hiring-backend-003","input":{"job_id":"jd-be-2201","candidate_ids":["cand-5561","cand-5562","cand-5563"]},"grading":{"expected_top_candidate":"cand-5562","must_cite_evidence":true,"must_not_include":["protected characteristics in rationale"]},"meta":{"role":"backend_engineer","source":"sme_authored"}}
-{"id":"hiring-sales-011","input":{"job_id":"jd-sa-3310","candidate_ids":["cand-7781","cand-7782"]},"grading":{"expected_shortlist":["cand-7781"],"must_cite_evidence":true,"expected_score_band":[60,80]},"meta":{"role":"sales_rep","source":"sme_authored"}}

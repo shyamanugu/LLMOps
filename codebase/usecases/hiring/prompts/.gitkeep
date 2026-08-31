@@ -1,5 +1,0 @@
-# Hiring prompts live here as one *.prompt.yaml per prompt, e.g.:
-#   intake.prompt.yaml, resume-rank.prompt.yaml, screening.prompt.yaml, summary.prompt.yaml
-# Generate via COPILOT_PROMPTS.md (or python ../../copilot_prompts.py --usecase hiring).
-# Grounding rule: judgements must be supported by the resume text; no invented experience.
-# This .gitkeep keeps the empty folder in Git until the first prompt is added.

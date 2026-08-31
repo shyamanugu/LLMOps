@@ -1,2 +1,0 @@
-{"id":"apix-telesales-014","input":{"transcript_id":"c-88421","program":"telesales"},"grading":{"must_cite_evidence":true,"expected_score_band":[70,85],"must_flag":["missed_upsell"]},"meta":{"program":"telesales","source":"sme_authored"}}
-{"id":"apix-wcc-007","input":{"transcript_id":"c-90310","program":"wcc"},"grading":{"must_cite_evidence":true,"expected_score_band":[55,70],"must_flag":["compliance_disclosure_missing"],"must_not_include":["invented moments not in transcript"]},"meta":{"program":"wcc","source":"sme_authored"}}

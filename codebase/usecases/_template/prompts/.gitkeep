@@ -1,4 +1,0 @@
-# Prompts for this use case live here as one *.prompt.yaml file per prompt.
-# Generate them via COPILOT_PROMPTS.md (or python ../../copilot_prompts.py --usecase <name>).
-# Each file: id, version, labels, model_alias, temperature, inputs, template, eval_refs, changelog.
-# This .gitkeep keeps the empty folder in Git until the first prompt is added.

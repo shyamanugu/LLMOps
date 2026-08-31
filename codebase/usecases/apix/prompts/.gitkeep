@@ -1,6 +1,0 @@
-# APIX prompts live here as one *.prompt.yaml per prompt, e.g.:
-#   dimension-sales.prompt.yaml, dimension-compliance.prompt.yaml,
-#   evidence-extraction.prompt.yaml, scoring.prompt.yaml, coaching-report.prompt.yaml
-# Generate via COPILOT_PROMPTS.md (or python ../../copilot_prompts.py --usecase apix).
-# Canonical example (coaching-report v3) is in ../../5thAug/v2/research-brief.md.
-# This .gitkeep keeps the empty folder in Git until the first prompt is added.
