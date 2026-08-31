@@ -147,12 +147,14 @@ Must be resolved (or explicitly queued) before infra work starts.
 - CI already caught two real bugs on its first run: a Bicep `scope` error in component 01's `main.bicep`, and 139 ruff findings across the tree (both fixed)
 
 ### 10. Serving & Hosting
-- [ ] Container Apps multi-revision strategy configured
-- [ ] Canary split configured (~10% → ramp to 100%)
-- [ ] APIM instance identified — new (Contributor-safe) or existing shared platform instance (confirm ownership)
-- [ ] APIM policies: quota, rate limit, auth validation
-- [ ] Promotion gate: manual approval step (GitHub Environments) + full eval pass required
-- [ ] `README.md` written
+- [x] Generic FastAPI wrapper implemented (`/healthz`, `POST /pipelines/{name}/run`) + `PipelineRegistry` — dispatches to a real Orchestration `Pipeline`/`State`. See ADR 0013.
+- [x] Container Apps Bicep authored (environment + app, canary `latestRevisionTrafficPercent` param) — validated via `az bicep build`, not yet deployed
+- [ ] Canary split configured — parameter exists, no automated ramp-up mechanism yet (needs CI/CD's deployment job + a real usecase)
+- [ ] APIM instance identified — deferred; auth is blocked on Entra ID access regardless (see below)
+- [ ] APIM policies: quota, rate limit, auth validation — blocked on Entra ID app registration, same gap as CI/CD (09)'s OIDC login
+- [ ] Promotion gate: manual approval step + full eval pass — deferred until CI/CD (09)'s deployment job exists
+- [x] `README.md` written
+- No real container image built/pushed yet — placeholder public image used in Bicep so the template is deployable-shaped without a private registry credential
 
 ### 11. Feedback Loop
 - [ ] Storage Account (Blob, append-blob per environment) authored as Bicep — not yet deployed; Cosmos DB not chosen, a JSONL append-blob is enough at current scale

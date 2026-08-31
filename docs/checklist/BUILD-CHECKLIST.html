@@ -398,12 +398,14 @@
         <summary>10. Serving &amp; Hosting</summary>
         <div class="component-body">
           <ul class="items">
-            <li><label><input type="checkbox" class="chk"><span>Container Apps multi-revision strategy configured</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Canary split configured (~10% → ramp to 100%)</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>APIM instance identified — new or existing shared platform instance (confirm ownership)</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>APIM policies: quota, rate limit, auth validation</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Promotion gate: manual approval + full eval pass required</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Generic FastAPI wrapper implemented (/healthz, POST /pipelines/{name}/run) + PipelineRegistry — dispatches to a real Orchestration Pipeline/State (ADR 0013)</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span class="tag safe">safe</span>Container Apps Bicep authored (environment + app, canary traffic param) — validated, not deployed</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Canary split — parameter exists, no automated ramp-up yet (needs CI/CD's deployment job + a real usecase)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>APIM instance identified — deferred; auth blocked on Entra ID access regardless</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>APIM policies: quota, rate limit, auth validation — blocked on Entra ID app registration</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Promotion gate: manual approval + full eval pass — deferred until CI/CD (09)'s deployment job exists</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>README.md written</span></label></li>
+            <li><label><em>No real container image built/pushed — placeholder public image used so Bicep is deployable-shaped without a private registry credential</em></label></li>
           </ul>
         </div>
       </details>
