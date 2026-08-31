@@ -6,7 +6,7 @@ events for tests and for local debugging before Azure Monitor is
 provisioned.
 """
 from dataclasses import dataclass, field
-from typing import List, Protocol
+from typing import Protocol
 
 from .types import PipelineEvent, StepEvent
 
@@ -29,8 +29,8 @@ class NullTracer:
 
 @dataclass
 class InMemoryTracer:
-    step_events: List[StepEvent] = field(default_factory=list)
-    pipeline_events: List[PipelineEvent] = field(default_factory=list)
+    step_events: list[StepEvent] = field(default_factory=list)
+    pipeline_events: list[PipelineEvent] = field(default_factory=list)
 
     def record_step(self, event: StepEvent) -> None:
         self.step_events.append(event)

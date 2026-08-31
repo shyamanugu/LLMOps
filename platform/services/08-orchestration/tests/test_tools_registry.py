@@ -8,7 +8,6 @@ from unittest.mock import patch
 
 from data_tools.retrieval.tool import RetrievalTool
 from data_tools.types import SearchHit
-
 from orchestration.tools import ToolRegistry
 
 _CLIENTS_CONFIG = {

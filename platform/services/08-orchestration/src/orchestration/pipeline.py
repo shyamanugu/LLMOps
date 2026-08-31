@@ -14,7 +14,6 @@ tracer backend is in use — trivial by hand against
 """
 import time
 from dataclasses import dataclass, field
-from typing import List
 
 from observability.tracer import NullTracer, Tracer
 from observability.types import PipelineEvent
@@ -26,7 +25,7 @@ from .step import Step
 @dataclass
 class Pipeline:
     name: str
-    steps: List[Step]
+    steps: list[Step]
     tracer: Tracer = field(default_factory=NullTracer)
 
     def run(self, state: State, environment: str) -> State:

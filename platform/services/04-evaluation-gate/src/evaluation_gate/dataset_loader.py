@@ -5,12 +5,11 @@ Management's loader/registry split.
 """
 import json
 from pathlib import Path
-from typing import List
 
 from .types import EvalCase
 
 
-def load_dataset(path: Path) -> List[EvalCase]:
+def load_dataset(path: Path) -> list[EvalCase]:
     cases = []
     with open(path, "r", encoding="utf-8") as f:
         for line in f:

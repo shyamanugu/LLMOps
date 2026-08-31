@@ -3,7 +3,6 @@
 comment) — figures are not duplicated here, only read.
 """
 from pathlib import Path
-from typing import Optional
 
 import yaml
 
@@ -18,7 +17,7 @@ def _load_pricing() -> dict:
 
 
 def compute_cost(
-    deployment: str, input_tokens: int, output_tokens: int, pricing: Optional[dict] = None
+    deployment: str, input_tokens: int, output_tokens: int, pricing: dict | None = None
 ) -> float:
     pricing = pricing if pricing is not None else _load_pricing()
 

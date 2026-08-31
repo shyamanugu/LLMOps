@@ -1,5 +1,4 @@
 import pytest
-
 from data_tools.client_index_registry import UnknownClientError, resolve_client_index
 
 

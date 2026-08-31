@@ -6,8 +6,8 @@ directories to point the registry at) rather than a code change. See
 docs/decisions/0006-prompt-management-git-backed-storage.md.
 """
 import re
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Dict, Iterable, List
 
 from .loader import load_fragment_file, load_prompt_file
 from .types import (
@@ -28,8 +28,8 @@ class PromptRegistry:
         prompt_dirs: Iterable[Path] = (),
         fragment_dirs: Iterable[Path] = (),
     ):
-        self._prompts: Dict[str, PromptSpec] = {}
-        self._fragments: Dict[str, FragmentSpec] = {}
+        self._prompts: dict[str, PromptSpec] = {}
+        self._fragments: dict[str, FragmentSpec] = {}
 
         for directory in fragment_dirs:
             self._load_fragments(Path(directory))
@@ -85,5 +85,5 @@ class PromptRegistry:
 
         return _FRAGMENT_TOKEN.sub(_replace, text)
 
-    def list_prompts(self) -> List[str]:
+    def list_prompts(self) -> list[str]:
         return sorted(self._prompts)

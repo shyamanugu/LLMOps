@@ -3,7 +3,6 @@ provider + deployment for the current environment. Orchestration code should
 only ever import `resolve` from here — never reference a model name directly.
 """
 from pathlib import Path
-from typing import Optional
 
 import yaml
 
@@ -30,7 +29,7 @@ def _load_config() -> dict:
 
 
 def resolve(
-    alias: str, environment: str, expected_kind: Optional[ModelKind] = None
+    alias: str, environment: str, expected_kind: ModelKind | None = None
 ) -> ModelHandle:
     config = _load_config()
 

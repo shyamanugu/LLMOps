@@ -12,7 +12,6 @@ signal.
 """
 import re
 from dataclasses import dataclass, field
-from typing import Dict
 
 from .types import CheckResult
 
@@ -33,7 +32,7 @@ _DEFAULT_ENABLED = {
 
 @dataclass
 class SecretLeakGuardrail:
-    enabled_categories: Dict[str, bool] = field(default_factory=lambda: dict(_DEFAULT_ENABLED))
+    enabled_categories: dict[str, bool] = field(default_factory=lambda: dict(_DEFAULT_ENABLED))
 
     def check_input(self, text: str) -> CheckResult:
         return CheckResult(allowed=True)

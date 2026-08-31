@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test (${{ matrix.component }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        component:
+          - 02-prompt-management
+          - 03-model-management
+          - 04-evaluation-gate
+          - 05-observability
+          - 06-guardrails
+          - 07-data-tools
+          - 08-orchestration
+          - 11-feedback
+    defaults:
+      run:
+        working-directory: platform/services/${{ matrix.component }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: pytest
+
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ruff
+      - run: ruff check platform/services
+
+  bicep-validate:
+    name: Validate Bicep templates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile every .bicep file (catches syntax/scope errors, no Azure login needed)
+        run: |
+          set -e
+          find platform/services -name "*.bicep" -print0 | while IFS= read -r -d '' file; do
+            echo "Validating $file"
+            az bicep build --file "$file" --stdout > /dev/null
+          done

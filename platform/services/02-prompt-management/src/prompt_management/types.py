@@ -4,7 +4,6 @@ forgets to supply a required variable.
 """
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
 
 
 @dataclass
@@ -13,10 +12,10 @@ class PromptSpec:
     version: int
     description: str
     model_capability: str
-    input_variables: List[str]
+    input_variables: list[str]
     template: str
-    output_schema: Optional[dict] = None
-    source_path: Optional[Path] = field(default=None, repr=False)
+    output_schema: dict | None = None
+    source_path: Path | None = field(default=None, repr=False)
 
 
 @dataclass
@@ -24,7 +23,7 @@ class FragmentSpec:
     name: str
     description: str
     template: str
-    source_path: Optional[Path] = field(default=None, repr=False)
+    source_path: Path | None = field(default=None, repr=False)
 
 
 class PromptNotFoundError(KeyError):

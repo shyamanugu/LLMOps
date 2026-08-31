@@ -1,5 +1,4 @@
 import pytest
-
 from model_management.model_router import (
     KindMismatchError,
     ModelNotProvisionedError,

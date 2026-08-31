@@ -11,7 +11,6 @@ too — see `promotion.py`.
 """
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Optional
 
 
 def _now_iso() -> str:
@@ -24,7 +23,7 @@ class FeedbackEvent:
     step_name: str
     rating: str
     original_input: dict = field(default_factory=dict)
-    corrected_output: Optional[str] = None
+    corrected_output: str | None = None
     rater_role: str = "end_user"
     comment: str = ""
     timestamp: str = field(default_factory=_now_iso)

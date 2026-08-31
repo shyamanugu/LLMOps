@@ -12,8 +12,8 @@ so tests can supply a fake logger without the package present.
 """
 import logging
 import os
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
-from typing import Callable, Optional
 
 from .types import PipelineEvent, StepEvent
 
@@ -32,7 +32,7 @@ def _default_logger_factory() -> logging.Logger:
 @dataclass
 class AzureMonitorTracer:
     logger_factory: Callable[[], logging.Logger] = field(default=_default_logger_factory, repr=False)
-    _logger: Optional[logging.Logger] = field(default=None, init=False, repr=False)
+    _logger: logging.Logger | None = field(default=None, init=False, repr=False)
 
     def _get_logger(self) -> logging.Logger:
         if self._logger is None:

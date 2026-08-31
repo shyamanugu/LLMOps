@@ -6,8 +6,8 @@ index directly. See docs/decisions/0007-data-tools-scope.md for why a shared
 Search service with one index per client — rather than a shared index with a
 filter — is the isolation model here.
 """
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable, List, Optional
 
 from model_management.model_router import resolve as resolve_model
 from model_management.providers.base import ModelProvider
@@ -35,7 +35,7 @@ class RetrievalTool:
         default=_default_get_provider, repr=False
     )
 
-    def invoke(self, client_id: str, query: str, top_k: Optional[int] = None) -> List[SearchHit]:
+    def invoke(self, client_id: str, query: str, top_k: int | None = None) -> list[SearchHit]:
         index_name = resolve_client_index(client_id, self.environment)
 
         handle = resolve_model(self.embedding_alias, self.environment, expected_kind=ModelKind.EMBEDDING)

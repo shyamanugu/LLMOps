@@ -138,11 +138,13 @@ Must be resolved (or explicitly queued) before infra work starts.
 - [ ] `README.md` written
 
 ### 09. CI/CD
-- [ ] GitHub Actions workflows created: `pr-eval-gate.yml`, `deploy.yml`, `nightly-eval.yml`
-- [ ] GitHub → Azure auth: OIDC via federated credential 🔒 (Phase 0, item 6) — **preferred, passwordless**
+- [x] `.github/workflows/ci.yml` created and running: `test` (matrix, 8 components, 79 tests), `lint` (ruff), `bicep-validate` (`az bicep build`, no Azure login) — all real, none stubbed. See ADR 0012.
+- [ ] `deploy.yml` / `nightly-eval.yml` — not built; deployment needs Azure auth (below), nightly eval needs a real usecase's golden dataset (component 04)
+- [ ] GitHub → Azure auth: OIDC via federated credential 🔒 (Phase 0, item 6) — **preferred, passwordless**. CD design documented in `09-cicd/README.md`, ready to implement once granted.
 - [ ] Interim fallback if blocked: confirm whether a Service Principal + client secret is even permitted (also 🔒, confirm before assuming this is a workaround)
-- [ ] Branch protection rules configured (GitHub repo admin, not Azure)
-- [ ] `README.md` written
+- [ ] Branch protection rules configured (GitHub repo admin, not Azure) — not yet configured
+- [x] `README.md` written
+- CI already caught two real bugs on its first run: a Bicep `scope` error in component 01's `main.bicep`, and 139 ruff findings across the tree (both fixed)
 
 ### 10. Serving & Hosting
 - [ ] Container Apps multi-revision strategy configured

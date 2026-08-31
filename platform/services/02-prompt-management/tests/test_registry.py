@@ -6,7 +6,6 @@ config change, not a code change.
 from pathlib import Path
 
 import pytest
-
 from prompt_management.registry import PromptRegistry
 from prompt_management.types import MissingVariableError, PromptNotFoundError
 

@@ -16,7 +16,6 @@ against a live resource at the time this was written. See "Revisit When" in
 docs/decisions/0009-guardrails-scope.md.
 """
 import os
-from typing import Dict
 
 
 class AzureContentSafetyBackend:
@@ -29,7 +28,7 @@ class AzureContentSafetyBackend:
             credential=AzureKeyCredential(os.environ["AZURE_CONTENT_SAFETY_API_KEY"]),
         )
 
-    def analyze_text(self, text: str) -> Dict[str, int]:
+    def analyze_text(self, text: str) -> dict[str, int]:
         from azure.ai.contentsafety.models import AnalyzeTextOptions
 
         result = self._client.analyze_text(AnalyzeTextOptions(text=text))

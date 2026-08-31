@@ -5,11 +5,9 @@ still records a StepEvent with the error/guardrail reason attached, since
 telemetry on a failed run matters at least as much as on a successful one.
 """
 import pytest
-
 from guardrails.blocklist import BlocklistGuardrail
 from guardrails.composite import CompositeGuardrail
 from observability.tracer import InMemoryTracer
-
 from orchestration.guardrails import GuardrailBlockedError
 from orchestration.pipeline import Pipeline
 from orchestration.state import State

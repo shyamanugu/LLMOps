@@ -8,12 +8,11 @@ caught the moment someone tries to load the file, not silently.
 """
 import json
 from pathlib import Path
-from typing import List
 
 from .types import FeedbackEvent
 
 
-def promote_to_golden_dataset(events: List[FeedbackEvent], output_path: Path) -> int:
+def promote_to_golden_dataset(events: list[FeedbackEvent], output_path: Path) -> int:
     """Writes one exact_match case per event carrying a human correction —
     `corrected_output` becomes the case's expected value, so a future
     regression that stops producing this corrected answer is caught by

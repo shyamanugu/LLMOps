@@ -9,14 +9,13 @@ Observability component (05) has the full picture to log, not just whichever
 check happened to run first.
 """
 from dataclasses import dataclass, field
-from typing import List
 
 from .types import CheckResult, GuardrailCheck
 
 
 @dataclass
 class CompositeGuardrail:
-    checks: List[GuardrailCheck] = field(default_factory=list)
+    checks: list[GuardrailCheck] = field(default_factory=list)
 
     def check_input(self, text: str) -> CheckResult:
         return self._run(text, "check_input")

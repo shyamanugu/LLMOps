@@ -9,7 +9,6 @@ up in a model's output.
 """
 import re
 from dataclasses import dataclass, field
-from typing import List
 
 from .types import CheckResult
 
@@ -25,7 +24,7 @@ _DEFAULT_PATTERNS = [
 
 @dataclass
 class PromptInjectionGuardrail:
-    patterns: List[str] = field(default_factory=lambda: list(_DEFAULT_PATTERNS))
+    patterns: list[str] = field(default_factory=lambda: list(_DEFAULT_PATTERNS))
 
     def check_input(self, text: str) -> CheckResult:
         lowered = text.lower()

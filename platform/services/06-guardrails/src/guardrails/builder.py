@@ -4,7 +4,6 @@ onboarding a new usecase's guardrail policy is a config entry, not a code
 change, same shape as every other component in this platform.
 """
 from pathlib import Path
-from typing import Optional
 
 import yaml
 
@@ -32,7 +31,7 @@ def _resolve_policy(usecase: str, environment: str) -> dict:
 
 
 def build_guardrail(
-    usecase: str, environment: str, include_azure_content_safety: Optional[bool] = None
+    usecase: str, environment: str, include_azure_content_safety: bool | None = None
 ) -> CompositeGuardrail:
     policy = _resolve_policy(usecase, environment)
     checks = []

@@ -2,7 +2,7 @@
 deployed resource. Returns canned responses keyed by a substring match on the
 prompt, which is enough to prove state threads correctly between steps.
 """
-from typing import Sequence
+from collections.abc import Sequence
 
 
 class FakeModelProvider:

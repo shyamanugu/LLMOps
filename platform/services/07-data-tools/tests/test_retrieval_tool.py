@@ -5,7 +5,6 @@ never return one client's hits for the other's request.
 from unittest.mock import patch
 
 import pytest
-
 from data_tools.client_index_registry import UnknownClientError
 from data_tools.retrieval.tool import RetrievalTool
 from data_tools.types import SearchHit

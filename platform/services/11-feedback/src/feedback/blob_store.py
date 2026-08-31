@@ -12,7 +12,6 @@ or `JsonlFileFeedbackStore` doesn't need it installed.
 import json
 import os
 from dataclasses import asdict, dataclass
-from typing import List
 
 from .types import FeedbackEvent
 
@@ -36,7 +35,7 @@ class AzureBlobFeedbackStore:
     def record(self, event: FeedbackEvent) -> None:
         self._client.append_block(json.dumps(asdict(event)) + "\n")
 
-    def list_for_session(self, session_id: str) -> List[FeedbackEvent]:
+    def list_for_session(self, session_id: str) -> list[FeedbackEvent]:
         raw_bytes = self._client.download_blob().readall()
         events = []
         for line in raw_bytes.decode("utf-8").splitlines():

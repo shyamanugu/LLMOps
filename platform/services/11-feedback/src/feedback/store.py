@@ -6,7 +6,7 @@ real backend once a usecase is live and needs shared, durable storage.
 import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import List, Protocol
+from typing import Protocol
 
 from .types import FeedbackEvent
 
@@ -15,18 +15,18 @@ class FeedbackStore(Protocol):
     def record(self, event: FeedbackEvent) -> None:
         ...
 
-    def list_for_session(self, session_id: str) -> List[FeedbackEvent]:
+    def list_for_session(self, session_id: str) -> list[FeedbackEvent]:
         ...
 
 
 @dataclass
 class InMemoryFeedbackStore:
-    events: List[FeedbackEvent] = field(default_factory=list)
+    events: list[FeedbackEvent] = field(default_factory=list)
 
     def record(self, event: FeedbackEvent) -> None:
         self.events.append(event)
 
-    def list_for_session(self, session_id: str) -> List[FeedbackEvent]:
+    def list_for_session(self, session_id: str) -> list[FeedbackEvent]:
         return [e for e in self.events if e.session_id == session_id]
 
 
@@ -39,7 +39,7 @@ class JsonlFileFeedbackStore:
         with open(self.path, "a", encoding="utf-8") as f:
             f.write(json.dumps(asdict(event)) + "\n")
 
-    def list_for_session(self, session_id: str) -> List[FeedbackEvent]:
+    def list_for_session(self, session_id: str) -> list[FeedbackEvent]:
         if not self.path.exists():
             return []
         events = []

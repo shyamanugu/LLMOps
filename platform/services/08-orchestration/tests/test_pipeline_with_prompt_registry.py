@@ -4,11 +4,10 @@ left open for "Prompt source," now closed.
 """
 from pathlib import Path
 
-from prompt_management.registry import PromptRegistry
-
 from orchestration.pipeline import Pipeline
 from orchestration.state import State
 from orchestration.step import ModelStep
+from prompt_management.registry import PromptRegistry
 
 from .fakes import FakeModelProvider
 

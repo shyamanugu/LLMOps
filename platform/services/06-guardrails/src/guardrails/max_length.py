@@ -3,15 +3,14 @@ against runaway prompts or responses rather than a content check. `None`
 (the default) means no cap on that side.
 """
 from dataclasses import dataclass
-from typing import Optional
 
 from .types import CheckResult
 
 
 @dataclass
 class MaxLengthGuardrail:
-    max_input_chars: Optional[int] = None
-    max_output_chars: Optional[int] = None
+    max_input_chars: int | None = None
+    max_output_chars: int | None = None
 
     def check_input(self, text: str) -> CheckResult:
         if self.max_input_chars is not None and len(text) > self.max_input_chars:

@@ -9,9 +9,10 @@ Management's `tests/fixtures/usecase_demo/` stands in for a usecase's own
 prompts.
 """
 import os
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 import requests
 import yaml
@@ -33,8 +34,8 @@ class HttpApiTool:
     base_url: str
     path_template: str = ""
     method: str = "GET"
-    auth_header_name: Optional[str] = None
-    auth_header_env_var: Optional[str] = None
+    auth_header_name: str | None = None
+    auth_header_env_var: str | None = None
     timeout_seconds: float = 10.0
     http_call: Callable[[str, str, dict, float], Any] = field(
         default=_default_http_call, repr=False

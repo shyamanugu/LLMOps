@@ -383,11 +383,13 @@
         <summary>09. CI/CD</summary>
         <div class="component-body">
           <ul class="items">
-            <li><label><input type="checkbox" class="chk"><span>GitHub Actions workflows created: pr-eval-gate.yml, deploy.yml, nightly-eval.yml</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>GitHub → Azure auth via OIDC federated credential (preferred, passwordless)</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>.github/workflows/ci.yml created and running: test (matrix, 8 components, 79 tests), lint (ruff), bicep-validate — all real, no Azure login (ADR 0012)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>deploy.yml / nightly-eval.yml — not built; blocked on Azure auth below / needs a real usecase's golden dataset</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>GitHub → Azure auth via OIDC federated credential (preferred, passwordless) — CD design documented, ready once granted</span></label></li>
             <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>Confirm whether Service Principal + client secret is even permitted, if OIDC blocked</span></label></li>
             <li><label><input type="checkbox" class="chk"><span>Branch protection rules configured (GitHub repo admin, not Azure)</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>README.md written</span></label></li>
+            <li><label><em>CI's first run caught two real bugs: a Bicep scope error in component 01, and 139 ruff findings (both fixed)</em></label></li>
           </ul>
         </div>
       </details>

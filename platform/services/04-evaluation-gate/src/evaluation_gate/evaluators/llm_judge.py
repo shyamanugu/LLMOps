@@ -7,15 +7,16 @@ The judge is asked for a single-line verdict ("PASS: <reason>" or
 avoid depending on the judge model reliably producing strict JSON on every
 call.
 """
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 from model_management.model_router import resolve as resolve_model
 from model_management.providers.base import ModelProvider
 from model_management.types import ModelKind
 
-from ..types import EvalCase, EvalResult
 from ..model_client import get_provider as _default_get_provider
+from ..types import EvalCase, EvalResult
 
 _JUDGE_PROMPT = """You are grading whether an AI system's output satisfies a rubric.
 

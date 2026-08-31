@@ -5,14 +5,13 @@ specific phrases) is a usecase/business decision, supplied via
 config/guardrails.yaml.
 """
 from dataclasses import dataclass, field
-from typing import List
 
 from .types import CheckResult
 
 
 @dataclass
 class BlocklistGuardrail:
-    terms: List[str] = field(default_factory=list)
+    terms: list[str] = field(default_factory=list)
 
     def _check(self, text: str) -> CheckResult:
         lowered = text.lower()

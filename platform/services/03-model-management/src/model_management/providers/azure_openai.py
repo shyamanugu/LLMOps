@@ -7,7 +7,7 @@ public interface will not need to change when that happens, only how it
 authenticates internally.
 """
 import os
-from typing import Sequence
+from collections.abc import Sequence
 
 from openai import AzureOpenAI
 

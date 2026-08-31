@@ -11,7 +11,6 @@ customer's record, a fabricated SSN) defaults to `block`.
 """
 import re
 from dataclasses import dataclass, field
-from typing import Dict
 
 from .types import CheckResult
 
@@ -25,12 +24,12 @@ _PATTERNS = {
 
 @dataclass
 class PIIGuardrail:
-    input_mode: Dict[str, str] = field(default_factory=dict)
-    output_mode: Dict[str, str] = field(default_factory=dict)
+    input_mode: dict[str, str] = field(default_factory=dict)
+    output_mode: dict[str, str] = field(default_factory=dict)
     default_input_mode: str = "flag"
     default_output_mode: str = "block"
 
-    def _check(self, text: str, mode_map: Dict[str, str], default_mode: str) -> CheckResult:
+    def _check(self, text: str, mode_map: dict[str, str], default_mode: str) -> CheckResult:
         found = []
         blocking = []
         for category, pattern in _PATTERNS.items():

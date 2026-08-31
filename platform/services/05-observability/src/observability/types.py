@@ -4,23 +4,22 @@ dataclasses (not imported from anywhere) so any `Tracer` implementation can
 consume them without a shared dependency beyond this component.
 """
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
 class StepEvent:
     session_id: str
     step_name: str
-    model_alias: Optional[str] = None
-    provider: Optional[str] = None
-    deployment: Optional[str] = None
+    model_alias: str | None = None
+    provider: str | None = None
+    deployment: str | None = None
     input_tokens: int = 0
     output_tokens: int = 0
     cost_usd: float = 0.0
     latency_ms: float = 0.0
     guardrail_allowed: bool = True
     guardrail_reason: str = ""
-    error: Optional[str] = None
+    error: str | None = None
 
 
 @dataclass
@@ -30,4 +29,4 @@ class PipelineEvent:
     step_count: int
     total_cost_usd: float = 0.0
     total_latency_ms: float = 0.0
-    error: Optional[str] = None
+    error: str | None = None

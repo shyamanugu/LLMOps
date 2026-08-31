@@ -1,7 +1,8 @@
 """Provider interface. Every model provider (Azure OpenAI today, others later)
 implements this so the resolver and orchestration code never depend on a
 specific SDK directly."""
-from typing import Protocol, Sequence, TypedDict
+from collections.abc import Sequence
+from typing import Protocol, TypedDict
 
 
 class ChatMessage(TypedDict):

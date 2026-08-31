@@ -11,7 +11,7 @@ interface will not need to change when that happens, only how it
 authenticates internally.
 """
 import os
-from typing import Dict, List, Sequence
+from collections.abc import Sequence
 
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
@@ -24,14 +24,14 @@ class AzureAISearchBackend:
     def __init__(self) -> None:
         self._endpoint = os.environ["AZURE_SEARCH_ENDPOINT"]
         self._credential = AzureKeyCredential(os.environ["AZURE_SEARCH_API_KEY"])
-        self._clients: Dict[str, SearchClient] = {}
+        self._clients: dict[str, SearchClient] = {}
 
     def _client_for(self, index_name: str) -> SearchClient:
         if index_name not in self._clients:
             self._clients[index_name] = SearchClient(self._endpoint, index_name, self._credential)
         return self._clients[index_name]
 
-    def search(self, index_name: str, vector: Sequence[float], top_k: int) -> List[SearchHit]:
+    def search(self, index_name: str, vector: Sequence[float], top_k: int) -> list[SearchHit]:
         client = self._client_for(index_name)
         query = VectorizedQuery(vector=list(vector), k_nearest_neighbors=top_k, fields="embedding")
         results = client.search(search_text=None, vector_queries=[query], top=top_k)

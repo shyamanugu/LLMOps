@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-
 from evaluation_gate.dataset_loader import load_dataset
 from evaluation_gate.evaluators.exact_match import ExactMatchEvaluator
 from evaluation_gate.evaluators.llm_judge import LLMJudgeEvaluator

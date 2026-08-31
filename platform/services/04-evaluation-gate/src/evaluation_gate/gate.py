@@ -8,9 +8,10 @@ usable for testing a single prompt, a single model swap, or a full pipeline
 without this component needing to know which. See
 docs/decisions/0008-evaluation-gate-scope.md.
 """
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 import yaml
 
@@ -40,7 +41,7 @@ def _resolve_threshold(usecase: str, environment: str) -> float:
 @dataclass
 class EvaluationGate:
     environment: str = "dev"
-    evaluators: Optional[Dict[str, Evaluator]] = None
+    evaluators: dict[str, Evaluator] | None = None
 
     def __post_init__(self) -> None:
         if self.evaluators is None:
@@ -53,9 +54,9 @@ class EvaluationGate:
     def run(
         self,
         usecase: str,
-        cases: List[EvalCase],
+        cases: list[EvalCase],
         system_under_test: Callable[[EvalCase], Any],
-        threshold: Optional[float] = None,
+        threshold: float | None = None,
     ) -> GateResult:
         results = []
         for case in cases:

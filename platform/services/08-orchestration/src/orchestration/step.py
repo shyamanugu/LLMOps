@@ -5,8 +5,9 @@ through the provider bridge (`model_client.py`), records what happened via
 Observability (05), and writes the result into shared state.
 """
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable, List, Optional, Protocol
+from typing import Protocol
 
 from model_management.model_router import resolve
 from model_management.providers.base import ModelProvider
@@ -33,10 +34,10 @@ class ModelStep:
     name: str
     model_alias: str
     output_key: str
-    prompt_template: Optional[str] = None
-    prompt_name: Optional[str] = None
-    prompt_registry: Optional[PromptRegistry] = None
-    input_keys: List[str] = field(default_factory=list)
+    prompt_template: str | None = None
+    prompt_name: str | None = None
+    prompt_registry: PromptRegistry | None = None
+    input_keys: list[str] = field(default_factory=list)
     expected_kind: ModelKind = ModelKind.CHAT
     guardrail: GuardrailCheck = field(default_factory=PassthroughGuardrail)
     tracer: Tracer = field(default_factory=NullTracer)

@@ -2,7 +2,7 @@
 the aggregated gate decision.
 """
 from dataclasses import dataclass, field
-from typing import Any, List, Optional
+from typing import Any
 
 
 @dataclass
@@ -11,8 +11,8 @@ class EvalCase:
     input: dict
     evaluator: str
     expected: Any = None
-    rubric: Optional[str] = None
-    output_schema: Optional[dict] = None
+    rubric: str | None = None
+    output_schema: dict | None = None
 
 
 @dataclass
@@ -27,7 +27,7 @@ class GateResult:
     passed: bool
     pass_rate: float
     threshold: float
-    results: List[EvalResult] = field(default_factory=list)
+    results: list[EvalResult] = field(default_factory=list)
 
 
 class UnknownEvaluatorError(KeyError):

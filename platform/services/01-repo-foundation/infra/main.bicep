@@ -22,6 +22,13 @@ param costCenter string = 'change-me'
 @description('Business unit tag value, reserved for per-client cost separation')
 param businessUnit string = 'change-me'
 
+// Computed locally, matching resource-group.bicep's own naming expression
+// exactly, rather than read from rg.outputs.resourceGroupName below — the
+// `scope` property must be calculable before any module deploys, and a
+// module's output doesn't qualify even when (as here) it's just echoing a
+// value computable from these same input parameters.
+var resourceGroupName = 'rg-${workloadName}-${environmentName}-${location}-${instance}'
+
 module rg 'resource-group.bicep' = {
   name: 'deploy-resource-group'
   params: {
@@ -37,7 +44,7 @@ module rg 'resource-group.bicep' = {
 
 module identity 'managed-identity.bicep' = {
   name: 'deploy-managed-identity'
-  scope: resourceGroup(rg.outputs.resourceGroupName)
+  scope: resourceGroup(resourceGroupName)
   params: {
     environmentName: environmentName
     location: location

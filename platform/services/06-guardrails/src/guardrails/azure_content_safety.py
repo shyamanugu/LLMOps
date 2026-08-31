@@ -4,8 +4,8 @@ talks to a live Azure endpoint; `FakeContentSafetyBackend`
 (tests/fakes.py) is what tests actually run against, injected via
 `backend_factory` the same way `ModelStep` injects `provider_factory`.
 """
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable
 
 from .types import CheckResult
 
