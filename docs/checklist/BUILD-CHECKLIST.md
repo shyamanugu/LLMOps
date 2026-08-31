@@ -153,12 +153,13 @@ Must be resolved (or explicitly queued) before infra work starts.
 - [ ] `README.md` written
 
 ### 11. Feedback Loop
-- [ ] Cosmos DB (or Azure SQL) created for feedback store ✅
-- [ ] Feedback capture schema implemented, tied to `trace_id`
-- [ ] Triage workflow defined (Workbook or lightweight UI)
-- [ ] "Confirmed bad case → golden dataset" process documented
-- [ ] RBAC: MI → Cosmos DB Data Contributor 🔒, interim: connection string via Key Vault ✅
-- [ ] `README.md` written
+- [ ] Storage Account (Blob, append-blob per environment) authored as Bicep — not yet deployed; Cosmos DB not chosen, a JSONL append-blob is enough at current scale
+- [x] Feedback capture schema implemented (`FeedbackEvent`), tied to `session_id`
+- [ ] Triage workflow (Workbook or lightweight UI) — deferred until a usecase's serving layer (component 10) exists to be the first real caller
+- [x] "Confirmed bad case → golden dataset" process implemented — `promote_to_golden_dataset()`, a data-format bridge to component 04. See ADR 0011.
+- [ ] RBAC: MI → Storage Blob Data Contributor 🔒 (Phase 0 queue), interim: connection string via `.env.local` ✅
+- [x] `README.md` written
+- No Orchestration (08) change — feedback is collected out of band, not during a Step's run (see ADR 0011)
 
 ### 12. FinOps / Cost Management
 - [ ] Budget alerts configured — confirm Cost Management Contributor is included in current access 🔒/✅ (verify)

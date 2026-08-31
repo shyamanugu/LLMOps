@@ -410,12 +410,13 @@
         <summary>11. Feedback Loop</summary>
         <div class="component-body">
           <ul class="items">
-            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Cosmos DB (or Azure SQL) created for feedback store</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Feedback capture schema implemented, tied to trace_id</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Triage workflow defined (Workbook or lightweight UI)</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>"Confirmed bad case → golden dataset" process documented</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>RBAC: MI → Cosmos DB Data Contributor (interim: connection string via Key Vault)</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Storage Account (Blob) authored as Bicep — not yet deployed; Cosmos DB not chosen, JSONL append-blob is enough at current scale</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Feedback capture schema implemented (FeedbackEvent), tied to session_id</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Triage workflow — deferred until a usecase's serving layer (component 10) exists</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>"Confirmed bad case → golden dataset" implemented — promote_to_golden_dataset() (ADR 0011)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>RBAC: MI → Storage Blob Data Contributor (interim: connection string via .env.local)</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>README.md written</span></label></li>
+            <li><label><em>No Orchestration (08) change — feedback collected out of band, not during a Step's run (ADR 0011)</em></label></li>
           </ul>
         </div>
       </details>
