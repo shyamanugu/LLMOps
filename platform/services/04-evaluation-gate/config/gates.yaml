@@ -1,0 +1,6 @@
+# Per-usecase, per-environment pass threshold. A usecase not listed here
+# uses the platform default (100% — every golden-dataset case must pass; see
+# docs/decisions/0008-evaluation-gate-scope.md for why the default is strict
+# rather than a softer percentage).
+
+usecases: {}

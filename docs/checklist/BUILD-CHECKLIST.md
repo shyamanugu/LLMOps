@@ -91,14 +91,14 @@ Must be resolved (or explicitly queued) before infra work starts.
 - [ ] `README.md` written
 
 ### 04. Evaluation Gate
-- [ ] Golden dataset schema finalized (`.jsonl`)
-- [ ] Golden dataset authored for Usecase #1 — SME-sourced, 50–200 cases, per program
-- [ ] Baseline run captured on current production output
-- [ ] Metrics implemented: groundedness, tool-selection accuracy, PII leak, safety
-- [ ] Thresholds defined in `evaluators.yaml` (regression limit + absolute floors)
-- [ ] Container Apps Job created for eval runner ✅
-- [ ] CI wired: PR-triggered subset + nightly full run
-- [ ] `README.md` written
+- [x] Golden dataset schema finalized (`.jsonl`: id, input, evaluator, expected/rubric/output_schema)
+- [ ] Golden dataset authored for Usecase #1 — SME-sourced, 50–200 cases, per program — demo dataset exists under `tests/fixtures/`, real dataset pending your usecase
+- [ ] Baseline run captured on current production output — no usecase live yet to baseline against
+- [x] Evaluators implemented: `exact_match`, `schema` (validates Prompt Management's `output_schema`), `llm_judge` (rubric-based, via the `judge` alias)
+- [x] Thresholds defined in `config/gates.yaml` — default 100% (every case must pass), overridable per usecase/environment. See ADR 0008.
+- [ ] Container Apps Job for eval runner — deferred; no CI/CD (09) trigger exists yet to run it from
+- [ ] CI wired: PR-triggered subset + nightly full run — deferred until CI/CD (09) exists
+- [x] `README.md` written
 
 ### 05. Observability
 - [ ] Application Insights resource created ✅

@@ -306,14 +306,14 @@
         <summary>04. Evaluation Gate</summary>
         <div class="component-body">
           <ul class="items">
-            <li><label><input type="checkbox" class="chk"><span>Golden dataset schema finalized (.jsonl)</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Golden dataset authored for Usecase #1 — SME-sourced, 50–200 cases per program</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Baseline run captured on current production output</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Metrics implemented: groundedness, tool-selection, PII leak, safety</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Thresholds defined in <code>evaluators.yaml</code></span></label></li>
-            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Container Apps Job created for eval runner</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>CI wired: PR subset + nightly full run</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Golden dataset schema finalized (.jsonl: id, input, evaluator, expected/rubric/output_schema)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Golden dataset authored for Usecase #1 — demo dataset exists under tests/fixtures/, real dataset pending</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Baseline run captured on current production output — no usecase live yet</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Evaluators implemented: exact_match, schema (validates output_schema), llm_judge (rubric-based via judge alias)</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Thresholds defined in config/gates.yaml — default 100%, overridable per usecase/environment (ADR 0008)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Container Apps Job for eval runner — deferred, no CI/CD trigger exists yet</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>CI wired: PR subset + nightly full run — deferred until CI/CD (09) exists</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>README.md written</span></label></li>
           </ul>
         </div>
       </details>

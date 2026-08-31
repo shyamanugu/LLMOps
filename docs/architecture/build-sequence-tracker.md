@@ -9,7 +9,7 @@ Source of truth for "what's done, what's next." Component folder numbers (`01`�
 | 3 | Orchestration | `08-orchestration` | ✅ Done (code) | See ADR 0005. Library only, no service deployed — deployment path documented in its README. Awaiting usecase code from you to reconcile against this engine's Step/Pipeline shape. |
 | 4 | Prompt Management | `02-prompt-management` | ✅ Done (code) | See ADR 0006. Git-backed YAML storage, Foundry deferred (RBAC gap). Wired into Orchestration's `ModelStep` via `prompt_name`/`prompt_registry`; also fixed a pre-existing missing `tests/__init__.py` in 08 while wiring it. Not yet deployed (nothing to deploy — no Azure resource). |
 | 5 | Data & Tools | `07-data-tools` | ✅ Done (code) | See ADR 0007. Per-client Search index (shared service), STT/TTS pipeline tools, generic HttpApiTool connector. Wired into Orchestration's `ToolRegistry`, closing the "Tools" seam. Not yet deployed — no Azure resource provisioned. |
-| 6 | Evaluation Gate | `04-evaluation-gate` | ⬜ Not started | |
+| 6 | Evaluation Gate | `04-evaluation-gate` | ✅ Done (code) | See ADR 0008. Golden dataset + 3 evaluators (exact_match, schema, llm_judge) + threshold-based gate. `system_under_test` is a plain callable, no dependency on Orchestration. Not wired to CI/CD (09, doesn't exist yet) — plan documented in its README. Not yet deployed — no Azure resource of its own. |
 | 7 | Guardrails | `06-guardrails` | ⬜ Not started | |
 | 8 | Observability | `05-observability` | ⬜ Not started | |
 | 9 | Feedback Loop | `11-feedback` | ⬜ Not started | |
