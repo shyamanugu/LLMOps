@@ -51,13 +51,13 @@ Must be resolved (or explicitly queued) before infra work starts.
 
 ## Phase 1 — Documentation-First Workflow Setup
 
-- [ ] Create `docs/decisions/` for Architecture Decision Records (ADRs)
-- [ ] Create ADR template (`docs/decisions/0000-template.md`)
-- [ ] Create `docs/architecture/azure-resource-map.md` (living doc: component → resource → SKU → status)
-- [ ] Create `docs/architecture/permissions-log.md` (every 🔒 item: requested date, approved date, interim workaround used)
-- [ ] Create `docs/architecture/reusability-scorecard.md` (filled in Phase 3)
-- [ ] Commit this checklist (`.md` + `.html`) to the repo
-- [ ] Agree as a team: PPT update happens only after Phase 3 is marked complete
+- [x] Create `docs/decisions/` for Architecture Decision Records (ADRs)
+- [x] Create ADR template (`docs/decisions/0000-template.md`)
+- [x] Create `docs/architecture/azure-resource-map.md` (living doc: component → resource → SKU → status)
+- [x] Create `docs/architecture/permissions-log.md` (every 🔒 item: requested date, approved date, interim workaround used)
+- [x] Create `docs/architecture/reusability-scorecard.md` (template only — filled in Phase 3)
+- [x] Commit this checklist (`.md` + `.html`) to the repo
+- [ ] Agree as a team: PPT update happens only after Phase 3 is marked complete — N/A, single-person build; carried forward as the standing rule anyway
 
 ---
 
@@ -174,10 +174,11 @@ Must be resolved (or explicitly queued) before infra work starts.
 - Distinct from Observability (05)'s LLM-token cost tracking — this is Azure infrastructure billing, not per-model-call cost; no Python package, Bicep + query only (like 09)
 
 ### 13. Governance & Onboarding
-- [ ] `usecases/_template/` scaffold finalized
-- [ ] Onboarding runbook written: step-by-step for adding usecase N
-- [ ] "Inherited vs. Defined" matrix kept current
-- [ ] `README.md` written
+- [x] `usecases/_template/` scaffold finalized — actually run and verified (`pipeline.py` builds a real Pipeline, `serving_entrypoint.py` builds a real app); found and fixed a real shared-fragment wiring bug in the process. See ADR 0015.
+- [x] Onboarding runbook written (`docs/architecture/onboarding-runbook.md`) — step-by-step, plus an explicit definition of what would fail the reusability test
+- [x] "Inherited vs. Defined" matrix created and filled in (`docs/architecture/inherited-vs-defined.md`) — a snapshot as of component 12, to be corrected once Phase 3 happens
+- [x] `README.md` written
+- Reusability scorecard (`docs/architecture/reusability-scorecard.md`) created but deliberately left unfilled — real numbers require an actual usecase #2 onboarding attempt (Phase 3), not estimated in advance
 
 ### 14. Security & Compliance
 - [ ] Key Vault access model decided and documented

@@ -1,0 +1,8 @@
+# Only needed if this usecase uses retrieval (Data & Tools, component 07).
+# Paste this block under `environments.<env>.clients` in
+# platform/services/07-data-tools/config/clients.yaml, replacing
+# REPLACE_WITH_CLIENT_ID with the actual client_id this usecase will pass to
+# RetrievalTool. Then run scripts/provision_client_index.py to create the
+# index itself — the config entry alone doesn't provision anything.
+REPLACE_WITH_CLIENT_ID:
+  index_name: idx-llmops-REPLACE_WITH_CLIENT_ID-dev

@@ -1,0 +1,14 @@
+# Paste this block under `usecases:` in
+# platform/services/06-guardrails/config/guardrails.yaml, replacing
+# REPLACE_WITH_USECASE_NAME with this usecase's actual name. This is the
+# only kind of edit that file needs for onboarding — an additive entry,
+# never a change to existing usecases' entries or to the guardrail code
+# itself.
+REPLACE_WITH_USECASE_NAME:
+  dev:
+    blocklist:
+      terms: []
+    prompt_injection:
+      enabled: true
+    secret_leak:
+      enabled: true

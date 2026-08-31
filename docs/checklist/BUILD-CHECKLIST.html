@@ -241,13 +241,13 @@
     <summary>Phase 1 — Documentation-First Workflow Setup <span class="phase-count"></span></summary>
     <div class="phase-body">
       <ul class="items">
-        <li><label><input type="checkbox" class="chk"><span>Create <code>docs/decisions/</code> for Architecture Decision Records (ADRs)</span></label></li>
-        <li><label><input type="checkbox" class="chk"><span>Create ADR template (<code>docs/decisions/0000-template.md</code>)</span></label></li>
-        <li><label><input type="checkbox" class="chk"><span>Create <code>docs/architecture/azure-resource-map.md</code></span></label></li>
-        <li><label><input type="checkbox" class="chk"><span>Create <code>docs/architecture/permissions-log.md</code></span></label></li>
-        <li><label><input type="checkbox" class="chk"><span>Create <code>docs/architecture/reusability-scorecard.md</code></span></label></li>
-        <li><label><input type="checkbox" class="chk"><span>Commit this checklist (.md + .html) to the repo</span></label></li>
-        <li><label><input type="checkbox" class="chk"><span>Team agreement: PPT updates only after Phase 3 is complete</span></label></li>
+        <li><label><input type="checkbox" class="chk" checked><span>Create <code>docs/decisions/</code> for Architecture Decision Records (ADRs)</span></label></li>
+        <li><label><input type="checkbox" class="chk" checked><span>Create ADR template (<code>docs/decisions/0000-template.md</code>)</span></label></li>
+        <li><label><input type="checkbox" class="chk" checked><span>Create <code>docs/architecture/azure-resource-map.md</code></span></label></li>
+        <li><label><input type="checkbox" class="chk" checked><span>Create <code>docs/architecture/permissions-log.md</code></span></label></li>
+        <li><label><input type="checkbox" class="chk" checked><span>Create <code>docs/architecture/reusability-scorecard.md</code> (template only — filled in Phase 3)</span></label></li>
+        <li><label><input type="checkbox" class="chk" checked><span>Commit this checklist (.md + .html) to the repo</span></label></li>
+        <li><label><input type="checkbox" class="chk"><span>Team agreement: PPT updates only after Phase 3 is complete — N/A, single-person build; carried forward as the standing rule anyway</span></label></li>
       </ul>
     </div>
   </details>
@@ -443,10 +443,11 @@
         <summary>13. Governance &amp; Onboarding</summary>
         <div class="component-body">
           <ul class="items">
-            <li><label><input type="checkbox" class="chk"><span><code>usecases/_template/</code> scaffold finalized</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Onboarding runbook written: step-by-step for adding usecase N</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>"Inherited vs. Defined" matrix kept current</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span><code>usecases/_template/</code> scaffold finalized — actually run and verified, found/fixed a real fragment-wiring bug (ADR 0015)</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Onboarding runbook written (docs/architecture/onboarding-runbook.md)</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>"Inherited vs. Defined" matrix created and filled in — snapshot as of component 12</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>README.md written</span></label></li>
+            <li><label><em>Reusability scorecard created but deliberately unfilled — needs a real usecase #2 attempt (Phase 3)</em></label></li>
           </ul>
         </div>
       </details>

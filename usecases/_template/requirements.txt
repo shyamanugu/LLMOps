@@ -1,0 +1,5 @@
+# This usecase's own dependencies — chain whichever platform components it
+# actually uses. Not every usecase needs every component; only reference
+# the ones this one's pipeline.py actually imports.
+-r ../../platform/services/08-orchestration/requirements.txt
+-r ../../platform/services/10-serving-hosting/requirements.txt
