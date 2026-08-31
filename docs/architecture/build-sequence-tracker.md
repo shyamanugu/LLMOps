@@ -8,7 +8,7 @@ Source of truth for "what's done, what's next." Component folder numbers (`01`�
 | 2 | Model Management | `03-model-management` | ✅ Done (code) | See ADR 0003. Not yet deployed to Azure. Package restructured under `src/model_management/` per ADR 0004. |
 | 3 | Orchestration | `08-orchestration` | ✅ Done (code) | See ADR 0005. Library only, no service deployed — deployment path documented in its README. Awaiting usecase code from you to reconcile against this engine's Step/Pipeline shape. |
 | 4 | Prompt Management | `02-prompt-management` | ✅ Done (code) | See ADR 0006. Git-backed YAML storage, Foundry deferred (RBAC gap). Wired into Orchestration's `ModelStep` via `prompt_name`/`prompt_registry`; also fixed a pre-existing missing `tests/__init__.py` in 08 while wiring it. Not yet deployed (nothing to deploy — no Azure resource). |
-| 5 | Data & Tools | `07-data-tools` | ⬜ Not started | |
+| 5 | Data & Tools | `07-data-tools` | ✅ Done (code) | See ADR 0007. Per-client Search index (shared service), STT/TTS pipeline tools, generic HttpApiTool connector. Wired into Orchestration's `ToolRegistry`, closing the "Tools" seam. Not yet deployed — no Azure resource provisioned. |
 | 6 | Evaluation Gate | `04-evaluation-gate` | ⬜ Not started | |
 | 7 | Guardrails | `06-guardrails` | ⬜ Not started | |
 | 8 | Observability | `05-observability` | ⬜ Not started | |

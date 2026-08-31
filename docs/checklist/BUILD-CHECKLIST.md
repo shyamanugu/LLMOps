@@ -118,15 +118,14 @@ Must be resolved (or explicitly queued) before infra work starts.
 - [ ] `README.md` written
 
 ### 07. Data & Tools
-- [ ] Azure AI Search created ✅ — SKU sized to expected index volume
-- [ ] Azure SQL / existing AFNI DB access confirmed — **read-only, parameterized queries only**
-- [ ] Blob Storage account created for documents ✅
-- [ ] Document Intelligence resource created if `extract_document` needed ✅
-- [ ] Data isolation model decided: shared index with `client_id` filter vs. per-client index (**BPO-specific — AFNI serves multiple end-clients, this is not optional**)
-- [ ] Tools implemented: `search_knowledge`, `query_sql`, `extract_document`, `get_record`
-- [ ] MCP server wrapper implemented and tested
-- [ ] RBAC: MI → Search/Storage/SQL data roles 🔒, interim: connection strings via Key Vault ✅
-- [ ] `README.md` written
+- [x] Data isolation model decided: **per-client index on one shared Azure AI Search service** (not a shared index with a filter) — enforced in code via `client_index_registry.py`, never a raw index name. See ADR 0007.
+- [ ] Azure AI Search service authored as Bicep (`infra/azure-ai-search.bicep`) — not yet deployed 🌐 (quota/tier limits are an external dependency, not a permission gap)
+- [ ] Azure SQL / existing AFNI DB access — deferred; no usecase has specified this yet, `HttpApiTool` covers the general connector case in the meantime
+- [x] Tools implemented: `search_knowledge` (`RetrievalTool`), `transcribe_audio` / `synthesize_speech` (STT/TTS pipeline), generic `HttpApiTool` connector
+- [ ] MCP server wrapper — not built; no usecase has required MCP yet
+- [ ] RBAC: MI → Search/Speech data roles 🔒 (Phase 0 queue), interim: API keys via `.env.local` ✅
+- [x] Wired into Orchestration (08) — tools register into `ToolRegistry`
+- [x] `README.md` written
 
 ### 08. Orchestration / Agent Runtime
 - [ ] Container Apps environment created ✅

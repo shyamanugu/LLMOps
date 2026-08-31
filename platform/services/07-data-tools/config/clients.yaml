@@ -1,0 +1,17 @@
+# Client -> Azure AI Search index mapping. This file is the entire enforcement
+# point for data isolation: RetrievalTool never accepts a raw index name, only
+# a client_id, and resolves it through here. A client that doesn't appear in
+# this file for an environment cannot be queried at all — onboarding a new
+# client's retrieval is a pull-requested config entry (plus provisioning the
+# index itself via scripts/provision_client_index.py), never a code change.
+# See docs/decisions/0007-data-tools-scope.md.
+
+environments:
+  dev:
+    clients: {}
+
+  test:
+    clients: {}
+
+  prod:
+    clients: {}

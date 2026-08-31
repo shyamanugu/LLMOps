@@ -351,15 +351,14 @@
         <summary>07. Data &amp; Tools</summary>
         <div class="component-body">
           <ul class="items">
-            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Azure AI Search created — SKU sized to expected index volume</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Azure SQL / existing AFNI DB access confirmed — read-only, parameterized queries only</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Blob Storage account created for documents</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Document Intelligence resource created if needed</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span><strong>BPO-specific:</strong> data isolation model decided — shared index with client_id filter vs. per-client index</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Tools implemented: search_knowledge, query_sql, extract_document, get_record</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>MCP server wrapper implemented and tested</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>RBAC: MI → Search/Storage/SQL data roles (interim: connection strings via Key Vault)</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span><strong>BPO-specific:</strong> data isolation model decided — per-client index on one shared Azure AI Search service, enforced via client_index_registry.py (ADR 0007)</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag safe">safe</span>Azure AI Search service authored as Bicep — not yet deployed</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Azure SQL / existing AFNI DB access — deferred, no usecase has specified this yet</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Tools implemented: search_knowledge (RetrievalTool), transcribe_audio / synthesize_speech (STT/TTS), generic HttpApiTool connector</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>MCP server wrapper — not built, no usecase has required MCP yet</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span class="tag locked">locked</span>RBAC: MI → Search/Speech data roles (interim: API keys via .env.local)</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Wired into Orchestration (08) via ToolRegistry</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>README.md written</span></label></li>
           </ul>
         </div>
       </details>
