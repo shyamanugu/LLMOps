@@ -456,12 +456,13 @@
         <summary>14. Security &amp; Compliance</summary>
         <div class="component-body">
           <ul class="items">
-            <li><label><input type="checkbox" class="chk"><span>Key Vault access model decided and documented</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>All RBAC requests cross-referenced against Phase 0 queue — none silently pending</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Data residency confirmed per client contract</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>PII handling policy documented (cross-ref component 06)</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>Diagnostic settings enabled on every resource → Log Analytics</span></label></li>
-            <li><label><input type="checkbox" class="chk"><span>README.md written</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>Key Vault access model decided and documented — cross-referenced from ADR 0001, not re-decided</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>All RBAC requests cross-referenced — audit found 2 previously-unlogged gaps, permissions-log.md now 14 items</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Data residency confirmed per client contract — not confirmed, no client requirement specified yet (data-residency.md)</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>PII handling policy documented — pii-handling-policy.md, plus a finding: StepEvent doesn't capture raw content</span></label></li>
+            <li><label><input type="checkbox" class="chk"><span>Diagnostic settings — 1 validated worked example (Azure OpenAI), not yet wired into other components' Bicep</span></label></li>
+            <li><label><input type="checkbox" class="chk" checked><span>README.md written</span></label></li>
+            <li><label><em>This is the last of the original 14 components</em></label></li>
           </ul>
         </div>
       </details>

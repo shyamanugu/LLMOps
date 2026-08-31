@@ -181,12 +181,13 @@ Must be resolved (or explicitly queued) before infra work starts.
 - Reusability scorecard (`docs/architecture/reusability-scorecard.md`) created but deliberately left unfilled — real numbers require an actual usecase #2 onboarding attempt (Phase 3), not estimated in advance
 
 ### 14. Security & Compliance
-- [ ] Key Vault access model decided and documented
-- [ ] All RBAC requests cross-referenced against Phase 0 queue — none silently pending
-- [ ] Data residency confirmed per client contract (BPO client data may have region/geo constraints)
-- [ ] PII handling policy documented (cross-ref component 06)
-- [ ] Diagnostic settings enabled on every resource → Log Analytics
-- [ ] `README.md` written
+- [x] Key Vault access model decided and documented — cross-referenced from ADR 0001 (deferred entirely), not re-decided
+- [x] All RBAC requests cross-referenced against Phase 0 queue — audit found 2 previously-unlogged gaps (Foundry project role, Serving & Hosting auth); `permissions-log.md` now 14 items, none silently pending
+- [ ] Data residency confirmed per client contract — not confirmed; no client has specified a requirement yet. See `data-residency.md` for exactly what's missing.
+- [x] PII handling policy documented (cross-ref component 06) — `pii-handling-policy.md`; also documents that Observability's StepEvent doesn't capture raw content, now a deliberate constraint
+- [ ] Diagnostic settings enabled on every resource → Log Analytics — pattern validated (1 worked example, Azure OpenAI), not yet wired into the other ~10 Bicep templates (real mechanical follow-up)
+- [x] `README.md` written
+- This is the last of the original 14 components — see Phase 3 below for what's next
 
 ---
 
