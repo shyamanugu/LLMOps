@@ -1,0 +1,2 @@
+{"id": "seed_analysis_returns_object", "input": {"transcript": "Agent: Thank you for calling, how can I help? Customer: I want to upgrade my plan. Agent: I can help with that today."}, "evaluator": "schema", "output_schema": {"type": "object"}}
+{"id": "seed_analysis_returns_object_2", "input": {"transcript": "Agent: I understand your frustration. Let me escalate this to my supervisor. Customer: Thank you, I appreciate it."}, "evaluator": "schema", "output_schema": {"type": "object"}}

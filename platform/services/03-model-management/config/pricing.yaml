@@ -13,3 +13,11 @@ deployments:
   text-embedding-3-large:
     input_per_1k: 0.0
     output_per_1k: 0.0
+  # ── ai_pipeline (AIA call-analytics) deployments ──────────────────────────
+  # The pipeline calls Azure OpenAI with the deployment named by its
+  # REASONING_MODEL_DEPLOYMENT env var — currently ``gpt-5.4-nano``. TODO:
+  # replace 0.0 with AFNI's confirmed per-1k token rates so Observability (05)
+  # reports real cost per call.
+  gpt-5.4-nano:
+    input_per_1k: 0.0
+    output_per_1k: 0.0

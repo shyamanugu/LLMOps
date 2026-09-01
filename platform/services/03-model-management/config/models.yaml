@@ -8,8 +8,8 @@
 environments:
   dev:
     models:
-      reason:    { provider: azure_openai, deployment: gpt-4o,                 kind: chat }
-      bulk:      { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
+      reason:    { provider: azure_openai, deployment: null,                   kind: chat }  # ai_pipeline: set real deployment to activate registry-driven selection (else falls back to REASONING_MODEL_DEPLOYMENT)
+      bulk:      { provider: azure_openai, deployment: null,                   kind: chat }  # ai_pipeline: set real deployment (a cheaper model) to activate; else falls back to the pipeline's env deployment
       nano:      { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
       embedding: { provider: azure_openai, deployment: text-embedding-3-large, kind: embedding }
       judge:     { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
@@ -17,8 +17,8 @@ environments:
 
   test:
     models:
-      reason:    { provider: azure_openai, deployment: gpt-4o,                 kind: chat }
-      bulk:      { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
+      reason:    { provider: azure_openai, deployment: null,                   kind: chat }  # ai_pipeline: set real deployment to activate registry-driven selection (else falls back to REASONING_MODEL_DEPLOYMENT)
+      bulk:      { provider: azure_openai, deployment: null,                   kind: chat }  # ai_pipeline: set real deployment (a cheaper model) to activate; else falls back to the pipeline's env deployment
       nano:      { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
       embedding: { provider: azure_openai, deployment: text-embedding-3-large, kind: embedding }
       judge:     { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
@@ -26,8 +26,8 @@ environments:
 
   prod:
     models:
-      reason:    { provider: azure_openai, deployment: gpt-4o,                 kind: chat }
-      bulk:      { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
+      reason:    { provider: azure_openai, deployment: null,                   kind: chat }  # ai_pipeline: set real deployment to activate registry-driven selection (else falls back to REASONING_MODEL_DEPLOYMENT)
+      bulk:      { provider: azure_openai, deployment: null,                   kind: chat }  # ai_pipeline: set real deployment (a cheaper model) to activate; else falls back to the pipeline's env deployment
       nano:      { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }
       embedding: { provider: azure_openai, deployment: text-embedding-3-large, kind: embedding }
       judge:     { provider: azure_openai, deployment: gpt-4o-mini,            kind: chat }

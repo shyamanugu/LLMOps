@@ -3,4 +3,15 @@
 # docs/decisions/0008-evaluation-gate-scope.md for why the default is strict
 # rather than a softer percentage).
 
-usecases: {}
+usecases:
+  # ── ai_pipeline (AIA call-analytics) ──────────────────────────────────────
+  # Phase 0 stub thresholds. Phase 5 wires golden datasets + evaluators
+  # (SchemaEvaluator for structured analysis/individual_metrics; LLMJudge for
+  # denoise/summary) and a CI gate. Tighten these as coverage grows.
+  ai_pipeline:
+    dev:
+      pass_threshold: 0.8
+    test:
+      pass_threshold: 0.9
+    prod:
+      pass_threshold: 1.0

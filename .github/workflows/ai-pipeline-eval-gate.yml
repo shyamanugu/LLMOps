@@ -1,0 +1,40 @@
+# LLMOps Evaluation Gate for the AIA pipeline (Phase 5).
+# Runs the golden-dataset gate on PRs that touch the pipeline or its prompts.
+# Skips gracefully (exit 0) when model creds aren't configured as secrets, so it
+# never spuriously blocks a merge; set the secrets below to enforce the gate.
+name: ai-pipeline-eval-gate
+
+on:
+  pull_request:
+    paths:
+      - "usecases/ai_pipeline 2/**"
+      - "platform/services/03-model-management/config/models.yaml"
+      - "platform/services/04-evaluation-gate/config/gates.yaml"
+  workflow_dispatch: {}
+
+jobs:
+  eval-gate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "usecases/ai_pipeline 2"
+    env:
+      AI_PIPELINE_ENV: test
+      REASONING_MODEL_ENDPOINT: ${{ secrets.REASONING_MODEL_ENDPOINT }}
+      REASONING_MODEL_DEPLOYMENT: ${{ secrets.REASONING_MODEL_DEPLOYMENT }}
+      REASONING_MODEL_APIKEY: ${{ secrets.REASONING_MODEL_APIKEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pyyaml jsonschema
+      - name: Run evaluation gate
+        # Uses the seed dataset by default; point --dataset at a real golden set
+        # built with `python -m ai_pipeline.eval.build_dataset ...`.
+        run: |
+          python -m ai_pipeline.eval.harness --program telesales --env test

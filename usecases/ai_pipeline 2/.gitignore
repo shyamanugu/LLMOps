@@ -1,0 +1,29 @@
+# ── Secrets ───────────────────────────────────────────────────────────────
+# The real .env holds live credentials (Azure OpenAI key, storage keys, SQL) and
+# is IGNORED so it is never committed. Copy .env.example -> .env and fill it in.
+# .env.example (placeholders only) IS committed as the template.
+.env
+.env.local
+!.env.example
+
+# ── LLMOps local artifacts ──────────────────────────────────────────────────
+traces/            # JSONL tracer output (AI_PIPELINE_TRACER=jsonl)
+feedback/          # local feedback store (feedback_gate)
+logs/              # rotating pipeline logs
+
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+
+# ── React demo UI ─────────────────────────────────────────────────────────--
+ui/node_modules/
+ui/dist/
+
+# ── OS / editor ───────────────────────────────────────────────────────────--
+.DS_Store
+Thumbs.db

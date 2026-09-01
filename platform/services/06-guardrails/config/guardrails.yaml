@@ -29,4 +29,50 @@ defaults:
     enabled: false
     severity_threshold: 4
 
-usecases: {}
+usecases:
+  # ── ai_pipeline (AIA call-analytics) ──────────────────────────────────────
+  # Policy rationale: inputs are recorded customer call transcripts and outputs
+  # are per-call analytics/coaching. Transcripts legitimately contain customer
+  # PII, so PII is *flagged* (recorded on the trace for compliance visibility)
+  # but NEVER blocked — blocking would silently drop analyzed calls and corrupt
+  # the dataset. Genuine secret leaks (API keys, tokens) ARE blocked. Prompt
+  # injection is disabled here: these are internal transcripts, not adversarial
+  # user input to an agent, and the detector would false-positive on ordinary
+  # speech ("ignore that…") and drop legitimate calls. Revisit if any part of
+  # this pipeline is ever exposed to untrusted, agentic input.
+  ai_pipeline:
+    dev: &ai_pipeline_policy
+      pii:
+        # flag (not block) every category, on both sides.
+        input_mode: { email: flag, phone: flag, ssn: flag, credit_card: flag }
+        output_mode: { email: flag, phone: flag, ssn: flag, credit_card: flag }
+      blocklist:
+        terms: []
+      prompt_injection:
+        enabled: false
+      secret_leak:
+        enabled: true
+      max_length:
+        max_input_chars: null
+        max_output_chars: null
+      azure_content_safety:
+        # Enable once AZURE_CONTENT_SAFETY_ENDPOINT/API_KEY are provisioned.
+        enabled: false
+        severity_threshold: 4
+    test: *ai_pipeline_policy
+    prod:
+      pii:
+        input_mode: { email: flag, phone: flag, ssn: flag, credit_card: flag }
+        output_mode: { email: flag, phone: flag, ssn: flag, credit_card: flag }
+      blocklist:
+        terms: []
+      prompt_injection:
+        enabled: false
+      secret_leak:
+        enabled: true
+      max_length:
+        max_input_chars: null
+        max_output_chars: null
+      azure_content_safety:
+        enabled: false
+        severity_threshold: 4
