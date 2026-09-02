@@ -1,17 +1,23 @@
 # ── Secrets ───────────────────────────────────────────────────────────────
-# The real .env holds live credentials (Azure OpenAI key, storage keys, SQL) and
-# is IGNORED so it is never committed. Copy .env.example -> .env and fill it in.
-# .env.example (placeholders only) IS committed as the template.
+# The real .env holds live credentials and is IGNORED so it is never committed.
+# Copy .env.example -> .env and fill it in. .env.example IS committed.
 .env
 .env.local
 !.env.example
 
-# ── LLMOps local artifacts ──────────────────────────────────────────────────
-traces/            # JSONL tracer output (AI_PIPELINE_TRACER=jsonl)
-feedback/          # local feedback store (feedback_gate)
-logs/              # rotating pipeline logs
-data/              # local mock-mode storage (AI_PIPELINE_LOCAL_DATA_DIR)
-*.parquet          # stray local parquet (e.g. from make_sample_raw --out)
+# ── LLMOps local artifacts (comments MUST be on their own line, not inline) ──
+# JSONL tracer output (AI_PIPELINE_TRACER=jsonl)
+traces/
+# local feedback store (feedback_gate)
+feedback/
+# rotating pipeline logs
+logs/
+# local mock-mode storage (AI_PIPELINE_LOCAL_DATA_DIR)
+data/
+# stray local parquet (e.g. from make_sample_raw --out)
+*.parquet
+# ops console local db + prompt registry (SQLite + JSON)
+ops/data/
 
 # ── Python ──────────────────────────────────────────────────────────────────
 __pycache__/
@@ -22,10 +28,10 @@ venv/
 .pytest_cache/
 *.egg-info/
 
-# ── React demo UI ─────────────────────────────────────────────────────────--
+# ── React demo UI ────────────────────────────────────────────────────────---
 ui/node_modules/
 ui/dist/
 
-# ── OS / editor ───────────────────────────────────────────────────────────--
+# ── OS / editor ──────────────────────────────────────────────────────────---
 .DS_Store
 Thumbs.db

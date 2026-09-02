@@ -81,27 +81,75 @@ def render(program: str, name: str, fallback: str, **variables) -> str:
     return fallback
 
 
-def apply_prompt_overrides(cfg, program: str) -> None:
-    """Replace cfg.*_system_prompt with git-backed YAML where one exists.
+# Versioned prompt registry written by the Ops console (ops/data/registry/prompts).
+_OPS_REGISTRY = _PKG_ROOT / "ops" / "data" / "registry" / "prompts"
 
-    No-op when the platform is absent or no YAML is present for a prompt — the
-    in-code (dynamic) prompt is kept, so this never changes behaviour until a
-    team deliberately drops in a YAML prompt.
+
+def _ops_registry_prompt(program: str, name: str):
+    """Resolve a prompt from the Ops console's versioned registry.
+
+    Priority: an env-pinned version ``AI_PIPELINE_PROMPT_<PROGRAM>_<NAME>=v3``
+    (deploy a version by changing an env value — no code change), otherwise the
+    registry's ``active.json`` pointer (the version 'Activate' set in the UI).
+    Returns the template string, or None if nothing is registered. Pure
+    filesystem reads — works even if the platform packages are absent.
     """
-    reg = _get_registry(program)
-    if reg is None:
-        return
-    try:
-        available = set(reg.list_prompts())
-    except Exception:
-        return
-    for name, field_name, _cap in _PROMPT_FIELDS:
-        if name in available and hasattr(cfg, field_name):
+    import json
+    import os
+
+    base = _OPS_REGISTRY / program / name
+    if not base.exists():
+        return None
+    env = os.environ.get(f"AI_PIPELINE_PROMPT_{program.upper()}_{name.upper()}", "").strip().lstrip("vV")
+    version = int(env) if env.isdigit() else None
+    if version is None:
+        af = base / "active.json"
+        if af.exists():
             try:
-                setattr(cfg, field_name, reg.render(name))
-                logger.info("Prompt override | program=%s prompt=%s (git-backed YAML)", program, name)
-            except Exception as exc:
-                logger.warning("Prompt override failed (%s/%s): %s", program, name, exc)
+                version = json.loads(af.read_text(encoding="utf-8")).get("active_version")
+            except Exception:
+                version = None
+    if version is None:
+        return None
+    vf = base / f"v{version}.json"
+    if not vf.exists():
+        return None
+    try:
+        return json.loads(vf.read_text(encoding="utf-8")).get("template")
+    except Exception:
+        return None
+
+
+def apply_prompt_overrides(cfg, program: str) -> None:
+    """Point cfg.*_system_prompt at a managed prompt when one exists.
+
+    Resolution order per prompt: (1) Ops registry — env-pinned version or the
+    activated version; (2) git-backed YAML under prompts/<program>/; (3) leave
+    the in-code prompt untouched. Fail-open at every step, so behaviour only
+    changes once a prompt is deliberately registered/activated.
+    """
+    if not program:
+        return
+    yaml_reg = _get_registry(program)
+    yaml_available = set()
+    if yaml_reg is not None:
+        try:
+            yaml_available = set(yaml_reg.list_prompts())
+        except Exception:
+            yaml_available = set()
+
+    for name, field_name, _cap in _PROMPT_FIELDS:
+        if not hasattr(cfg, field_name):
+            continue
+        template, source = _ops_registry_prompt(program, name), "ops-registry"
+        if template is None and name in yaml_available:
+            try:
+                template, source = yaml_reg.render(name), "yaml"
+            except Exception:
+                template = None
+        if template is not None:
+            setattr(cfg, field_name, template)
+            logger.info("Prompt override | program=%s prompt=%s source=%s", program, name, source)
 
 
 def dump_prompts(cfg, program: str) -> list[str]:

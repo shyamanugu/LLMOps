@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIA LLMOps — Ops Console</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">AIA <span>LLMOps · Ops Console</span></div>
+    <div class="topbar-right">
+      <span id="mode-pill" class="pill">…</span>
+      <nav id="tabs" class="tabs"></nav>
+    </div>
+  </header>
+  <main id="view" class="view"><div class="loading">Connecting to backend…</div></main>
+  <footer class="footer">Backend: <code id="api-url"></code> · start with <code>python ops/start_backend.py</code></footer>
+  <script src="app.js"></script>
+</body>
+</html>
