@@ -10,6 +10,8 @@
 traces/            # JSONL tracer output (AI_PIPELINE_TRACER=jsonl)
 feedback/          # local feedback store (feedback_gate)
 logs/              # rotating pipeline logs
+data/              # local mock-mode storage (AI_PIPELINE_LOCAL_DATA_DIR)
+*.parquet          # stray local parquet (e.g. from make_sample_raw --out)
 
 # ── Python ──────────────────────────────────────────────────────────────────
 __pycache__/

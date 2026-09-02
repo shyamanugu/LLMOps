@@ -410,6 +410,61 @@ restarting.
 
 ---
 
+## 6.5 Run everything locally (no Docker) — mock & real via `.env`
+
+Docker/Container Apps (Section 8) is one option. For a laptop demo you don't need it —
+run the pipeline and the UI directly, and switch between mock and real with **one line
+in `.env`**: `AI_PIPELINE_MODE=mock | real`.
+
+### Option A — Mock demo, zero dependencies (fastest)
+No Azure, no OpenAI key. Shows the bundled sample on the UI (green/amber badge reads
+**MOCK DEMO**).
+```bash
+cd "usecases/ai_pipeline 2/ui"
+npm install && npm run dev        # http://localhost:5173
+```
+That's the whole demo. (To regenerate the sample from the transcripts:
+`python ui/make_sample_data.py`.)
+
+### Option B — Run the real pipeline locally in MOCK mode (local files, no Azure Storage)
+`AI_PIPELINE_MODE=mock` makes the pipeline read/write parquet on your **local disk**
+(`AI_PIPELINE_LOCAL_DATA_DIR`, default `./data`) instead of Azure Blob. You only need an
+LLM key (`REASONING_MODEL_*`) — no Storage/SQL account.
+```bash
+cd "usecases/ai_pipeline 2"
+python -m venv .venv && . .venv/Scripts/activate
+pip install -e . && pip install -r requirements.txt
+
+# .env:  AI_PIPELINE_MODE=mock   +   REASONING_MODEL_* filled in
+# 1) seed local input (writes ./data/raw/2025-08-28.parquet):
+python -m ai_pipeline.tools.make_sample_raw --date 2025-08-28 --local
+# 2) run the steps one by one (outputs land in ./data/denoised, ./data/analysis, ./data/summary):
+python -m ai_pipeline.main --program telesales --date 2025-08-28 --step denoise
+python -m ai_pipeline.main --program telesales --date 2025-08-28 --step analysis
+python -m ai_pipeline.main --program telesales --date 2025-08-28 --step summary
+# 3) build the UI dataset from the local run + traces, then show it:
+python ui/export_run.py --trace-file traces/trace.jsonl \
+  --summaries-dir ./data/summary --program telesales --date 2025-08-28 \
+  --out ui/public/sample-data.json
+cd ui && npm run dev
+```
+(`individual_metrics`/`kpi` still need Azure SQL — skip them in mock mode.)
+
+### Option C — Run locally in REAL mode (live Azure)
+Same commands as Option B, but set `AI_PIPELINE_MODE=real` and fill the Storage (+ SQL)
+blocks in `.env`. Now `make_storage()` uses Azure Blob, so drop the `--local` flag and
+upload input with `--upload` instead; the UI export shows the **LIVE DATA** badge.
+
+| Path | `.env` `AI_PIPELINE_MODE` | Needs Azure Storage? | Needs LLM key? |
+|------|---------------------------|----------------------|----------------|
+| A — UI mock demo | mock | no | no |
+| B — local pipeline run | mock | no (local disk) | yes |
+| C — real pipeline run | real | yes | yes |
+
+The switch is entirely in `.env` — no code change moves you between mock and real.
+
+---
+
 ## 7. Suggested client walkthrough (5 minutes)
 1. **Pipeline flow** — "Raw calls in, coaching intelligence out, five governed steps."
 2. **LLMOps panel** — "Every model call is traced: tokens, cost, latency, and guardrail

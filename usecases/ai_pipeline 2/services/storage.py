@@ -123,3 +123,102 @@ class StorageService:
             names = [n for n in names if n.endswith(suffix)]
         return names
 
+
+class LocalStorageService:
+    """Filesystem-backed drop-in for ``StorageService`` used in **mock** mode.
+
+    Same method surface the pipeline steps call, but reads/writes parquet + JSON
+    under a local base directory (``AI_PIPELINE_LOCAL_DATA_DIR``, default
+    ``./data``) instead of Azure Blob — so the whole pipeline runs on a laptop
+    with no Azure Storage account. Containers map to sub-directories:
+    ``<base>/<container>/<filename>``. Reads use duckdb on the local parquet
+    (identical SQL to the Azure path), keeping step behaviour unchanged.
+    """
+
+    def __init__(self, config: StorageConfig, base_dir: str | None = None) -> None:
+        self.config = config
+        base = base_dir or os.environ.get("AI_PIPELINE_LOCAL_DATA_DIR", "").strip() or "./data"
+        from pathlib import Path
+
+        self.base = Path(base).expanduser().resolve()
+        self.base.mkdir(parents=True, exist_ok=True)
+        logger.info("LocalStorageService (mock) initialised | base=%s", self.base)
+
+    def _path(self, container: str, filename: str):
+        return self.base / container / filename
+
+    def _posix(self, container: str, filename: str) -> str:
+        return self._path(container, filename).as_posix()
+
+    # ── reads ────────────────────────────────────────────────────────────
+    def read_parquet_sql(self, container: str, filename: str, where: Optional[str] = None) -> pl.DataFrame:
+        path = self._path(container, filename)
+        if not path.exists():
+            raise FileNotFoundError(f"No source file at {path}")
+        q = f"SELECT * FROM read_parquet('{path.as_posix()}')"
+        if where:
+            q += f" WHERE {where}"
+        logger.info("read_parquet_sql (local) | %s", q)
+        return duckdb.query(q).pl()
+
+    def read_parquet_sql_multi(self, container: str, filenames: list[str], where: Optional[str] = None, columns: Optional[list[str]] = None) -> pl.DataFrame:
+        paths = [self._posix(container, f) for f in filenames if self._path(container, f).exists()]
+        if not paths:
+            raise FileNotFoundError(f"No source files in {self.base / container}")
+        cols = ", ".join(columns) if columns else "*"
+        q = f"SELECT {cols} FROM read_parquet({paths}, filename=true)"
+        if where:
+            q += f" WHERE {where}"
+        return duckdb.query(q).pl()
+
+    def read_parquet(self, container: str, filename: str) -> pl.DataFrame:
+        path = self._path(container, filename)
+        if not path.exists():
+            raise FileNotFoundError(f"No source file at {path}")
+        return pl.read_parquet(path)
+
+    def read_json(self, container: str, filename: str) -> dict:
+        import json
+        with open(self._path(container, filename), "r", encoding="utf-8") as f:
+            return json.loads(f.read())
+
+    # ── writes ───────────────────────────────────────────────────────────
+    def write_parquet(self, df: pl.DataFrame, container: str, filename: str) -> None:
+        path = self._path(container, filename)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        logger.info("write_parquet (local) | %s | rows=%d", path, len(df))
+        df.write_parquet(path)
+
+    def write_json(self, data: dict, container: str, filename: str) -> None:
+        import json
+        path = self._path(container, filename)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(json.dumps(data, indent=4, ensure_ascii=True))
+
+    def exists(self, container: str, filename: str) -> bool:
+        return self._path(container, filename).exists()
+
+    def mkdir(self, container: str, dirname: str) -> None:
+        (self.base / container / dirname).mkdir(parents=True, exist_ok=True)
+
+    def list_files(self, container: str, prefix: str = "", suffix: str | None = None) -> list[str]:
+        base = self.base / container / prefix if prefix else self.base / container
+        if not base.exists():
+            return []
+        names = [p.name for p in base.iterdir() if p.is_file()]
+        if suffix:
+            names = [n for n in names if n.endswith(suffix)]
+        return names
+
+
+def make_storage(config: StorageConfig):
+    """Return the storage backend for the current runtime mode: filesystem in
+    **mock** mode (no Azure needed), Azure Blob in **real** mode. Single seam —
+    steps receive whichever object and call the same methods."""
+    from ai_pipeline import mode as run_mode
+
+    if run_mode.is_mock():
+        return LocalStorageService(config)
+    return StorageService(config)
+

@@ -39,7 +39,7 @@ from ai_pipeline.logging_config import setup_logging, get_logger
 from ai_pipeline import observability as obs
 from ai_pipeline import guardrails_gate as gate
 from ai_pipeline import mode as run_mode
-from ai_pipeline.services.storage import StorageService
+from ai_pipeline.services.storage import make_storage
 from ai_pipeline.steps import run_denoise, run_analysis, run_summary, run_individual_metrics
 from ai_pipeline.steps.kpi_aggregator import run_kpi_aggregator
 
@@ -125,7 +125,7 @@ async def run_pipeline(args):
             cfg.agent_filter = [int(a.strip()) for a in args.agent.split(",") if a.strip()]
             logger.info("Agent filter set from CLI: %s", cfg.agent_filter)
 
-    storage = StorageService(cfg.storage)
+    storage = make_storage(cfg.storage)  # local FS in mock mode, Azure Blob in real mode
 
     # Determine date(s) to process
     if args.start and args.end:

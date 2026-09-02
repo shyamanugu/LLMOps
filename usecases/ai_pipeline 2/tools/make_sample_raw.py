@@ -73,14 +73,27 @@ def main(argv=None) -> int:
     p.add_argument("--date", required=True, help="YYYY-MM-DD (also the parquet filename)")
     p.add_argument("--program", default=DEFAULT_PROGRAM, help=f"ProgramName value (default: {DEFAULT_PROGRAM})")
     p.add_argument("--out", default=None, help="local output path (default ./<date>.parquet)")
-    p.add_argument("--upload", action="store_true", help="also upload into the raw container via StorageService")
+    p.add_argument("--local", action="store_true",
+                   help="write into the local mock data dir's raw container "
+                        "(AI_PIPELINE_LOCAL_DATA_DIR/<raw>/<date>.parquet) so a mock-mode run finds it")
+    p.add_argument("--upload", action="store_true", help="also upload into the raw container via StorageService (real mode)")
     args = p.parse_args(argv)
 
     import polars as pl
 
     rows = build_rows(args.program)
     df = pl.DataFrame(rows)
-    out = args.out or f"./{args.date}.parquet"
+
+    if args.local:
+        from pathlib import Path
+        from ai_pipeline.programs_config.base import StorageConfig
+
+        base = Path(os.environ.get("AI_PIPELINE_LOCAL_DATA_DIR", "./data")).expanduser()
+        raw_container = StorageConfig().raw_container or "raw"
+        out = str(base / raw_container / f"{args.date}.parquet")
+        Path(out).parent.mkdir(parents=True, exist_ok=True)
+    else:
+        out = args.out or f"./{args.date}.parquet"
     df.write_parquet(out)
     print(f"Wrote {out} | {len(df)} rows | program='{args.program}'")
 
