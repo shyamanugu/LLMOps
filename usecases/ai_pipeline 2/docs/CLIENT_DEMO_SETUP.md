@@ -22,6 +22,24 @@ the output to the client.
 
 Tier A needs only Node (Section 6). Tier B additionally needs Sections 2–5.
 
+### Setup order at a glance (follow in this exact sequence for Tier B)
+
+1. **Prerequisites** — Azure CLI / Portal access, Python 3.11+, Node 18+ (Section 1).
+2. **Create Azure services manually** in the Portal — Azure OpenAI + a model
+   deployment, then a Storage account + containers (Section 2.1, 2.2). Optional:
+   SQL, App Insights, Content Safety (2.3–2.5). All are pay-as-you-go/consumption.
+3. **`.env` setup** — `cp .env.example .env`, paste the endpoints/keys/containers
+   you just created, set `AI_PIPELINE_MODE=real` (Section 3).
+4. **Config changes** — set real per-token rates in `pricing.yaml`, and (optional)
+   provision the `reason`/`bulk` model aliases in `models.yaml`; review the
+   `ai_pipeline` guardrail policy and eval thresholds (Section 3.5).
+5. **Install** the pipeline + platform (Section 4).
+6. **Provide input data** — upload a `raw/<date>.parquet` (real transcripts, or
+   the sample generator in Section 0.5).
+7. **Run the steps one by one** — `denoise → analysis → summary` (→ `individual_metrics → kpi` if SQL) (Section 4).
+8. **Show the output** — export the run and open the UI (Section 6); optionally
+   deploy the container to Azure Container Apps (Section 8).
+
 ---
 
 ## 0.5 Where does the data come from? (provenance — read this)
@@ -123,18 +141,30 @@ The flag is surfaced in code via `ai_pipeline/mode.py` (`runtime_mode()`,
 
 ### 2.0 Summary
 
-| # | Service | Required? | Auth (Contributor-friendly) | Feeds `.env` |
-|---|---------|-----------|------------------------------|--------------|
-| 1 | **Azure OpenAI** (AI Foundry) | ✅ Minimal | API key | `REASONING_MODEL_*` |
-| 2 | **Storage Account (Blob)** | ✅ Minimal | Account key / conn string | `SALES_STORAGE_*`, `AFNI_FILESTORE_CONNSTRING`, `SALES_*_CONTAINER` |
-| 3 | **Azure SQL Database** | ⬜ Optional | Entra admin *or* SQL auth | `APP_AZURE_SQL_*` |
-| 4 | **Application Insights** (+ Log Analytics) | ⬜ Optional | Connection string | `APPLICATIONINSIGHTS_CONNECTION_STRING` |
-| 5 | **Azure AI Content Safety** | ⬜ Optional | API key | `AZURE_CONTENT_SAFETY_*` |
+| # | Service | Required? | Billing model (choose this tier) | Auth (Contributor-friendly) | Feeds `.env` |
+|---|---------|-----------|----------------------------------|------------------------------|--------------|
+| 1 | **Azure OpenAI** (AI Foundry) | ✅ Minimal | **Pay-as-you-go** (Standard S0 — per-token consumption) | API key | `REASONING_MODEL_*` |
+| 2 | **Storage Account (Blob)** | ✅ Minimal | **Pay-as-you-go** (Standard, LRS — pay per GB + ops) | Account key / conn string | `SALES_STORAGE_*`, `AFNI_FILESTORE_CONNSTRING`, `SALES_*_CONTAINER` |
+| 3 | **Azure SQL Database** | ⬜ Optional | **Serverless (consumption)** — General Purpose Serverless, auto-pause | Entra admin *or* SQL auth | `APP_AZURE_SQL_*` |
+| 4 | **Application Insights** (+ Log Analytics) | ⬜ Optional | **Pay-as-you-go** (per-GB ingestion) | Connection string | `APPLICATIONINSIGHTS_CONNECTION_STRING` |
+| 5 | **Azure AI Content Safety** | ⬜ Optional | **Pay-as-you-go** (Standard S0 — per-call) | API key | `AZURE_CONTENT_SAFETY_*` |
+| 6 | **Azure Container Registry** | 🐳 Deploy only | **Pay-as-you-go** (Basic) | Admin user / az login | (deploy only) |
+| 7 | **Azure Container Apps** | 🐳 Deploy only | **Consumption plan** (scale-to-zero, per-second) | az login | (deploy only) |
 
+> **Everything above is consumption / pay-as-you-go** — no reserved capacity, no
+> fixed monthly commitment. You pay only for tokens processed, GB stored, and
+> container seconds used. For a demo the spend is negligible; scale-to-zero on
+> Container Apps means the deployed job costs nothing while idle.
+>
+> **Create these manually in the Azure Portal** (this doc's primary path). The
+> `az` CLI equivalents are given for reference/repeatability, but you never have
+> to run a provisioning script — every resource is a few clicks in the Portal.
+>
 > **Minimum to run the pipeline end-to-end = #1 + #2.** With just those you can run
 > `denoise → analysis → summary`. #3 adds `individual_metrics` + `kpi`. #4/#5 add the
 > LLMOps observability-in-Azure and cloud content-safety options (both have local
-> alternatives, so they're never blockers for a demo).
+> alternatives, so they're never blockers for a demo). #6/#7 are only for the
+> optional container deployment in Section 9.
 
 ---
 
@@ -143,7 +173,9 @@ The LLM every pipeline step calls.
 
 **Portal**
 1. Portal → *Create resource* → search **Azure OpenAI** → Create.
-2. Subscription + your **RG**, Region = `$LOC`, name `<openai-name>`, pricing tier `Standard S0`.
+2. Subscription + your **RG**, Region = `$LOC`, name `<openai-name>`, pricing tier
+   **Standard S0** (this is the pay-as-you-go, per-token consumption tier — there is
+   no separate "consumption" SKU for Azure OpenAI; S0 *is* PAYG).
 3. After it deploys → open it → **Model deployments** (or *Go to Azure AI Foundry portal*)
    → **Deploy model** → choose your chat model → set **deployment name** to the value you'll
    put in `REASONING_MODEL_DEPLOYMENT` (e.g. `gpt-5.4-nano`).
@@ -215,7 +247,10 @@ your client IP (or "Allow Azure services").
 ```bash
 az sql server create -n "<sqlserver>" -g "$RG" -l "$LOC" \
   --admin-user "<admin>" --admin-password "<StrongP@ssw0rd!>"
-az sql db create -g "$RG" -s "<sqlserver>" -n "<db>" --service-objective S0
+# Serverless = consumption billing (auto-pauses when idle, pay per vCore-second):
+az sql db create -g "$RG" -s "<sqlserver>" -n "<db>" \
+  --edition GeneralPurpose --compute-model Serverless \
+  --family Gen5 --capacity 2 --auto-pause-delay 60
 az sql server firewall-rule create -g "$RG" -s "<sqlserver>" \
   -n allow-my-ip --start-ip-address <your.ip> --end-ip-address <your.ip>
 ```
@@ -276,6 +311,29 @@ default). Leave optional blocks blank.
 
 > Secrets live only in `.env` (ignored). `.env.example` (placeholders) is the committed
 > template. Never put a real key in `.env.example`.
+
+---
+
+## 3.5 Config changes (LLMOps platform)
+
+These are small edits to the platform's config-as-code YAML — the platform is under
+`platform/services/` at the repo root. All optional for a first run, but do at least
+the pricing one so cost tracking is real.
+
+1. **Real cost tracking** — `platform/services/03-model-management/config/pricing.yaml`:
+   set `input_per_1k` / `output_per_1k` for your deployment (the file already has a
+   `gpt-5.4-nano` entry with `0.0` placeholders). Until you do, cost shows `$0`.
+2. **Central model routing (optional)** —
+   `platform/services/03-model-management/config/models.yaml`: set the `reason` and
+   `bulk` aliases' `deployment:` to your real Azure deployment name(s) per environment.
+   Left as `null`, the pipeline falls back to `REASONING_MODEL_DEPLOYMENT` from `.env`
+   (so it works either way). Point `bulk` at a cheaper model to cut denoise cost.
+3. **Guardrail policy (review)** —
+   `platform/services/06-guardrails/config/guardrails.yaml` → `usecases.ai_pipeline`:
+   PII is flagged (not blocked), secrets blocked. Adjust if your policy differs.
+4. **Eval thresholds (optional)** —
+   `platform/services/04-evaluation-gate/config/gates.yaml` → `usecases.ai_pipeline`:
+   dev 0.8 / test 0.9 / prod 1.0. Tighten as your golden dataset grows.
 
 ---
 
@@ -365,7 +423,103 @@ restarting.
 
 ---
 
-## 8. Troubleshooting
+## 8. Deploy the pipeline: local Docker → Azure Container Apps
+
+Your preferred path: **build the image locally**, push it to your registry, and run it
+on **Azure Container Apps** (Consumption plan — scale-to-zero, pay-per-second). Because
+the pipeline is a **batch job** (run per date/step, then exit), the natural fit is a
+**Container Apps Job**, not an always-on app — but both are covered.
+
+All resources here are consumption/pay-as-you-go and creatable manually in the Portal.
+The `az` commands are given so you can copy-paste; do them in the Portal instead if you
+prefer.
+
+### 8.1 Build the image locally
+The Dockerfile lives in the usecase but **must be built from the repo root** so the
+LLMOps platform is in the build context:
+
+```bash
+cd /d/AFNI/LLMOps                         # repo root
+docker build -f "usecases/ai_pipeline 2/Dockerfile" -t aia-pipeline:latest .
+
+# smoke-test locally in mock mode (no Azure needed):
+docker run --rm -e AI_PIPELINE_MODE=mock aia-pipeline:latest --program telesales --step summary
+# or against real Azure using your .env:
+docker run --rm --env-file "usecases/ai_pipeline 2/.env" \
+  aia-pipeline:latest --program telesales --step summary --date 2025-08-28
+```
+
+### 8.2 Create an Azure Container Registry (Basic, PAYG) and push
+**Portal:** *Create resource → Container Registry →* your RG, name `<acr>`, SKU **Basic**.
+Then enable *Access keys → Admin user* (simplest for a demo).
+
+```bash
+az acr create -g "$RG" -n "<acr>" --sku Basic --admin-enabled true
+az acr login -n "<acr>"
+docker tag aia-pipeline:latest "<acr>.azurecr.io/aia-pipeline:latest"
+docker push "<acr>.azurecr.io/aia-pipeline:latest"
+```
+
+### 8.3 Create the Container Apps environment (Consumption)
+**Portal:** *Create resource → Container Apps →* it creates a **Container Apps
+Environment** (workload profile: **Consumption**). Or:
+
+```bash
+az extension add --name containerapp --upgrade
+az containerapp env create -g "$RG" -n "<cae-env>" -l "$LOC"   # Consumption by default
+```
+
+### 8.4a Deploy as a Container Apps **Job** (recommended for batch)
+A Job runs to completion and stops — ideal for a per-date pipeline run, and it costs
+nothing between runs.
+
+```bash
+az containerapp job create -g "$RG" -n "aia-pipeline-job" \
+  --environment "<cae-env>" \
+  --trigger-type Manual --replica-timeout 3600 --replica-retry-limit 1 \
+  --image "<acr>.azurecr.io/aia-pipeline:latest" \
+  --registry-server "<acr>.azurecr.io" \
+  --cpu 1.0 --memory 2.0Gi \
+  --args "--program" "telesales" "--step" "summary" "--date" "2025-08-28"
+
+# set secrets + env (map your .env values):
+az containerapp job secret set -g "$RG" -n "aia-pipeline-job" \
+  --secrets openai-key="<key>" storage-key="<key>"
+az containerapp job update -g "$RG" -n "aia-pipeline-job" \
+  --set-env-vars AI_PIPELINE_MODE=real AI_PIPELINE_ENV=prod \
+    REASONING_MODEL_ENDPOINT="<endpoint>" REASONING_MODEL_DEPLOYMENT="gpt-5.4-nano" \
+    REASONING_MODEL_APIKEY=secretref:openai-key \
+    SALES_STORAGE_ACCOUNT_NAME="<acct>" SALES_STORAGE_ACCOUNT_KEY=secretref:storage-key \
+    SALES_RAW_CONTAINER=raw SALES_DENOISED_CONTAINER=denoised \
+    SALES_ANALYSIS_CONTAINER=analysis SALES_SUMMARY_CONTAINER=summary
+
+# run it now (and schedule later with --trigger-type Schedule --cron-expression "...")
+az containerapp job start -g "$RG" -n "aia-pipeline-job"
+```
+
+To change the date/step, update `--args` (or start with `--args` overrides) and start again.
+
+### 8.4b Deploy as a Container **App** (if you want an always-on service)
+Only if you later wrap the pipeline in the platform's serving API
+(`platform/services/10-serving-hosting`). For the batch pipeline as-is, prefer the Job.
+
+```bash
+az containerapp create -g "$RG" -n "aia-pipeline" \
+  --environment "<cae-env>" \
+  --image "<acr>.azurecr.io/aia-pipeline:latest" \
+  --registry-server "<acr>.azurecr.io" \
+  --cpu 1.0 --memory 2.0Gi --min-replicas 0 --max-replicas 1   # min 0 = scale to zero
+```
+
+### 8.5 Get the output out
+The container writes results to your Azure Storage containers (same as a local run). To
+refresh the **UI** from a container run, pull the summary JSON + `traces/trace.jsonl`
+locally and run `ui/export_run.py` (Section 6), or point the exporter at the outputs you
+downloaded from Blob.
+
+---
+
+## 9. Troubleshooting
 - **`resolve ... not provisioned` / model 404:** your endpoint's deployment name must
   match `REASONING_MODEL_DEPLOYMENT`. Alias routing falls back to this env value unless
   you provision `reason`/`bulk` in `models.yaml`.

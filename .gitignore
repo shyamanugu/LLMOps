@@ -28,3 +28,6 @@ Thumbs.db
 # .env.local IS ignored — real credentials (e.g. Azure OpenAI API key) go here,
 # created locally by each developer, never committed.
 .env.local
+
+# Local scratch (image crops, ad-hoc)
+scratch_crops/
