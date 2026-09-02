@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AFNI LLMOps — Decisions</title><link rel="stylesheet" href="deck.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="brand">AFNI LLMOps<small>Enterprise GenAI Platform</small></div>
+  <a data-page="index.html" href="index.html">Overview</a>
+  <a data-page="platform.html" href="platform.html">Platform</a>
+  <a data-page="implementation.html" href="implementation.html">Implementation</a>
+  <a data-page="decisions.html" href="decisions.html">Decisions</a>
+  <a data-page="future.html" href="future.html">Future Use Cases</a>
+  <a data-page="usecases.html" href="usecases.html">AFNI Ideas</a>
+  <span class="spacer"></span><span class="tag">Client Review</span>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Section 03</div>
+    <h1>Decisions we need from you</h1>
+    <p>The platform and the APIX proof point are done. These are the <b>real, concrete choices</b> that
+       shape the next milestone — cost, scope, timeline, and go-live. Each one changes what we build next.</p>
+    <div class="pills"><span class="pill">Answer drives scope</span><span class="pill">No wrong answers — just trade-offs</span></div>
+  </div>
+
+  <h2 class="section">A · Go-live &amp; environment</h2>
+  <div class="grid g2">
+    <div class="card"><h3><span class="num">1</span>Azure landing zone</h3>
+      <p style="font-size:14px">Which subscription, resource group, and region do we target? What access do
+         we have — Contributor at RG level, or can roles be assigned? <b>Why it matters:</b> decides how we
+         provision and whether we use key-auth or managed identity.</p></div>
+    <div class="card"><h3><span class="num">2</span>Environments</h3>
+      <p style="font-size:14px">Do we need dev / test / prod separated now, or one environment to start?
+         <b>Why it matters:</b> model aliases, guardrail policy, and eval thresholds are all per-environment.</p></div>
+  </div>
+
+  <h2 class="section">B · Models &amp; cost</h2>
+  <div class="grid g2">
+    <div class="card"><h3><span class="num">3</span>Approved model list &amp; pricing</h3>
+      <p style="font-size:14px">Which Azure OpenAI deployments are approved for <code>reason</code> (analysis) and
+         <code>bulk</code> (denoise)? What are the per-token rates? <b>Why it matters:</b> cost tracking shows
+         $0 until real rates are in; a cheaper <code>bulk</code> model can cut denoise spend materially.</p></div>
+    <div class="card"><h3><span class="num">4</span>Cost &amp; FinOps guardrails</h3>
+      <p style="font-size:14px">Do we need budget alerts / spend caps, and at what thresholds?
+         <b>Why it matters:</b> turns on component 12 (Azure budgets) and dashboards.</p></div>
+  </div>
+
+  <h2 class="section">C · Data, privacy &amp; safety</h2>
+  <div class="grid g2">
+    <div class="card"><h3><span class="num">5</span>PII policy on transcripts</h3>
+      <p style="font-size:14px">Is <b>flag-for-audit</b> acceptable, or must we <b>redact/mask</b> PII in outputs?
+         Any category (SSN, card) that must hard-block? <b>Why it matters:</b> one policy file — but it changes
+         what agents see and what we store.</p></div>
+    <div class="card"><h3><span class="num">6</span>Content Safety &amp; residency</h3>
+      <p style="font-size:14px">Do we enable Azure AI Content Safety, and are there data-residency constraints
+         (region, retention)? <b>Why it matters:</b> enables component 06 cloud moderation and shapes storage.</p></div>
+  </div>
+
+  <h2 class="section">D · Operations &amp; ownership</h2>
+  <div class="grid g2">
+    <div class="card"><h3><span class="num">7</span>Golden-dataset ownership</h3>
+      <p style="font-size:14px">Who curates ground truth, and how many cases can we get per program to start?
+         <b>Why it matters:</b> the eval gate is only as strong as the golden set behind it.</p></div>
+    <div class="card"><h3><span class="num">8</span>Human-in-the-loop</h3>
+      <p style="font-size:14px">Do coaches review/approve AI reflections before they reach agents?
+         <b>Why it matters:</b> decides whether the feedback tab is advisory or an approval gate.</p></div>
+  </div>
+
+  <h2 class="section">E · Deployment &amp; next milestone</h2>
+  <div class="grid g2">
+    <div class="card"><h3><span class="num">9</span>Deployment shape</h3>
+      <p style="font-size:14px">Batch job on a schedule (Container Apps Job, scale-to-zero) vs. an always-on
+         service? What cadence — nightly, weekly? <b>Why it matters:</b> sets the hosting pattern and cost profile.</p></div>
+    <div class="card"><h3><span class="num">10</span>Next use case to onboard</h3>
+      <p style="font-size:14px">Which second use case should we bring on to <b>prove reuse</b> — Voice Agent,
+         PI Index, Hiring, or something else? <b>Why it matters:</b> this is the strongest demonstration of ROI.</p></div>
+  </div>
+
+  <div class="callout"><div class="lab">Recommended first moves (our view)</div>
+    <p>1) Provide the approved models + rates (unlocks real cost). &nbsp; 2) Confirm the PII policy. &nbsp;
+       3) Point us at a small golden set for APIX. &nbsp; 4) Pick the second use case. With those four, we can
+       flip APIX to <b>real</b> and start the next onboarding in parallel.</p></div>
+</div>
+
+<div class="pager"></div>
+<script src="deck.js"></script>
+</body>
+</html>

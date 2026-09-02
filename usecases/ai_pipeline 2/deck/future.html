@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AFNI LLMOps — Future Use Cases</title><link rel="stylesheet" href="deck.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="brand">AFNI LLMOps<small>Enterprise GenAI Platform</small></div>
+  <a data-page="index.html" href="index.html">Overview</a>
+  <a data-page="platform.html" href="platform.html">Platform</a>
+  <a data-page="implementation.html" href="implementation.html">Implementation</a>
+  <a data-page="decisions.html" href="decisions.html">Decisions</a>
+  <a data-page="future.html" href="future.html">Future Use Cases</a>
+  <a data-page="usecases.html" href="usecases.html">AFNI Ideas</a>
+  <span class="spacer"></span><span class="tag">Client Review</span>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Section 04</div>
+    <h1>Build once, reuse everywhere</h1>
+    <p>APIX proved the pattern. The <b>same platform</b> — same guardrails, same observability, same eval
+       gate, same console — powers the next use case as a <b>configuration exercise</b>, not a rebuild.
+       Time-to-value drops from quarters to weeks.</p>
+  </div>
+
+  <h2 class="section">Onboarding a new use case — the golden path</h2>
+  <div class="card">
+    <div class="flow">
+      <div class="node"><b>1 · Intake</b><span>value &amp; risk tiering</span></div><div class="arrow">→</div>
+      <div class="node"><b>2 · Configure</b><span>aliases · prompts · guardrail policy · thresholds</span></div><div class="arrow">→</div>
+      <div class="node"><b>3 · Evaluate</b><span>golden set + gate</span></div><div class="arrow">→</div>
+      <div class="node"><b>4 · Operate</b><span>console: run · monitor · govern</span></div><div class="arrow">→</div>
+      <div class="node"><b>5 · Improve</b><span>feedback → golden set</span></div>
+    </div>
+    <p style="font-size:14px;color:var(--soft);margin:12px 0 0">The only new artefacts are config and a golden
+       dataset. Everything else is inherited from the platform.</p>
+  </div>
+
+  <h2 class="section">What each new use case reuses vs. adds</h2>
+  <div class="card"><div style="overflow-x:auto"><table>
+    <thead><tr><th>Concern</th><th>Reused from platform</th><th>New per use case</th></tr></thead>
+    <tbody>
+      <tr><td>Observability &amp; cost</td><td>Component 05 as-is</td><td>Nothing</td></tr>
+      <tr><td>Model routing</td><td>Component 03 engine</td><td>Alias → deployment entries</td></tr>
+      <tr><td>Guardrails</td><td>Component 06 checks</td><td>A policy block (PII/blocklist)</td></tr>
+      <tr><td>Prompts</td><td>Component 02 registry + console</td><td>The prompt text (versioned)</td></tr>
+      <tr><td>Evaluation</td><td>Component 04 gate + CI</td><td>A golden dataset + threshold</td></tr>
+      <tr><td>Feedback</td><td>Component 11 store/promotion</td><td>Nothing</td></tr>
+      <tr><td>Ops console</td><td>The whole console</td><td>Nothing (auto-populates)</td></tr>
+    </tbody></table></div></div>
+
+  <h2 class="section">The three flagship use cases the platform is built for</h2>
+  <div class="grid g3">
+    <div class="tile"><div class="cat" style="color:var(--blue)">Real-time</div><h4>Voice Agent</h4>
+      <p>Autonomous voice automation + agent-assist. Adds component 07 (speech) &amp; 08 (orchestration); reuses
+         guardrails, observability, eval, prompts.</p></div>
+    <div class="tile"><div class="cat" style="color:var(--teal)">Analytics</div><h4>Performance Intelligence (PI) Index</h4>
+      <p>An explainable performance score from 100% of interactions. Reuses the exact analysis/summary pattern
+         APIX already uses — largely config + prompts.</p></div>
+    <div class="tile"><div class="cat" style="color:var(--violet)">Decisioning</div><h4>Hiring Intelligence</h4>
+      <p>Fair, high-volume recruitment — "AI assists, humans decide". Reuses guardrails, eval gate, and the
+         human-in-the-loop feedback pattern.</p></div>
+  </div>
+
+  <h2 class="section">The compounding return</h2>
+  <div class="grid g3">
+    <div class="card" style="text-align:center"><div class="kpi">1×</div><div class="kpi-lab">Platform built once (done)</div></div>
+    <div class="card" style="text-align:center"><div class="kpi">Weeks</div><div class="kpi-lab">to onboard use case #2, not quarters</div></div>
+    <div class="card" style="text-align:center"><div class="kpi">Same</div><div class="kpi-lab">governance &amp; cost controls on every use case</div></div>
+  </div>
+
+  <div class="callout"><div class="lab">Why this matters to AFNI</div>
+    <p>Risk and cost are controlled <b>by construction</b>: every use case is observable, evaluated, and governed
+       the same way. The 4th, 10th, and 40th use case ride the same paved road — that is the entire thesis of the
+       platform, and APIX is the proof it works.</p></div>
+</div>
+
+<div class="pager"></div>
+<script src="deck.js"></script>
+</body>
+</html>

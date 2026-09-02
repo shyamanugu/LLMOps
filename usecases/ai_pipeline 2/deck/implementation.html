@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AFNI LLMOps — Implementation</title><link rel="stylesheet" href="deck.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="brand">AFNI LLMOps<small>Enterprise GenAI Platform</small></div>
+  <a data-page="index.html" href="index.html">Overview</a>
+  <a data-page="platform.html" href="platform.html">Platform</a>
+  <a data-page="implementation.html" href="implementation.html">Implementation</a>
+  <a data-page="decisions.html" href="decisions.html">Decisions</a>
+  <a data-page="future.html" href="future.html">Future Use Cases</a>
+  <a data-page="usecases.html" href="usecases.html">AFNI Ideas</a>
+  <span class="spacer"></span><span class="tag">Client Review</span>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Section 02</div>
+    <h1>Platform → AI Pipeline (APIX)</h1>
+    <p>The AI Pipeline is a batch <b>call-analytics</b> application: it turns raw contact-centre
+       transcripts into per-agent coaching intelligence. We used it as the <b>first proof point</b> —
+       wiring the LLMOps platform into a real, working app to prove reuse.</p>
+    <div class="pills"><span class="pill">5 steps: denoise → analysis → summary → metrics → KPI</span>
+      <span class="pill">Thin-adapter integration</span><span class="pill">Non-breaking</span></div>
+  </div>
+
+  <h2 class="section">How the platform plugs in — one clean seam</h2>
+  <p class="lead">Every LLM call in the pipeline flows through a single function. We wrapped that one seam,
+     so the platform layers in without touching the step logic the developer wrote.</p>
+  <div class="card">
+    <div class="flow">
+      <div class="node"><b>denoise</b><span>clean transcript</span></div><div class="arrow">→</div>
+      <div class="node"><b>analysis</b><span>score each call</span></div><div class="arrow">→</div>
+      <div class="node"><b>summary</b><span>weekly reflection</span></div><div class="arrow">→</div>
+      <div class="node"><b>metrics</b><span>coaching metrics</span></div><div class="arrow">→</div>
+      <div class="node"><b>KPI</b><span>aggregate report</span></div>
+    </div>
+    <div style="text-align:center;color:var(--soft);margin:10px 0 2px">every step calls one function ↓</div>
+    <div class="callout"><div class="lab">The injection seam — <code>query()</code></div>
+      <p>1 · render prompt (02) &nbsp;→&nbsp; 2 · guardrail check input (06) &nbsp;→&nbsp; 3 · resolve model alias (03)
+         &nbsp;→&nbsp; 4 · call model &nbsp;→&nbsp; 5 · guardrail check output (06) &nbsp;→&nbsp; 6 · record trace + cost (05).
+         Prompt version comes from the registry; feedback (11) &amp; the eval gate (04) close the loop.</p></div>
+  </div>
+
+  <h2 class="section">What we planned vs. what we implemented</h2>
+  <div class="card"><div style="overflow-x:auto"><table>
+    <thead><tr><th>Capability</th><th>Component</th><th>Status</th><th>What it does for APIX today</th></tr></thead>
+    <tbody>
+      <tr><td>Platform wiring &amp; use-case registration</td><td>—</td><td><span class="chip c-done">Implemented</span></td><td>Registered <code>ai_pipeline</code> in model/pricing/guardrail/gate config.</td></tr>
+      <tr><td>Observability &amp; cost</td><td>05</td><td><span class="chip c-done">Implemented</span></td><td>Per-call tokens, cost, latency, guardrail decision — traced for every step.</td></tr>
+      <tr><td>Model management</td><td>03</td><td><span class="chip c-done">Implemented</span></td><td>Steps call model <i>aliases</i>; swap models by config with a safe env fallback.</td></tr>
+      <tr><td>Guardrails</td><td>06</td><td><span class="chip c-done">Implemented</span></td><td>PII flagged (never dropped), secrets blocked — captured for audit.</td></tr>
+      <tr><td>Prompt management</td><td>02</td><td><span class="chip c-done">Implemented</span></td><td>Versioned prompts; <b>activate a version → next run uses it, no redeploy</b>.</td></tr>
+      <tr><td>Evaluation gate</td><td>04</td><td><span class="chip c-done">Implemented</span></td><td>Golden-dataset scoring + a CI gate before prompt/model changes ship.</td></tr>
+      <tr><td>Feedback loop</td><td>11</td><td><span class="chip c-done">Implemented</span></td><td>Capture corrections → promote to golden set → next gate run.</td></tr>
+      <tr><td>Ops Console (run · playground · eval · datasets · monitor · feedback · guardrails)</td><td>—</td><td><span class="chip c-done">Implemented</span></td><td>One pure-Python console; runs on a locked-down VDI, no installs.</td></tr>
+      <tr><td>Mock / Real modes</td><td>—</td><td><span class="chip c-done">Implemented</span></td><td>Demo with local data, or flip one env value to use live Azure.</td></tr>
+      <tr><td>Live Azure Monitor / FinOps dashboards</td><td>05 / 12</td><td><span class="chip c-next">Next</span></td><td>Ship traces &amp; budgets to Azure once creds/rates are provided.</td></tr>
+      <tr><td>RAG · Voice · Connectors</td><td>07</td><td><span class="chip c-plan">Available</span></td><td>Built in the platform; not needed by APIX yet — ready for other use cases.</td></tr>
+      <tr><td>Native orchestration &amp; HTTP serving</td><td>08 / 10</td><td><span class="chip c-plan">Available</span></td><td>Pipeline can migrate to platform orchestration / serving when useful.</td></tr>
+      <tr><td>Access control (RBAC)</td><td>—</td><td><span class="chip c-idea">Deferred</span></td><td>Ops-only scope for now, per agreement — add when multi-role.</td></tr>
+    </tbody></table></div></div>
+
+  <h2 class="section">Key implementation decisions we already made</h2>
+  <div class="grid g3">
+    <div class="card"><h3>Thin adapter, not a rewrite</h3><p style="color:var(--soft);font-size:14px">We wrapped the
+      single LLM seam instead of re-platforming the pipeline. Low risk, fully reversible, and each capability
+      shipped independently.</p></div>
+    <div class="card"><h3>Fail-open everywhere</h3><p style="color:var(--soft);font-size:14px">If the platform
+      is absent or a cloud service is down, the pipeline still runs — observability/guardrails degrade to no-ops
+      rather than breaking a batch.</p></div>
+    <div class="card"><h3>PII flagged, not blocked</h3><p style="color:var(--soft);font-size:14px">Transcripts
+      legitimately contain customer PII; blocking would silently drop calls. We flag for audit and block genuine
+      secret leaks — a policy you can change in one file.</p></div>
+  </div>
+
+  <div class="callout warn"><div class="lab">Honest status</div>
+    <p>Everything above is demonstrated in <b>mock mode</b> (local data, deterministic mock model) so it runs
+       anywhere with zero setup. The <b>real</b> path (live Azure OpenAI, Storage, SQL, Monitor) is built and
+       one env-flag away, pending the decisions on the next page.</p></div>
+</div>
+
+<div class="pager"></div>
+<script src="deck.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AFNI LLMOps — Platform</title><link rel="stylesheet" href="deck.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="brand">AFNI LLMOps<small>Enterprise GenAI Platform</small></div>
+  <a data-page="index.html" href="index.html">Overview</a>
+  <a data-page="platform.html" href="platform.html">Platform</a>
+  <a data-page="implementation.html" href="implementation.html">Implementation</a>
+  <a data-page="decisions.html" href="decisions.html">Decisions</a>
+  <a data-page="future.html" href="future.html">Future Use Cases</a>
+  <a data-page="usecases.html" href="usecases.html">AFNI Ideas</a>
+  <span class="spacer"></span><span class="tag">Client Review</span>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Section 01</div>
+    <h1>The LLMOps Platform</h1>
+    <p>A governed, reusable toolkit of <b>14 components</b> that turn a raw model call into a
+       production-grade, observable, governed capability. Every component is independently packaged
+       and <b>consumed by configuration</b>, so it drops into any use case.</p>
+    <div class="pills"><span class="pill">Config-as-code</span><span class="pill">No-op safe defaults</span>
+      <span class="pill">Azure-first</span><span class="pill">Deterministic guardrails wrap probabilistic models</span></div>
+  </div>
+
+  <h2 class="section">Components by category</h2>
+  <p class="lead">Grouped by what they do in the lifecycle: <b>Build → Evaluate & Improve → Operate &
+     Observe → Govern & Secure</b>. The tag shows how reusable each is across use cases.</p>
+
+  <h3 style="color:var(--blue);margin:6px 0 2px">▸ Build</h3>
+  <div class="grid g4">
+    <div class="tile"><div class="cat" style="color:var(--blue)">02 · Prompt Mgmt</div><h4>Prompt registry</h4>
+      <p>Versioned, git-backed prompts with fragments &amp; variables. Edit without code.</p><span class="reuse reuse-hi">Fully reusable</span></div>
+    <div class="tile"><div class="cat" style="color:var(--blue)">03 · Model Mgmt</div><h4>Model router</h4>
+      <p>Alias → deployment resolution (reason/bulk/judge). Swap models by config, per environment.</p><span class="reuse reuse-hi">Fully reusable</span></div>
+    <div class="tile"><div class="cat" style="color:var(--blue)">08 · Orchestration</div><h4>Pipeline engine</h4>
+      <p>Ordered Steps over shared State, with tracing built in. The atomic model-call unit.</p><span class="reuse reuse-hi">Fully reusable</span></div>
+    <div class="tile"><div class="cat" style="color:var(--blue)">07 · Data Tools</div><h4>RAG · Speech · Connectors</h4>
+      <p>Azure AI Search retrieval, speech-to-text/TTS, HTTP tool connectors, per-client index isolation.</p><span class="reuse reuse-hi">Fully reusable</span></div>
+  </div>
+
+  <h3 style="color:var(--teal);margin:16px 0 2px">▸ Evaluate &amp; Improve</h3>
+  <div class="grid g2">
+    <div class="tile"><div class="cat" style="color:var(--teal)">04 · Evaluation Gate</div><h4>Golden-dataset gate</h4>
+      <p>Score prompts/models against ground truth (schema, exact-match, LLM-judge). Pass/fail threshold per use case — a quality gate before anything ships.</p><span class="reuse reuse-hi">Fully reusable</span></div>
+    <div class="tile"><div class="cat" style="color:var(--teal)">11 · Feedback</div><h4>Feedback → golden set</h4>
+      <p>Capture human corrections and promote them into new regression cases. Closes the improve loop.</p><span class="reuse reuse-hi">Fully reusable</span></div>
+  </div>
+
+  <h3 style="color:var(--violet);margin:16px 0 2px">▸ Operate &amp; Observe</h3>
+  <div class="grid g4">
+    <div class="tile"><div class="cat" style="color:var(--violet)">05 · Observability</div><h4>Tracing &amp; cost</h4>
+      <p>Per-call tokens, cost, latency, guardrail decisions → local or Azure Monitor.</p><span class="reuse reuse-hi">Fully reusable</span></div>
+    <div class="tile"><div class="cat" style="color:var(--violet)">12 · FinOps</div><h4>Budgets &amp; cost control</h4>
+      <p>Azure budgets/exports + per-token cost roll-ups for spend visibility.</p><span class="reuse reuse-hi">Fully reusable</span></div>
+    <div class="tile"><div class="cat" style="color:var(--violet)">10 · Serving</div><h4>Hosting</h4>
+      <p>FastAPI serving + container image to expose a pipeline over HTTP.</p><span class="reuse reuse-mid">Reusable pattern</span></div>
+    <div class="tile"><div class="cat" style="color:var(--violet)">09 · CI/CD</div><h4>Pipelines</h4>
+      <p>Per-component test matrix, lint, and the eval gate as a required check.</p><span class="reuse reuse-mid">Reusable pattern</span></div>
+  </div>
+
+  <h3 style="color:var(--amber);margin:16px 0 2px">▸ Govern &amp; Secure</h3>
+  <div class="grid g4">
+    <div class="tile"><div class="cat" style="color:var(--amber)">06 · Guardrails</div><h4>Safety checks</h4>
+      <p>PII, secret-leak, prompt-injection, content-safety — declarative policy per use case.</p><span class="reuse reuse-hi">Fully reusable</span></div>
+    <div class="tile"><div class="cat" style="color:var(--amber)">13 · Governance</div><h4>Onboarding</h4>
+      <p>The golden-path runbook to bring a new use case onto the platform.</p><span class="reuse reuse-mid">Reusable process</span></div>
+    <div class="tile"><div class="cat" style="color:var(--amber)">14 · Security &amp; Compliance</div><h4>Policy</h4>
+      <p>Data-residency &amp; PII-handling policy mapped to OWASP LLM Top-10.</p><span class="reuse reuse-mid">Reusable policy</span></div>
+    <div class="tile"><div class="cat" style="color:var(--amber)">01 · Repo Foundation</div><h4>Scaffolding &amp; IaC</h4>
+      <p>The shared repo structure and infrastructure modules every component builds on.</p><span class="reuse reuse-mid">Foundation</span></div>
+  </div>
+
+  <h2 class="section">Why it's reusable — three design rules</h2>
+  <div class="grid g3">
+    <div class="card"><h3>1 · Onboard by config</h3><p style="color:var(--soft);font-size:14px">A new use case is a
+      handful of YAML entries — model aliases, a guardrail policy, prompts, eval thresholds — not new code.</p></div>
+    <div class="card"><h3>2 · Safe by default</h3><p style="color:var(--soft);font-size:14px">Every component ships a
+      no-op default (null tracer, pass-through guardrail, in-memory store), so a use case can adopt one piece at a
+      time and run before any cloud resource exists.</p></div>
+    <div class="card"><h3>3 · Composable</h3><p style="color:var(--soft);font-size:14px">Components are independent
+      and injected explicitly. Take only what you need; the rest stays dormant.</p></div>
+  </div>
+
+  <div class="callout"><div class="lab">The bottom line</div>
+    <p><b>10 of the 14 components are fully reusable as-is</b> across any GenAI use case; the remaining four are
+       reusable patterns/policies. This is what makes the 2nd, 5th, and 20th use case cheap.</p></div>
+</div>
+
+<div class="pager"></div>
+<script src="deck.js"></script>
+</body>
+</html>

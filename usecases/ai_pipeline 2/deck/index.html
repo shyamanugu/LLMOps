@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AFNI LLMOps — Overview</title><link rel="stylesheet" href="deck.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="brand">AFNI LLMOps<small>Enterprise GenAI Platform</small></div>
+  <a data-page="index.html" href="index.html">Overview</a>
+  <a data-page="platform.html" href="platform.html">Platform</a>
+  <a data-page="implementation.html" href="implementation.html">Implementation</a>
+  <a data-page="decisions.html" href="decisions.html">Decisions</a>
+  <a data-page="future.html" href="future.html">Future Use Cases</a>
+  <a data-page="usecases.html" href="usecases.html">AFNI Ideas</a>
+  <span class="spacer"></span><span class="tag">Client Review</span>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">AFNI · Office of GenAI Architecture</div>
+    <h1>Don't build AI features.<br>Build the factory that produces them.</h1>
+    <p>We have stood up a reusable, governed <b>LLMOps platform</b> — and proven it by wiring it
+       into a live application, the <b>AI Pipeline</b> for the <b>APIX</b> use case. Build once;
+       every future use case rides the same paved road.</p>
+    <div class="pills">
+      <span class="pill">14 platform components</span>
+      <span class="pill">6 wired into AI Pipeline today</span>
+      <span class="pill">Onboard-by-config</span>
+      <span class="pill">Runs on a locked-down VDI</span>
+    </div>
+  </div>
+
+  <h2 class="section">What you'll see in this walkthrough</h2>
+  <p class="lead">Five short sections — the platform, how we used it for APIX, the decisions we need
+     from you, and where it goes next.</p>
+
+  <div class="grid g3">
+    <a class="tile" href="platform.html"><div class="cat" style="color:var(--blue)">01 · Platform</div>
+      <h4>The LLMOps platform</h4><p>The reusable components, grouped by what they do, and which are drop-in reusable across any use case.</p></a>
+    <a class="tile" href="implementation.html"><div class="cat" style="color:var(--teal)">02 · Implementation</div>
+      <h4>Applied to AI Pipeline (APIX)</h4><p>What we planned, what we implemented, and how the platform actually plugs into the pipeline.</p></a>
+    <a class="tile" href="decisions.html"><div class="cat" style="color:var(--amber)">03 · Decisions</div>
+      <h4>Roadmap decisions we need</h4><p>Crucial, concrete questions whose answers shape scope, cost, and the next milestone.</p></a>
+    <a class="tile" href="future.html"><div class="cat" style="color:var(--violet)">04 · Future</div>
+      <h4>Reuse across use cases</h4><p>How the same platform powers the next 4th, 10th, and 40th use case in weeks, not quarters.</p></a>
+    <a class="tile" href="usecases.html"><div class="cat" style="color:var(--soft)">05 · Ideas</div>
+      <h4>Candidate AFNI use cases</h4><p>A menu of platform-friendly opportunities (hidden by default — reveal on click).</p></a>
+    <div class="tile" style="background:linear-gradient(135deg,#0f2138,#1b3557);color:#fff;border:none">
+      <div class="cat" style="color:#8fd6c9">The thesis</div>
+      <h4 style="color:#fff">One platform, many use cases</h4>
+      <p style="color:#ccd9e8">Deterministic guardrails wrap probabilistic models. Governance is designed in, not bolted on.</p></div>
+  </div>
+
+  <h2 class="section">The story in one line</h2>
+  <div class="card">
+    <div class="flow">
+      <div class="node"><b>Platform built</b><span>14 governed, reusable components</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Proven on APIX</b><span>AI Pipeline wired to 6 components</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Operated</b><span>One console: run, evaluate, monitor, govern</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><b>Reused</b><span>Next use case = config, not a rebuild</span></div>
+    </div>
+  </div>
+
+  <div class="callout"><div class="lab">How to navigate</div>
+    <p>Use the top menu, the <b>Next →</b> button (bottom right), or the <b>← →</b> arrow keys. Everything
+       runs locally in your browser — no internet needed.</p></div>
+</div>
+
+<div class="pager"></div>
+<script src="deck.js"></script>
+</body>
+</html>

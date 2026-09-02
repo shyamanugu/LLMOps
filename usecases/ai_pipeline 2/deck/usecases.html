@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AFNI LLMOps — AFNI Ideas</title><link rel="stylesheet" href="deck.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="brand">AFNI LLMOps<small>Enterprise GenAI Platform</small></div>
+  <a data-page="index.html" href="index.html">Overview</a>
+  <a data-page="platform.html" href="platform.html">Platform</a>
+  <a data-page="implementation.html" href="implementation.html">Implementation</a>
+  <a data-page="decisions.html" href="decisions.html">Decisions</a>
+  <a data-page="future.html" href="future.html">Future Use Cases</a>
+  <a data-page="usecases.html" href="usecases.html">AFNI Ideas</a>
+  <span class="spacer"></span><span class="tag">Client Review</span>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Section 05 · Optional</div>
+    <h1>Candidate use cases for AFNI</h1>
+    <p>A menu of <b>platform-friendly</b> opportunities — each maps cleanly onto components we already
+       built. These are <b>exploratory ideas</b>, hidden by default so they don't distract from the
+       committed roadmap. Reveal them when you want to brainstorm.</p>
+    <div class="pills"><span class="pill">Exploratory — not commitments</span>
+      <span class="pill">Each reuses the same platform</span></div>
+  </div>
+
+  <div class="card" style="text-align:center">
+    <h3>Speculative opportunity menu</h3>
+    <p style="color:var(--soft);font-size:14px;max-width:640px;margin:0 auto 14px">
+      Hidden by default. Click to reveal a set of ideas AFNI could onboard onto this platform. Each card notes
+      which existing components it leans on — nothing here requires a new platform.</p>
+    <button class="toggle-btn" data-show="▸ Show candidate use cases" data-hide="▾ Hide candidate use cases"
+            onclick="toggleBlock('ideas', this)">▸ Show candidate use cases</button>
+  </div>
+
+  <div id="ideas" class="hidden">
+    <div class="legend">
+      <span><b>Reuses:</b></span>
+      <span>02 Prompts</span><span>03 Models</span><span>04 Eval</span><span>05 Observability</span>
+      <span>06 Guardrails</span><span>07 Data/RAG/Voice</span><span>11 Feedback</span>
+    </div>
+
+    <div class="grid g2">
+      <div class="tile"><div class="cat" style="color:var(--blue)">Contact centre</div>
+        <h4>Subrogation automation</h4>
+        <p>Read claim notes &amp; call transcripts to identify subrogation opportunities and draft recovery
+           packages. <b>Reuses:</b> analysis pattern (02/03/04), guardrails (06), feedback (11).</p></div>
+
+      <div class="tile"><div class="cat" style="color:var(--teal)">Knowledge</div>
+        <h4>Agent knowledge assistant (RAG)</h4>
+        <p>Answer agent questions from AFNI policy &amp; client playbooks, with citations. <b>Reuses:</b>
+           data-tools RAG (07), guardrails (06), observability (05), eval gate (04).</p></div>
+
+      <div class="tile"><div class="cat" style="color:var(--violet)">Revenue</div>
+        <h4>Next-best-offer / upsell coach</h4>
+        <p>Suggest the right offer in-call or post-call from context &amp; outcomes. <b>Reuses:</b> analysis
+           (02/03), guardrails (06), eval against closed-deal ground truth (04).</p></div>
+
+      <div class="tile"><div class="cat" style="color:var(--amber)">Quality</div>
+        <h4>Automated QA &amp; compliance scoring</h4>
+        <p>Score 100% of calls for compliance/script adherence instead of a sampled QA. <b>Reuses:</b> the exact
+           APIX analysis/summary pattern — largely prompts + a golden set.</p></div>
+
+      <div class="tile"><div class="cat" style="color:var(--blue)">Customer</div>
+        <h4>Post-call summarisation &amp; disposition</h4>
+        <p>Auto-write call summaries, dispositions, and follow-up tasks into the CRM. <b>Reuses:</b> summary
+           step (02/03), connectors (07), guardrails (06).</p></div>
+
+      <div class="tile"><div class="cat" style="color:var(--teal)">Real-time</div>
+        <h4>Live agent-assist &amp; sentiment</h4>
+        <p>Real-time prompts and sentiment nudges during a call. <b>Reuses:</b> speech (07), orchestration (08),
+           guardrails (06), observability (05).</p></div>
+
+      <div class="tile"><div class="cat" style="color:var(--violet)">Workforce</div>
+        <h4>Coaching-plan generator</h4>
+        <p>Turn the AI reflections APIX already produces into scheduled, trackable coaching plans per agent.
+           <b>Reuses:</b> APIX outputs directly + feedback loop (11).</p></div>
+
+      <div class="tile"><div class="cat" style="color:var(--amber)">Operations</div>
+        <h4>Escalation &amp; churn early-warning</h4>
+        <p>Flag at-risk customers/agents from interaction signals for proactive intervention. <b>Reuses:</b>
+           analysis (02/03/04), observability (05), feedback (11).</p></div>
+    </div>
+
+    <div class="callout warn"><div class="lab">Framing for the client</div>
+      <p>These are <b>candidates to prioritise together</b>, not a delivery commitment. The point is that each one
+         is a <b>configuration</b> on the platform you've already funded — same guardrails, same cost controls,
+         same console — so evaluating "what's next" is a business conversation, not an engineering one.</p></div>
+  </div>
+</div>
+
+<div class="pager"></div>
+<script src="deck.js"></script>
+</body>
+</html>
