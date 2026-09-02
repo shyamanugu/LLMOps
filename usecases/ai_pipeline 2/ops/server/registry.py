@@ -105,8 +105,26 @@ def list_models(environment="dev"):
                         "input_per_1k": rate.get("input_per_1k"), "output_per_1k": rate.get("output_per_1k")})
         return out
     except Exception:
-        return [
-            {"alias": "reason", "provider": "azure_openai", "deployment": None, "kind": "chat"},
-            {"alias": "bulk", "provider": "azure_openai", "deployment": None, "kind": "chat"},
-            {"alias": "judge", "provider": "azure_openai", "deployment": "gpt-4o-mini", "kind": "chat"},
-        ]
+        return _FALLBACK_MODELS
+
+
+# Richer default catalogue for demo (used when models.yaml/pyyaml aren't available,
+# e.g. a bare VDI). Rates are illustrative — see engine._RATES / pricing.yaml.
+_FALLBACK_MODELS = [
+    {"alias": "reason", "provider": "azure_openai", "deployment": "gpt-4o", "kind": "chat",
+     "input_per_1k": 0.005, "output_per_1k": 0.015, "note": "Deep analysis / reasoning"},
+    {"alias": "bulk", "provider": "azure_openai", "deployment": "gpt-4o-mini", "kind": "chat",
+     "input_per_1k": 0.00015, "output_per_1k": 0.0006, "note": "High-volume, cheap (denoise)"},
+    {"alias": "nano", "provider": "azure_openai", "deployment": "gpt-5.4-nano", "kind": "chat",
+     "input_per_1k": 0.0002, "output_per_1k": 0.0008, "note": "Fastest / lowest cost"},
+    {"alias": "reason-pro", "provider": "azure_openai", "deployment": "gpt-4.1", "kind": "chat",
+     "input_per_1k": 0.002, "output_per_1k": 0.008, "note": "Highest quality reasoning"},
+    {"alias": "long-context", "provider": "azure_openai", "deployment": "gpt-5-mini", "kind": "chat",
+     "input_per_1k": 0.0004, "output_per_1k": 0.0016, "note": "Large transcript windows"},
+    {"alias": "judge", "provider": "azure_openai", "deployment": "gpt-4o-mini", "kind": "chat",
+     "input_per_1k": 0.00015, "output_per_1k": 0.0006, "note": "LLM-as-judge for evals"},
+    {"alias": "reasoning-o", "provider": "azure_openai", "deployment": "o3-mini", "kind": "chat",
+     "input_per_1k": 0.0011, "output_per_1k": 0.0044, "note": "Step-by-step reasoning model"},
+    {"alias": "embedding", "provider": "azure_openai", "deployment": "text-embedding-3-large",
+     "kind": "embedding", "input_per_1k": 0.00013, "output_per_1k": 0.0, "note": "RAG embeddings"},
+]

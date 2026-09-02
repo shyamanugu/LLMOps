@@ -3,7 +3,7 @@ traces + guardrail + feedback from the demo sample-data.json, and a couple of
 starter prompt versions in the registry."""
 import json
 
-from . import config, datasets, registry, store
+from . import config, datasets, engine, registry, store
 
 _SAMPLE = config.OPS_DIR / "server" / "sample_dashboard.json"
 if not _SAMPLE.exists():
@@ -43,7 +43,8 @@ def _seed_eval_history():
         ("denoise", 1, "bulk", "analysis_golden.jsonl", 1.00),
     ]
     for prompt, ver, model, ds, rate in history:
-        store.add_eval_run("telesales", prompt, ver, model, ds, rate, rate >= 0.8, 5, 0.0)
+        store.add_eval_run("telesales", prompt, ver, model, ds, rate, rate >= 0.8, 5,
+                           engine.cost_usd("gpt-4o-mini", 2100, 360))
 
 
 def _seed_from_sample():
@@ -58,7 +59,7 @@ def _seed_from_sample():
         per_out = int(s.get("output_tokens", 0)) // calls
         for _ in range(calls):
             store.add_trace(run_id, s.get("step"), None, "gpt-5.4-nano", per_in, per_out,
-                            (s.get("cost_usd", 0) or 0) / calls, s.get("avg_latency_ms", 0))
+                            engine.cost_usd("gpt-5.4-nano", per_in, per_out), s.get("avg_latency_ms", 0))
     # a few guardrail + feedback rows for the audit/feedback tabs
     store.add_guardrail(run_id, "analysis", "gpt-5.4-nano", "flagged", "PII detected (flagged, not blocked): phone")
     store.add_guardrail(run_id, "denoise", "gpt-5.4-nano", "flagged", "PII detected (flagged, not blocked): email")

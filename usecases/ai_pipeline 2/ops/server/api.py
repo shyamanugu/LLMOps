@@ -91,7 +91,8 @@ class Handler(BaseHTTPRequestHandler):
             if r == ["playground"]:
                 return self._send(engine.run_playground(
                     b.get("program", "telesales"), b.get("prompt_name"), b.get("version"),
-                    b.get("model_alias", "reason"), b.get("dataset"), b.get("ad_hoc_input")))
+                    b.get("model_alias", "reason"), b.get("dataset"), b.get("ad_hoc_input"),
+                    prompt_text=b.get("prompt_text")))
             # POST /api/run  -> execute (mock) a pipeline run for the Application tab
             if r == ["run"]:
                 res = engine.run_pipeline(b.get("program", "telesales"),

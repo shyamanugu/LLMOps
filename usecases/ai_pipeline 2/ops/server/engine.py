@@ -10,6 +10,27 @@ import time
 from . import config, datasets, registry, store
 
 
+# Illustrative per-1k-token USD rates so the demo never shows a misleading $0.
+# These are placeholders for presentation; replace with AFNI's contracted rates
+# in platform pricing.yaml. Real mode reads pricing.yaml via the platform when
+# available; this map is the mock/offline fallback.
+_RATES = {
+    "gpt-4o":            {"in": 0.0050, "out": 0.0150},
+    "gpt-4o-mini":       {"in": 0.00015, "out": 0.00060},
+    "gpt-5.4-nano":      {"in": 0.00020, "out": 0.00080},
+    "gpt-5-mini":        {"in": 0.00040, "out": 0.00160},
+    "gpt-4.1":           {"in": 0.00200, "out": 0.00800},
+    "o3-mini":           {"in": 0.00110, "out": 0.00440},
+    "text-embedding-3-large": {"in": 0.00013, "out": 0.0},
+    "_default":          {"in": 0.00050, "out": 0.00150},
+}
+
+
+def cost_usd(deployment, input_tokens, output_tokens):
+    r = _RATES.get(deployment or "", _RATES["_default"])
+    return round((input_tokens / 1000) * r["in"] + (output_tokens / 1000) * r["out"], 6)
+
+
 def list_datasets():
     return [d["name"] for d in datasets.list_datasets()] or ["telesales_golden.jsonl"]
 
@@ -74,11 +95,17 @@ def _evaluate(output_str, case):
     return True, "no evaluator"
 
 
-def run_playground(program, prompt_name, version, model_alias, dataset, ad_hoc_input=None):
-    prm = registry.get_version(program, prompt_name, version) if version else None
-    system = (prm or {}).get("template", "") or f"[in-code {program}/{prompt_name} prompt]"
+def run_playground(program, prompt_name, version, model_alias, dataset, ad_hoc_input=None,
+                   prompt_text=None):
+    # prompt_text (an edited/unsaved prompt from the Playground) wins over the
+    # stored version, so users can iterate on wording before saving a version.
+    if prompt_text and prompt_text.strip():
+        system = prompt_text
+    else:
+        prm = registry.get_version(program, prompt_name, version) if version else None
+        system = (prm or {}).get("template", "") or f"[in-code {program}/{prompt_name} prompt]"
     models = {m["alias"]: m for m in registry.list_models()}
-    deployment = (models.get(model_alias) or {}).get("deployment")
+    deployment = (models.get(model_alias) or {}).get("deployment") or "gpt-5.4-nano"
 
     cases = ([{"id": "ad-hoc", "input": {"transcript": ad_hoc_input}, "evaluator": "schema",
                "output_schema": {"type": "object"}}] if ad_hoc_input
@@ -101,12 +128,13 @@ def run_playground(program, prompt_name, version, model_alias, dataset, ad_hoc_i
     latency = round((time.perf_counter() - t0) * 1000, 1)
     n = len(cases) or 1
     pass_rate = round(passed_n / n, 3)
+    cost = cost_usd(deployment, tin, tout)
     summary = {"n_cases": len(cases), "passed": passed_n, "pass_rate": pass_rate,
-               "input_tokens": tin, "output_tokens": tout, "cost_usd": 0.0,
-               "latency_ms": latency, "mode": config.mode()}
+               "input_tokens": tin, "output_tokens": tout, "cost_usd": cost,
+               "latency_ms": latency, "mode": config.mode(), "deployment": deployment}
     if not ad_hoc_input:
         store.add_eval_run(program, prompt_name, version or 0, model_alias, dataset,
-                           pass_rate, pass_rate >= 0.8, len(cases), 0.0)
+                           pass_rate, pass_rate >= 0.8, len(cases), cost)
     return {"summary": summary, "results": results, "system_prompt": system}
 
 
@@ -145,9 +173,10 @@ def run_pipeline(program="telesales", date="2025-08-28", steps=None, seed_traces
         if name not in steps:
             continue
         if seed_traces:
+            ti, to = (900, 120) if name == "denoise" else (350, 90)
             for _ in range(calls):
                 store.add_trace(run_id, name, "reason" if name != "denoise" else "bulk",
-                                "gpt-5.4-nano", 350, 90, 0.0, latency)
+                                "gpt-5.4-nano", ti, to, cost_usd("gpt-5.4-nano", ti, to), latency)
         if name in ("analysis", "denoise"):
             store.add_guardrail(run_id, name, "gpt-5.4-nano", "flagged",
                                 "PII detected (flagged, not blocked): phone")

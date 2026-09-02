@@ -5,6 +5,19 @@ const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&
 const pct = (v, d = 0) => (v == null ? "—" : (v * 100).toFixed(d) + "%");
 const num = (v) => (v ?? 0).toLocaleString("en-US");
 const money = (v) => "$" + (v ?? 0).toFixed((v && v < 1) ? 4 : 2);
+// small ⓘ with a hover tooltip, to explain a metric during a client demo
+const info = (tip) => `<span class="info" data-tip="${esc(tip)}">i</span>`;
+const TIP = {
+  calls: "One LLM call = one model request. A run = 12 denoise + 12 analysis + 5 summary + 5 individual-metrics calls (KPI is pure aggregation, no LLM) = 34.",
+  intok: "Total prompt tokens sent to the model across all calls (system prompt + transcript).",
+  outtok: "Total tokens the model generated across all calls (the structured analysis / reflections).",
+  cost: "Estimated spend = tokens × per-1k rate from pricing.yaml. Rates here are ILLUSTRATIVE placeholders for the demo — swap in AFNI's contracted rates.",
+  latency: "Average wall-clock time per model call. Higher for analysis/summary (larger prompts) than denoise.",
+  flags: "Times a guardrail fired (e.g. PII detected). Flagged = recorded for audit but allowed through; blocked = stopped.",
+  errors: "Calls that failed (timeout, content filter, bad response). 0 is healthy.",
+  agents: "Distinct agents that had calls analysed and received an AI coaching reflection this run.",
+  passrate: "Share of golden-dataset cases the prompt+model passed. The evaluation gate blocks a change if this drops below the threshold.",
+};
 
 async function api(path, opts) {
   const r = await fetch(API + path, opts);
@@ -101,6 +114,11 @@ function head(title, sub) { return `<div class="page-head"><h1>${title}</h1><p>$
 async function Application() {
   view.innerHTML = head("AI Pipeline — Application",
     "Run the call-analytics pipeline and view the coaching intelligence it produces.");
+  if (HEALTH.mode !== "real")
+    view.appendChild($(`<div class="card" style="border-left:4px solid var(--amber);background:#fff8e9">
+      <b>Demo data.</b> <span class="muted">Numbers below are an illustrative sample generated from 12 example
+      transcripts — not from a live system or database. Flip <code>AI_PIPELINE_MODE=real</code> in <code>.env</code>
+      (with Azure creds) to run against real data.</span></div>`));
   const runCard = $(`<div class="card"><h2>Run a pipeline batch</h2>
     <p class="sub">Mock mode executes instantly with sample transcripts — no Azure needed.</p>
     <div class="field-row">
@@ -136,14 +154,14 @@ async function Application() {
     const t = (d.llmops || {}).totals || {}, emps = d.employees || [], kpis = d.kpis || [];
     dash.innerHTML = "";
     dash.appendChild($(`<div class="card"><h2>Run output — ${esc(d.meta.program || "")} · ${esc(d.meta.date || "")}</h2>
-      <p class="sub">Coaching intelligence generated from 100% of analysed calls.</p>
+      <p class="sub">Coaching intelligence generated from 100% of analysed calls. ${d.meta.mode === "mock" ? "<b>Mock data</b> — illustrative sample, not from a live system." : ""}</p>
       <div class="grid">
-        <div class="stat accent"><b>${num(emps.length)}</b><span>Agents coached</span></div>
-        <div class="stat"><b>${num(t.llm_calls)}</b><span>LLM calls</span></div>
-        <div class="stat"><b>${num((t.input_tokens || 0) + (t.output_tokens || 0))}</b><span>Tokens</span></div>
-        <div class="stat"><b>${money(t.cost_usd)}</b><span>Cost</span></div>
-        <div class="stat"><b>${Math.round(t.avg_latency_ms || 0)}ms</b><span>Avg latency</span></div>
-        <div class="stat"><b>${num(t.guardrail_flags)}</b><span>Guardrail flags</span></div>
+        <div class="stat accent"><b>${num(emps.length)}</b><span>Agents coached ${info(TIP.agents)}</span></div>
+        <div class="stat"><b>${num(t.llm_calls)}</b><span>LLM calls ${info(TIP.calls)}</span></div>
+        <div class="stat"><b>${num((t.input_tokens || 0) + (t.output_tokens || 0))}</b><span>Tokens ${info(TIP.intok)}</span></div>
+        <div class="stat"><b>${money(t.cost_usd)}</b><span>Cost ${info(TIP.cost)}<span class="illus">illustrative</span></span></div>
+        <div class="stat"><b>${Math.round(t.avg_latency_ms || 0)}ms</b><span>Avg latency ${info(TIP.latency)}</span></div>
+        <div class="stat"><b>${num(t.guardrail_flags)}</b><span>Guardrail flags ${info(TIP.flags)}</span></div>
       </div></div>`));
     if (kpis.length) dash.appendChild($(`<div class="card"><h2>Key performance indicators</h2>
       <div class="grid">${kpis.map(k => `<div class="stat"><b>${k.unit === "percent" ? pct(k.value) : num(Math.round(k.value))}</b>
@@ -178,35 +196,78 @@ async function Application() {
 /* ── Playground ────────────────────────────────────────────────────────── */
 async function Playground() {
   const [prompts, models, datasets] = await Promise.all([api("/prompts"), api("/models"), api("/datasets")]);
-  view.innerHTML = head("Playground", "Test a prompt version + model against a golden dataset and score it. Mock mode uses a deterministic mock LLM — no keys needed.");
+  view.innerHTML = head("Playground", "Edit a prompt, pick a model + golden dataset, and score it live. Mock mode uses a deterministic mock LLM — no keys needed. Compare models and prompt wordings before you save a version.");
   const card = $(`<div class="card"><div class="row-split"><div id="pg-l"></div><div id="pg-r"><div class="muted">Results appear here.</div></div></div></div>`);
   view.appendChild(card);
+  let TEMPLATES = {};   // version -> template text for the selected prompt
   card.querySelector("#pg-l").innerHTML = `
     <label>Prompt</label><select id="pg-prompt">${prompts.map(p => `<option value="${p.program}|${p.name}">${p.program} / ${p.name}</option>`).join("") || "<option>(none)</option>"}</select>
     <label>Version</label><select id="pg-version"></select>
-    <label>Model alias</label><select id="pg-model">${models.map(m => `<option value="${m.alias}">${m.alias}${m.deployment ? " → " + m.deployment : " (env fallback)"}</option>`).join("")}</select>
-    <label>Golden dataset</label><select id="pg-dataset">${datasets.map(d => `<option value="${d.name}">${d.name} (${d.cases})</option>`).join("")}</select>
-    <label>Ad-hoc input (optional)</label><textarea id="pg-adhoc" style="min-height:70px" placeholder="Paste one transcript to test a single case…"></textarea>
+    <label>Prompt text ${info("Edit freely and Run to test the wording without saving. Save as new version to persist it; Activate (Prompts tab) makes the pipeline use it.")}</label>
+    <textarea id="pg-text" style="min-height:150px" placeholder="Prompt template…"></textarea>
+    <div class="btnrow"><button class="btn alt sm" id="pg-save">💾 Save as new version</button>
+      <span class="muted" id="pg-savenote"></span></div>
+    <label>Model ${info("Each alias maps to an Azure deployment (config-as-code). Pick different models to compare quality vs. cost on the same golden set.")}</label>
+    <select id="pg-model">${models.map(m => `<option value="${m.alias}" title="${esc(m.note || "")}">${m.alias}${m.deployment ? " → " + m.deployment : ""}${m.note ? " — " + m.note : ""}</option>`).join("")}</select>
+    <div class="muted" id="pg-modelrate" style="margin-top:4px"></div>
+    <label>Golden dataset</label><select id="pg-dataset">${datasets.map(d => `<option value="${d.name}">${d.name} (${d.cases} cases)</option>`).join("")}</select>
+    <label>Ad-hoc input (optional) ${info("Paste one transcript to test a single case instead of the whole dataset — great for a quick live demo.")}</label>
+    <textarea id="pg-adhoc" style="min-height:60px" placeholder="Paste one transcript to test a single case…"></textarea>
     <div class="btnrow"><button class="btn go" id="pg-run">▶ Run evaluation</button></div>`;
+
+  const MODELS = Object.fromEntries(models.map(m => [m.alias, m]));
+  const showRate = () => {
+    const m = MODELS[document.getElementById("pg-model").value] || {};
+    document.getElementById("pg-modelrate").innerHTML = m.input_per_1k != null
+      ? `Rate: $${m.input_per_1k}/1k in · $${m.output_per_1k}/1k out <span class="illus">illustrative</span>` : "";
+  };
+  document.getElementById("pg-model").onchange = showRate; showRate();
+
   const fillV = async () => {
     const sel = document.getElementById("pg-prompt").value; if (!sel) return;
     const [pr, nm] = sel.split("|"); const p = await api(`/prompts/${pr}/${nm}`);
-    document.getElementById("pg-version").innerHTML = (p.versions || []).map(v =>
+    TEMPLATES = {}; (p.versions || []).forEach(v => TEMPLATES[v.version] = v.template || "");
+    const vsel = document.getElementById("pg-version");
+    vsel.innerHTML = (p.versions || []).map(v =>
       `<option value="${v.version}" ${v.version === p.active_version ? "selected" : ""}>v${v.version}${v.version === p.active_version ? " (active)" : ""}</option>`).join("");
+    loadText();
   };
-  document.getElementById("pg-prompt").onchange = fillV; await fillV();
+  const loadText = () => {
+    const v = document.getElementById("pg-version").value;
+    document.getElementById("pg-text").value = TEMPLATES[v] || "";
+  };
+  document.getElementById("pg-prompt").onchange = fillV;
+  document.getElementById("pg-version").onchange = loadText;
+  await fillV();
+
+  document.getElementById("pg-save").onclick = async () => {
+    const sel = document.getElementById("pg-prompt").value; if (!sel) return;
+    const [pr, nm] = sel.split("|");
+    const note = document.getElementById("pg-savenote");
+    try {
+      const spec = await post(`/prompts/${pr}/${nm}`, { template: document.getElementById("pg-text").value, note: "saved from playground" });
+      note.textContent = `saved v${spec.version}`;
+      await fillV();
+      document.getElementById("pg-version").value = spec.version; loadText();
+    } catch (e) { note.textContent = "save failed: " + e.message; }
+  };
+
   document.getElementById("pg-run").onclick = async () => {
     const out = card.querySelector("#pg-r"); const sel = document.getElementById("pg-prompt").value;
     if (!sel) { out.innerHTML = `<div class="err">No prompt.</div>`; return; }
     const [pr, nm] = sel.split("|"); out.innerHTML = `<div class="loading"><span class="spin"></span> Running…</div>`;
     try {
       const res = await post("/playground", { program: pr, prompt_name: nm, version: Number(document.getElementById("pg-version").value),
+        prompt_text: document.getElementById("pg-text").value,
         model_alias: document.getElementById("pg-model").value, dataset: document.getElementById("pg-dataset").value,
         ad_hoc_input: document.getElementById("pg-adhoc").value.trim() || null });
       const s = res.summary;
       out.innerHTML = `<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">${donut(s.passed, s.n_cases)}
-        <div class="grid" style="flex:1"><div class="stat"><b>${num(s.input_tokens + s.output_tokens)}</b><span>Tokens</span></div>
-        <div class="stat"><b>${s.latency_ms}ms</b><span>Latency</span></div><div class="stat"><b>${s.mode}</b><span>Mode</span></div></div></div>
+        <div class="grid" style="flex:1">
+          <div class="stat"><b>${num(s.input_tokens + s.output_tokens)}</b><span>Tokens ${info(TIP.intok)}</span></div>
+          <div class="stat"><b>${money(s.cost_usd)}</b><span>Cost ${info(TIP.cost)}</span></div>
+          <div class="stat"><b>${s.latency_ms}ms</b><span>Latency ${info(TIP.latency)}</span></div>
+          <div class="stat"><b>${esc(s.deployment || s.mode)}</b><span>Model</span></div></div></div>
         <div class="scroll" style="margin-top:12px"><table><thead><tr><th>Case</th><th>Result</th><th>Detail</th></tr></thead><tbody>
         ${res.results.map(r => `<tr><td>${esc(r.case_id)}</td><td><span class="badge ${r.passed ? "b-pass" : "b-fail"}">${r.passed ? "PASS" : "FAIL"}</span></td>
           <td>${esc((r.reason || r.output || "").slice(0, 140))}</td></tr>`).join("")}</tbody></table></div>`;
@@ -226,10 +287,10 @@ async function Evaluation() {
   const verBars = Object.entries(byVer).map(([k, a]) => ({ k, v: a.reduce((x, y) => x + y, 0) / a.length }));
 
   view.appendChild($(`<div class="card"><div class="grid">
-    <div class="stat accent"><b>${pct(avg)}</b><span>Avg pass rate</span></div>
-    <div class="stat"><b>${runs.length}</b><span>Eval runs</span></div>
-    <div class="stat"><b>${passed}</b><span>Passed gate</span></div>
-    <div class="stat"><b>${runs.length - passed}</b><span>Failed gate</span></div></div></div>`));
+    <div class="stat accent"><b>${pct(avg)}</b><span>Avg pass rate ${info(TIP.passrate)}</span></div>
+    <div class="stat"><b>${runs.length}</b><span>Eval runs ${info("Each Playground run against a golden dataset is recorded here.")}</span></div>
+    <div class="stat"><b>${passed}</b><span>Passed gate ${info("Runs at or above the environment threshold (dev 0.8 / test 0.9 / prod 1.0).")}</span></div>
+    <div class="stat"><b>${runs.length - passed}</b><span>Failed gate ${info("Runs below threshold — these would block a prompt/model change from shipping.")}</span></div></div></div>`));
   const charts = $(`<div class="cards-2"></div>`);
   charts.appendChild($(`<div class="card"><div class="chart-title">Pass-rate trend (oldest → newest)</div>${svgLine(trend)}</div>`));
   charts.appendChild($(`<div class="card"><div class="chart-title">Avg pass rate by prompt version</div>${svgHBars(verBars, { unit: "%" })}</div>`));
@@ -309,16 +370,16 @@ async function Datasets() {
 async function Monitoring() {
   const [m, runs] = await Promise.all([api("/monitoring"), api("/runs")]);
   const t = m.totals || {};
-  view.innerHTML = head("Monitoring", "Full LLM observability across the pipeline: cost, tokens, latency, guardrail flags — traced per call.");
+  view.innerHTML = head("Monitoring", "Full LLM observability across the pipeline: cost, tokens, latency, guardrail flags — traced per call. Hover any ⓘ for an explanation.");
   view.appendChild($(`<div class="card"><div class="grid">
-    <div class="stat accent"><b>${num(t.llm_calls)}</b><span>LLM calls</span></div>
-    <div class="stat"><b>${num(t.input_tokens)}</b><span>Input tokens</span></div>
-    <div class="stat"><b>${num(t.output_tokens)}</b><span>Output tokens</span></div>
-    <div class="stat"><b>${money(t.cost_usd)}</b><span>Cost</span></div>
-    <div class="stat"><b>${Math.round(t.avg_latency_ms || 0)}ms</b><span>Avg latency</span></div>
-    <div class="stat"><b>${num(t.guardrail_flags)}</b><span>Guardrail flags</span></div>
-    <div class="stat"><b>${num(t.errors)}</b><span>Errors</span></div></div>
-    ${!t.cost_usd ? `<div class="note" style="margin-top:12px">Cost shows $0 until per-token rates are set in <code>pricing.yaml</code>. Tokens, latency & guardrails are live.</div>` : ""}</div>`));
+    <div class="stat accent"><b>${num(t.llm_calls)}</b><span>LLM calls ${info(TIP.calls)}</span></div>
+    <div class="stat"><b>${num(t.input_tokens)}</b><span>Input tokens ${info(TIP.intok)}</span></div>
+    <div class="stat"><b>${num(t.output_tokens)}</b><span>Output tokens ${info(TIP.outtok)}</span></div>
+    <div class="stat"><b>${money(t.cost_usd)}</b><span>Cost ${info(TIP.cost)}<span class="illus">illustrative</span></span></div>
+    <div class="stat"><b>${Math.round(t.avg_latency_ms || 0)}ms</b><span>Avg latency ${info(TIP.latency)}</span></div>
+    <div class="stat"><b>${num(t.guardrail_flags)}</b><span>Guardrail flags ${info(TIP.flags)}</span></div>
+    <div class="stat"><b>${num(t.errors)}</b><span>Errors ${info(TIP.errors)}</span></div></div>
+    <div class="note" style="margin-top:12px">Cost uses <b>illustrative</b> per-token rates from <code>pricing.yaml</code> — swap in AFNI's contracted rates for exact figures. Tokens, latency &amp; guardrails are computed live.</div></div>`));
   const bs = (m.by_step || []).map(s => ({ k: s.step, v: Math.round(s.avg_latency_ms || 0) }));
   const cs = (m.by_step || []).map(s => ({ k: s.step, v: s.calls || 0 }));
   const two = $(`<div class="cards-2"></div>`);
