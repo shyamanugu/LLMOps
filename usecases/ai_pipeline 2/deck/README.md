@@ -15,6 +15,16 @@ Navigate by:
 
 Tip: press **F11** for full-screen presentation mode.
 
+## Two ways to present
+
+- **`presentation.html`** — the **speaker deck**: 9 dense slides, each with a **talk track**
+  (speaker notes) you can toggle with the on-screen button or the **N** key. Navigate with
+  **← →** / Space, **F** for full-screen. This is the "walk the client through it" artifact.
+  It has **screenshot placeholders** (dashed boxes) — drop UI images into a `deck/shots/`
+  folder and replace each box with `<img src="shots/xxx.png">`.
+- **`index.html` … `usecases.html`** — the **click-through reference** site (below), good for
+  handing over or exploring at their own pace.
+
 ## Pages (in order)
 
 1. **index.html** — Overview: the thesis and how the walkthrough is structured.
