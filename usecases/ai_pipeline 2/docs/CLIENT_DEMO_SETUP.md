@@ -351,11 +351,29 @@ the pricing one so cost tracking is real.
 
 ## 4. Install & run the pipeline (Tier B)
 
+### Dependency tiers — install only what you need
+
+| You want to… | Install | Compiled wheels? | Python 3.14? |
+|--------------|---------|------------------|--------------|
+| **Demo the Console** (Application, Playground, Eval, Datasets, Monitoring, Feedback, Guardrails) | **nothing** (`requirements-ops.txt` is empty) | none | ✅ works, zero installs |
+| Run the **full pipeline** (`ai_pipeline.main`) | `pip install -r requirements.txt` | yes (numpy, polars, pyarrow, duckdb, pydantic-core…) | ✅ if wheels exist; else use 3.12 |
+| Add the **Azure SQL** steps (`individual_metrics`, `kpi`) | `pip install -r requirements-sql.txt` | yes (pyodbc — hardest) | ⚠️ often needs 3.12 |
+
+> **Hit "failed to build wheels for pydantic_core / pyodbc / PyYAML"?** That comes from the
+> **full** `requirements.txt` on a Python with no prebuilt wheels for those compiled packages
+> (e.g. brand-new 3.14). Two fixes, in order of preference:
+> 1. **For the demo you don't need them at all** — just run the Console (Section 6.5 / `ops/README.md`).
+> 2. **For the full pipeline**, the requirements now use version *floors* (not exact pins) so pip
+>    grabs a matching wheel; if a package still has no 3.14 wheel, create the venv with **Python
+>    3.12** (`py -3.12 -m venv .venv`). `pyodbc` is split into `requirements-sql.txt` and only
+>    needed for the SQL steps.
+
 ```bash
 cd "usecases/ai_pipeline 2"
-python -m venv .venv && . .venv/Scripts/activate     # Windows Git Bash
+py -3.12 -m venv .venv && . .venv/Scripts/activate   # 3.12 recommended for the full pipeline
 pip install -e .
-pip install -r requirements.txt
+pip install -r requirements.txt                       # full pipeline
+pip install -r requirements-sql.txt                   # only if you run individual_metrics / kpi
 ```
 The LLMOps platform is picked up automatically from `../../platform/services/*/src`
 (via `_platform_bootstrap.py`; override with `LLMOPS_PLATFORM_ROOT` if needed).

@@ -1,0 +1,14 @@
+# Ops Console / demo dependencies:  (none)
+#
+# The unified LLMOps Console is 100% Python standard library — no third-party
+# packages, no compiled wheels, no network. It therefore installs and runs on a
+# locked-down VDI and on Python 3.14 with NOTHING to pip install.
+#
+#     python ops/start_backend.py      # stdlib HTTP API + SQLite
+#     python ops/start_ui.py           # stdlib static server
+#
+# This file is intentionally empty (this comment aside). Running:
+#     pip install -r requirements-ops.txt
+# is a harmless no-op — provided only so tooling that expects a requirements
+# file has one. If you hit wheel-build errors, you were installing the FULL
+# pipeline (requirements.txt); the demo needs none of it.

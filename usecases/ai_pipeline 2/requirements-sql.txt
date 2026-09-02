@@ -1,0 +1,12 @@
+# Azure SQL support — ONLY needed for the individual_metrics and kpi steps.
+#
+# pyodbc is a compiled C extension and needs the unixODBC dev headers + a C
+# compiler (and the Microsoft ODBC Driver 18 at runtime). It is the most likely
+# dependency to fail to build on a locked-down VDI or a brand-new Python. Install
+# it separately, and only if you run the SQL-backed steps:
+#
+#     pip install -r requirements-sql.txt
+#
+# If it fails to build on Python 3.14, use Python 3.12, or skip the SQL steps
+# (denoise -> analysis -> summary run without it).
+pyodbc>=5.1
