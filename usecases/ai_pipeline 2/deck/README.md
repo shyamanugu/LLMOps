@@ -15,15 +15,26 @@ Navigate by:
 
 Tip: press **F11** for full-screen presentation mode.
 
-## Two ways to present
+## The presentation to share — `AI_Pipeline_LLMOps.pptx`
 
-- **`presentation.html`** — the **speaker deck**: 9 dense slides, each with a **talk track**
-  (speaker notes) you can toggle with the on-screen button or the **N** key. Navigate with
-  **← →** / Space, **F** for full-screen. This is the "walk the client through it" artifact.
-  It has **screenshot placeholders** (dashed boxes) — drop UI images into a `deck/shots/`
-  folder and replace each box with `<img src="shots/xxx.png">`.
-- **`index.html` … `usecases.html`** — the **click-through reference** site (below), good for
-  handing over or exploring at their own pace.
+**`AI_Pipeline_LLMOps.pptx`** is the editable PowerPoint to email / share on Teams. 10 slides,
+each with **speaker notes** (plain comments in the Notes pane you can read while presenting).
+Fully editable in PowerPoint / Google Slides.
+
+Regenerate it any time after editing the content:
+```bash
+pip install python-pptx        # one-time
+python deck/build_pptx.py      # -> deck/AI_Pipeline_LLMOps.pptx
+```
+Edit the wording in `deck/build_pptx.py` and re-run, or just edit the `.pptx` directly in
+PowerPoint. There are **no screenshot placeholders** — add real screenshots in PowerPoint if
+you want them.
+
+## Click-through reference site (optional)
+
+`index.html … usecases.html` is a browser-based reference version of the same story (top nav,
+arrow-key navigation). Useful to hand over or explore at their own pace — not needed if you're
+presenting from the PPT.
 
 ## Pages (in order)
 
