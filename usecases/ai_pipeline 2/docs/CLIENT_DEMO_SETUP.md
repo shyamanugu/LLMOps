@@ -1,15 +1,27 @@
-# AIA Pipeline — Client Demo Setup (Azure services, `.env`, and the UI)
+# AI Pipeline — Client Demo Setup (Azure services, `.env`, and the console)
 
 **Audience:** whoever stands up the demo. This is self-contained — follow it top to
 bottom. It covers (1) the Azure services to create with **Contributor at resource-group
-level**, (2) the `.env` file, (3) running the pipeline, and (4) the React UI that shows
-the output to the client.
+level**, (2) the `.env` file, (3) running the pipeline, and (4) the **LLMOps Console** —
+one pure-Python app that runs the pipeline and shows the output to the client.
 
 > **You cannot deploy hosted infrastructure.** That's fine. The model here is:
 > you *create a few Azure resources inside a resource group you already have* (that
 > only needs RG-level Contributor), run the pipeline **from your laptop** against them,
-> and present the results in a **React UI that also runs on your laptop**. Nothing is
-> deployed as a public app.
+> and present the results in the **LLMOps Console that also runs on your laptop** (pure
+> Python — no Node, no npm, no build, so a locked-down VDI and its SSL/cert.pem are never
+> a factor). Nothing is deployed as a public app.
+
+> ## ⭐ The one thing to run for a demo
+> ```bash
+> cd "usecases/ai_pipeline 2"
+> python ops/start_backend.py      # terminal 1
+> python ops/start_ui.py           # terminal 2 → opens http://127.0.0.1:5173
+> ```
+> That's the whole demo in **mock** mode — no Azure, no installs. It opens the unified
+> **LLMOps Console**: Application (run + dashboard) · Playground · Evaluation · Golden
+> Datasets · Monitoring · Feedback · Guardrails. See `ops/README.md`. The rest of this
+> document is for wiring **real** Azure once the client approves.
 
 ---
 

@@ -1,6 +1,11 @@
-# AIA Pipeline — Demo UI
+# AI Pipeline — Demo UI (legacy — superseded by the LLMOps Console)
 
-A local React dashboard that showcases the AIA call-analytics pipeline and its
+> **This standalone React demo is superseded by the unified LLMOps Console** under
+> `../ops/` (run `python ops/start_backend.py` + `python ops/start_ui.py`). This folder is
+> kept only for its data/exporter utilities (`export_run.py`, `make_sample_data.py`,
+> `public/sample-data.json`). You do not need Node to demo anymore.
+
+A local React dashboard that showcases the AI Pipeline (call-analytics) and its
 AFNI LLMOps instrumentation to a client. No backend — it reads a single JSON file.
 
 ## Run

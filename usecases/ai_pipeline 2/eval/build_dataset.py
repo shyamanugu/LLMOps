@@ -48,7 +48,7 @@ def build(program: str, parquet_path: str, out_path: str, limit: int = 50) -> in
 
 
 def main(argv=None) -> int:
-    p = argparse.ArgumentParser(description="Build AIA golden eval dataset from analysis parquet")
+    p = argparse.ArgumentParser(description="Build AI Pipeline golden eval dataset from analysis parquet")
     p.add_argument("--program", required=True)
     p.add_argument("--parquet", required=True, help="path to a historical analysis parquet")
     p.add_argument("--out", required=True, help="output JSONL path")

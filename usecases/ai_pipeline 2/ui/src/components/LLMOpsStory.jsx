@@ -19,7 +19,7 @@ const COMPONENTS = [
 ]
 
 const REUSE = [
-  { title: 'This use case', body: 'AIA call analytics — one pipeline, onboarded to the platform.' },
+  { title: 'This use case', body: 'AI Pipeline call analytics — one pipeline, onboarded to the platform.' },
   { title: 'Voice Agent', body: 'Real-time contact-center automation — same platform, same guardrails.' },
   { title: 'PI Index', body: 'Performance intelligence across 100% of interactions.' },
   { title: 'Hiring Intelligence', body: 'Fair, high-volume recruitment — reuses the same paved road.' },
@@ -32,7 +32,7 @@ export default function LLMOpsStory() {
       <p className="story-lead">
         AFNI didn&rsquo;t build a one-off AI feature. It built a <strong>governed platform</strong> &mdash;
         a factory that produces AI use cases quickly, safely, and cost-effectively. This dashboard is
-        one use case (<strong>AIA call analytics</strong>) running <em>on</em> that platform. The pipeline
+        one use case (<strong>AI Pipeline call analytics</strong>) running <em>on</em> that platform. The pipeline
         stays focused on the domain; the platform wraps every model call with observability, cost control,
         guardrails, versioned prompts, and an evaluation gate &mdash; <strong>by construction, not bolted on.</strong>
       </p>

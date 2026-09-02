@@ -37,6 +37,9 @@ def init_db() -> None:
               id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT, program TEXT, prompt TEXT,
               version INTEGER, model_alias TEXT, dataset TEXT, pass_rate REAL, passed INTEGER,
               n_cases INTEGER, cost_usd REAL);
+            CREATE TABLE IF NOT EXISTS runs(
+              id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT, run_id TEXT, program TEXT,
+              date TEXT, n_steps INTEGER, mode TEXT);
             """
         )
 
@@ -69,6 +72,12 @@ def add_eval_run(program, prompt, version, model_alias, dataset, pass_rate, pass
                   (_now(), program, prompt, version, model_alias, dataset, pass_rate, int(passed), n_cases, cost))
 
 
+def add_run(run_id, program, date, n_steps, mode):
+    with _conn() as c:
+        c.execute("INSERT INTO runs(ts,run_id,program,date,n_steps,mode) VALUES(?,?,?,?,?,?)",
+                  (_now(), run_id, program, date, n_steps, mode))
+
+
 # ── reads ────────────────────────────────────────────────────────────────
 def _rows(sql, args=()):
     with _conn() as c:
@@ -91,6 +100,10 @@ def list_eval_runs(limit=100):
     return _rows("SELECT * FROM eval_runs ORDER BY id DESC LIMIT ?", (limit,))
 
 
+def list_runs(limit=50):
+    return _rows("SELECT * FROM runs ORDER BY id DESC LIMIT ?", (limit,))
+
+
 def monitoring_summary():
     with _conn() as c:
         tot = dict(c.execute(
@@ -111,4 +124,4 @@ def monitoring_summary():
 def counts():
     with _conn() as c:
         return {t: c.execute(f"SELECT COUNT(*) n FROM {t}").fetchone()["n"]
-                for t in ("feedback", "guardrails", "traces", "eval_runs")}
+                for t in ("feedback", "guardrails", "traces", "eval_runs", "runs")}

@@ -1,0 +1,540 @@
+{
+  "meta": {
+    "generated_at": "2025-08-28T10:00:00Z",
+    "run_id": "sample01",
+    "program": "telesales",
+    "environment": "dev",
+    "date": "2025-08-28",
+    "model_deployment": "gpt-5.4-nano",
+    "mode": "mock",
+    "source": "sample"
+  },
+  "llmops": {
+    "totals": {
+      "llm_calls": 34,
+      "input_tokens": 78800,
+      "output_tokens": 14320,
+      "cost_usd": 0.0,
+      "errors": 0,
+      "avg_latency_ms": 1873.5,
+      "guardrail_flags": 0
+    },
+    "by_step": [
+      {
+        "step": "denoise",
+        "calls": 12,
+        "input_tokens": 10800,
+        "output_tokens": 3120,
+        "cost_usd": 0.0,
+        "avg_latency_ms": 1400.0,
+        "errors": 0,
+        "guardrail_flags": 0
+      },
+      {
+        "step": "analysis",
+        "calls": 12,
+        "input_tokens": 42000,
+        "output_tokens": 7200,
+        "cost_usd": 0.0,
+        "avg_latency_ms": 2200.0,
+        "errors": 0,
+        "guardrail_flags": 0
+      },
+      {
+        "step": "summary",
+        "calls": 5,
+        "input_tokens": 20000,
+        "output_tokens": 2500,
+        "cost_usd": 0.0,
+        "avg_latency_ms": 2600.0,
+        "errors": 0,
+        "guardrail_flags": 0
+      },
+      {
+        "step": "individual_metrics",
+        "calls": 5,
+        "input_tokens": 6000,
+        "output_tokens": 1500,
+        "cost_usd": 0.0,
+        "avg_latency_ms": 1500.0,
+        "errors": 0,
+        "guardrail_flags": 0
+      }
+    ]
+  },
+  "kpis": [
+    {
+      "key": "resolution_rate",
+      "label": "Resolution Rate",
+      "value": 0.917,
+      "unit": "percent",
+      "delta": 0.04
+    },
+    {
+      "key": "right_of_sell_rate",
+      "label": "Right-of-Sell Rate",
+      "value": 0.417,
+      "unit": "percent",
+      "delta": 0.06
+    },
+    {
+      "key": "save_rate",
+      "label": "Save Rate",
+      "value": 0.75,
+      "unit": "percent",
+      "delta": 0.09
+    },
+    {
+      "key": "escalation_rate",
+      "label": "Escalation Rate",
+      "value": 0.167,
+      "unit": "percent",
+      "delta": -0.03
+    },
+    {
+      "key": "avg_handle_time",
+      "label": "Avg Handle Time (s)",
+      "value": 274,
+      "unit": "count",
+      "delta": -12
+    },
+    {
+      "key": "thumbs_up",
+      "label": "Thumbs Up %",
+      "value": 0.917,
+      "unit": "percent",
+      "delta": 0.05
+    }
+  ],
+  "employees": [
+    {
+      "employee_id": "9040400",
+      "name": "Jordan Lee",
+      "coach": "Sam Rivera",
+      "calls_analyzed": 3,
+      "reflection": "Jordan consistently anchors offers to the customer's own numbers \u2014 the data-overage upgrade was a textbook value framing. On the dropped-calls contact, empathy dipped and the customer's sentiment stayed negative; slowing down to acknowledge the frustration before jumping to the extender would lift the recovery. Strong closer overall.",
+      "scores": [
+        {
+          "label": "Active Listening",
+          "value": 0.9,
+          "unit": "percent"
+        },
+        {
+          "label": "Acknowledgment",
+          "value": 0.86,
+          "unit": "percent"
+        },
+        {
+          "label": "Empathy",
+          "value": 0.82,
+          "unit": "percent"
+        },
+        {
+          "label": "Product Knowledge",
+          "value": 0.91,
+          "unit": "percent"
+        },
+        {
+          "label": "Objection Handling",
+          "value": 0.84,
+          "unit": "percent"
+        },
+        {
+          "label": "Closing",
+          "value": 0.88,
+          "unit": "percent"
+        }
+      ],
+      "comparisons": [
+        {
+          "metric": "Escalations",
+          "individual": 1,
+          "teamAvg": 0.4,
+          "unit": "count"
+        },
+        {
+          "metric": "Closed Deals",
+          "individual": 1,
+          "teamAvg": 0.6,
+          "unit": "count"
+        }
+      ],
+      "top_calls": [
+        {
+          "contact_id": "C1000",
+          "intent": "Plan upgrade \u2014 data overages",
+          "outcome": "Closed deal",
+          "importance": 0.92,
+          "tags": [
+            "upsell",
+            "value-framing",
+            "data"
+          ],
+          "excerpt": "Framed the unlimited upgrade against last month's overage charges to justify the $10 difference."
+        },
+        {
+          "contact_id": "C1005",
+          "intent": "Service quality \u2014 dropped calls",
+          "outcome": "Resolved",
+          "importance": 0.8,
+          "tags": [
+            "service",
+            "escalation-risk"
+          ],
+          "excerpt": "Checked tower maintenance and shipped a network extender at no charge."
+        },
+        {
+          "contact_id": "C1010",
+          "intent": "Lost/stolen device",
+          "outcome": "Resolved (claim)",
+          "importance": 0.7,
+          "tags": [
+            "support",
+            "security"
+          ],
+          "excerpt": "Suspended the line and initiated an insurance claim for a replacement."
+        }
+      ],
+      "escalations": [
+        {
+          "contact_id": "C1005",
+          "reason": "Service quality \u2014 dropped calls",
+          "excerpt": "Checked tower maintenance and shipped a network extender at no charge."
+        }
+      ]
+    },
+    {
+      "employee_id": "9040401",
+      "name": "Priya Nair",
+      "coach": "Dana Cole",
+      "calls_analyzed": 3,
+      "reflection": "Priya excels at defusing billing frustration \u2014 the loyalty-credit save was handled with genuine empathy. She respects a 'no' cleanly (autopay decline). Opportunity: on the wearable add-on she could deepen product knowledge to pre-empt the number-share question and shorten the path to close.",
+      "scores": [
+        {
+          "label": "Active Listening",
+          "value": 0.88,
+          "unit": "percent"
+        },
+        {
+          "label": "Acknowledgment",
+          "value": 0.92,
+          "unit": "percent"
+        },
+        {
+          "label": "Empathy",
+          "value": 0.9,
+          "unit": "percent"
+        },
+        {
+          "label": "Product Knowledge",
+          "value": 0.79,
+          "unit": "percent"
+        },
+        {
+          "label": "Objection Handling",
+          "value": 0.81,
+          "unit": "percent"
+        },
+        {
+          "label": "Closing",
+          "value": 0.72,
+          "unit": "percent"
+        }
+      ],
+      "comparisons": [
+        {
+          "metric": "Escalations",
+          "individual": 0,
+          "teamAvg": 0.4,
+          "unit": "count"
+        },
+        {
+          "metric": "Closed Deals",
+          "individual": 1,
+          "teamAvg": 0.6,
+          "unit": "count"
+        }
+      ],
+      "top_calls": [
+        {
+          "contact_id": "C1001",
+          "intent": "Billing dispute \u2014 price increase",
+          "outcome": "Retained",
+          "importance": 0.78,
+          "tags": [
+            "retention",
+            "billing",
+            "empathy"
+          ],
+          "excerpt": "Acknowledged the surprise charge, explained the expired promo, and applied a loyalty credit."
+        },
+        {
+          "contact_id": "C1006",
+          "intent": "One-time bill payment",
+          "outcome": "No sale",
+          "importance": 0.4,
+          "tags": [
+            "billing"
+          ],
+          "excerpt": "Took the payment and respected the customer's decline of autopay."
+        },
+        {
+          "contact_id": "C1011",
+          "intent": "Wearable add-on",
+          "outcome": "Closed deal",
+          "importance": 0.72,
+          "tags": [
+            "upsell",
+            "wearable"
+          ],
+          "excerpt": "Added the discounted watch via number share at $10/mo."
+        }
+      ],
+      "escalations": []
+    },
+    {
+      "employee_id": "9040402",
+      "name": "Marcus Reyes",
+      "coach": "Sam Rivera",
+      "calls_analyzed": 2,
+      "reflection": "Marcus is the team's strongest on high-value acquisition \u2014 the three-line carrier switch was well-orchestrated and the trade-in credit surfaced proactively. Watch the trade-in inquiry that stalled in 'in progress'; a firmer next-step ask would convert more of these.",
+      "scores": [
+        {
+          "label": "Active Listening",
+          "value": 0.84,
+          "unit": "percent"
+        },
+        {
+          "label": "Acknowledgment",
+          "value": 0.8,
+          "unit": "percent"
+        },
+        {
+          "label": "Empathy",
+          "value": 0.78,
+          "unit": "percent"
+        },
+        {
+          "label": "Product Knowledge",
+          "value": 0.93,
+          "unit": "percent"
+        },
+        {
+          "label": "Objection Handling",
+          "value": 0.89,
+          "unit": "percent"
+        },
+        {
+          "label": "Closing",
+          "value": 0.9,
+          "unit": "percent"
+        }
+      ],
+      "comparisons": [
+        {
+          "metric": "Escalations",
+          "individual": 0,
+          "teamAvg": 0.4,
+          "unit": "count"
+        },
+        {
+          "metric": "Closed Deals",
+          "individual": 1,
+          "teamAvg": 0.6,
+          "unit": "count"
+        }
+      ],
+      "top_calls": [
+        {
+          "contact_id": "C1002",
+          "intent": "Trade-in promo inquiry",
+          "outcome": "In progress",
+          "importance": 0.7,
+          "tags": [
+            "upsell",
+            "trade-in"
+          ],
+          "excerpt": "Checked live trade value and surfaced the full $800 device credit."
+        },
+        {
+          "contact_id": "C1007",
+          "intent": "Carrier switch \u2014 3 lines",
+          "outcome": "Closed deal",
+          "importance": 0.96,
+          "tags": [
+            "acquisition",
+            "upsell",
+            "high-value"
+          ],
+          "excerpt": "Covered switching costs and set up three lines on unlimited plus."
+        }
+      ],
+      "escalations": []
+    },
+    {
+      "employee_id": "9040403",
+      "name": "Ava Thompson",
+      "coach": "Dana Cole",
+      "calls_analyzed": 2,
+      "reflection": "Ava turns saves and service recovery into loyalty \u2014 the suspend-instead-of-cancel play and the owned repeat-contact recovery both landed well. Her empathy is a standout. To grow, pair that trust with a light cross-sell where appropriate rather than closing the call flat.",
+      "scores": [
+        {
+          "label": "Active Listening",
+          "value": 0.91,
+          "unit": "percent"
+        },
+        {
+          "label": "Acknowledgment",
+          "value": 0.88,
+          "unit": "percent"
+        },
+        {
+          "label": "Empathy",
+          "value": 0.93,
+          "unit": "percent"
+        },
+        {
+          "label": "Product Knowledge",
+          "value": 0.8,
+          "unit": "percent"
+        },
+        {
+          "label": "Objection Handling",
+          "value": 0.85,
+          "unit": "percent"
+        },
+        {
+          "label": "Closing",
+          "value": 0.76,
+          "unit": "percent"
+        }
+      ],
+      "comparisons": [
+        {
+          "metric": "Escalations",
+          "individual": 1,
+          "teamAvg": 0.4,
+          "unit": "count"
+        },
+        {
+          "metric": "Closed Deals",
+          "individual": 0,
+          "teamAvg": 0.6,
+          "unit": "count"
+        }
+      ],
+      "top_calls": [
+        {
+          "contact_id": "C1003",
+          "intent": "Cancellation \u2014 relocating abroad",
+          "outcome": "Saved (suspend)",
+          "importance": 0.88,
+          "tags": [
+            "retention",
+            "save",
+            "international"
+          ],
+          "excerpt": "Offered line suspension up to 24 months instead of cancelling."
+        },
+        {
+          "contact_id": "C1008",
+          "intent": "Repeat issue \u2014 international texts",
+          "outcome": "Resolved + credit",
+          "importance": 0.82,
+          "tags": [
+            "escalation",
+            "service",
+            "recovery"
+          ],
+          "excerpt": "Owned the repeat contacts, fixed the messaging add-on, and applied a goodwill credit."
+        }
+      ],
+      "escalations": [
+        {
+          "contact_id": "C1008",
+          "reason": "Repeat issue \u2014 international texts",
+          "excerpt": "Owned the repeat contacts, fixed the messaging add-on, and applied a goodwill credit."
+        }
+      ]
+    },
+    {
+      "employee_id": "9040404",
+      "name": "Diego Alvarez",
+      "coach": "Sam Rivera",
+      "calls_analyzed": 2,
+      "reflection": "Diego balances retention and growth \u2014 the add-a-line bundle and the right-plan downgrade both kept the customer happy while protecting revenue. Continue leading with the total-cost story; it's clearly resonating.",
+      "scores": [
+        {
+          "label": "Active Listening",
+          "value": 0.83,
+          "unit": "percent"
+        },
+        {
+          "label": "Acknowledgment",
+          "value": 0.82,
+          "unit": "percent"
+        },
+        {
+          "label": "Empathy",
+          "value": 0.8,
+          "unit": "percent"
+        },
+        {
+          "label": "Product Knowledge",
+          "value": 0.86,
+          "unit": "percent"
+        },
+        {
+          "label": "Objection Handling",
+          "value": 0.83,
+          "unit": "percent"
+        },
+        {
+          "label": "Closing",
+          "value": 0.87,
+          "unit": "percent"
+        }
+      ],
+      "comparisons": [
+        {
+          "metric": "Escalations",
+          "individual": 0,
+          "teamAvg": 0.4,
+          "unit": "count"
+        },
+        {
+          "metric": "Closed Deals",
+          "individual": 1,
+          "teamAvg": 0.6,
+          "unit": "count"
+        }
+      ],
+      "top_calls": [
+        {
+          "contact_id": "C1004",
+          "intent": "Add a line + device",
+          "outcome": "Closed deal",
+          "importance": 0.85,
+          "tags": [
+            "add-line",
+            "upsell"
+          ],
+          "excerpt": "Bundled a new line at $20 with a free entry device."
+        },
+        {
+          "contact_id": "C1009",
+          "intent": "Bill review \u2014 too expensive",
+          "outcome": "Retained (plan switch)",
+          "importance": 0.75,
+          "tags": [
+            "retention",
+            "save",
+            "right-plan"
+          ],
+          "excerpt": "Moved the customer to a cheaper current plan with a streaming perk."
+        }
+      ],
+      "escalations": []
+    }
+  ]
+}

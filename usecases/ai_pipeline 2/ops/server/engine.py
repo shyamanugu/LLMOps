@@ -3,34 +3,19 @@
 Mock mode uses a deterministic mock LLM (no OpenAI needed). Real mode calls the
 actual model via the pipeline's query() path (expects REASONING_MODEL_* creds);
 if they're missing it returns a clear error instead of pretending."""
-import glob
 import hashlib
 import json
-import os
 import time
-from pathlib import Path
 
-from . import config, registry, store
-
-_DATASET_DIR = config.PKG_DIR / "eval" / "dataset"
+from . import config, datasets, registry, store
 
 
 def list_datasets():
-    names = []
-    if _DATASET_DIR.exists():
-        names = [Path(f).name for f in glob.glob(str(_DATASET_DIR / "*.jsonl"))]
-    return names or ["analysis_golden.seed.jsonl"]
+    return [d["name"] for d in datasets.list_datasets()] or ["telesales_golden.jsonl"]
 
 
 def load_dataset(name):
-    path = _DATASET_DIR / name
-    cases = []
-    if path.exists():
-        for line in path.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if line:
-                cases.append(json.loads(line))
-    return cases
+    return datasets.read_cases(name)
 
 
 # ── mock LLM: deterministic, structured, no network ─────────────────────────
@@ -123,3 +108,53 @@ def run_playground(program, prompt_name, version, model_alias, dataset, ad_hoc_i
         store.add_eval_run(program, prompt_name, version or 0, model_alias, dataset,
                            pass_rate, pass_rate >= 0.8, len(cases), 0.0)
     return {"summary": summary, "results": results, "system_prompt": system}
+
+
+# ── Mock pipeline run (Application tab) ─────────────────────────────────────
+_STEP_META = [
+    ("denoise", "Clean raw transcripts", 12, 1400),
+    ("analysis", "Per-call scoring", 12, 2200),
+    ("summary", "Weekly reflection", 5, 2600),
+    ("individual_metrics", "Coaching metrics", 5, 1500),
+    ("kpi", "Aggregate → report", 0, 300),
+]
+
+
+def _sample_dashboard():
+    """The transcript-derived sample dashboard the Application tab renders.
+    Bundled inside ops/ so the console is self-contained (no dependency on the
+    legacy React demo folder); falls back to it if the bundled copy is missing."""
+    for f in (config.OPS_DIR / "server" / "sample_dashboard.json",
+              config.PKG_DIR / "ui" / "public" / "sample-data.json"):
+        if f.exists():
+            try:
+                return json.loads(f.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+    return {"meta": {}, "llmops": {"totals": {}, "by_step": []}, "kpis": [], "employees": []}
+
+
+def run_pipeline(program="telesales", date="2025-08-28", steps=None, seed_traces=True):
+    """Simulate a pipeline run for the Application tab. In mock mode this executes
+    instantly and records traces/guardrails so Monitoring reflects the run. Returns
+    per-step progress + the results dashboard payload."""
+    steps = steps or [s[0] for s in _STEP_META]
+    run_id = hashlib.sha1(f"{program}{date}{time.time()}".encode()).hexdigest()[:8]
+    progress = []
+    for name, desc, calls, latency in _STEP_META:
+        if name not in steps:
+            continue
+        if seed_traces:
+            for _ in range(calls):
+                store.add_trace(run_id, name, "reason" if name != "denoise" else "bulk",
+                                "gpt-5.4-nano", 350, 90, 0.0, latency)
+        if name in ("analysis", "denoise"):
+            store.add_guardrail(run_id, name, "gpt-5.4-nano", "flagged",
+                                "PII detected (flagged, not blocked): phone")
+        progress.append({"step": name, "desc": desc, "status": "ok", "calls": calls,
+                         "latency_ms": latency})
+    dash = _sample_dashboard()
+    dash.setdefault("meta", {})
+    dash["meta"].update({"run_id": run_id, "program": program, "date": date, "mode": config.mode()})
+    return {"run_id": run_id, "program": program, "date": date, "steps": progress,
+            "dashboard": dash, "mode": config.mode()}

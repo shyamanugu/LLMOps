@@ -42,7 +42,7 @@ export default function App() {
           <KpiRow kpis={data.kpis} />
           <EmployeePanel employees={data.employees} />
           <footer className="footer">
-            AIA AI Pipeline · instrumented by the AFNI LLMOps platform ·
+            AI Pipeline AI Pipeline · instrumented by the AFNI LLMOps platform ·
             observability · model routing · guardrails · prompt management · evaluation gate · feedback loop
           </footer>
         </main>

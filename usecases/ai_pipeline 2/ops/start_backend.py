@@ -8,14 +8,13 @@ Mock by default (local SQLite + JSON registry, no Azure). Set AI_PIPELINE_MODE=r
 import sys
 from pathlib import Path
 
-# Make the ops package importable and load .env if present.
+# Make the ops package importable and load .env (stdlib parser — no python-dotenv,
+# so this works on a locked-down VDI with nothing pip-installed).
 _OPS = Path(__file__).resolve().parent
 sys.path.insert(0, str(_OPS))
-try:
-    from dotenv import load_dotenv
-    load_dotenv(_OPS.parent / ".env")
-except Exception:
-    pass
+
+from server import config  # noqa: E402
+config.load_dotenv_stdlib(_OPS.parent / ".env")
 
 from server.api import serve  # noqa: E402
 

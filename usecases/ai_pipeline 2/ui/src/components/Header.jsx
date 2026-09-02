@@ -32,7 +32,7 @@ export default function Header({ meta, onLoadFile }) {
       <div className="header-main">
         <div>
           <h1 className="title">
-            AIA <span className="title-dim">— AI Pipeline Intelligence</span>
+            AI Pipeline <span className="title-dim">— AI Pipeline Intelligence</span>
           </h1>
           <p className="subtitle">Powered by AFNI LLMOps</p>
         </div>

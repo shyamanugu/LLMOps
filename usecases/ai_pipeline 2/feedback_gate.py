@@ -1,4 +1,4 @@
-"""LLMOps feedback loop for the AIA pipeline (Phase 6).
+"""LLMOps feedback loop for the AI Pipeline (Phase 6).
 
 Thin adapter over the AFNI Feedback service (component 11). Captures human
 signals about a step's output (a coach's correction, a reviewer's reject) and
@@ -134,7 +134,7 @@ def promote(
 
 
 def main(argv=None) -> int:
-    p = argparse.ArgumentParser(description="AIA pipeline feedback loop")
+    p = argparse.ArgumentParser(description="AI Pipeline feedback loop")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     r = sub.add_parser("record", help="record a feedback signal")

@@ -1,4 +1,4 @@
-# LLMOps Integration Plan — AIA Call-Analytics Pipeline
+# LLMOps Integration Plan — AI Pipeline Call-Analytics Pipeline
 
 **Status:** Draft · Strategy approved (thin adapter) · Owner: <fill in>
 **Scope:** Wire the AFNI LLMOps platform (`platform/services/*`) into this pipeline (`usecases/ai_pipeline 2`) with minimal disruption to working step logic.

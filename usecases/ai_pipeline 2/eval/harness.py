@@ -1,4 +1,4 @@
-"""LLMOps evaluation gate for the AIA pipeline (Phase 5).
+"""LLMOps evaluation gate for the AI Pipeline (Phase 5).
 
 Runs a golden dataset through the pipeline's analysis step and scores each case
 with the evaluator it declares (via the AFNI Evaluation Gate, component 04),
@@ -98,7 +98,7 @@ def run_gate(
 
 
 def main(argv=None) -> int:
-    p = argparse.ArgumentParser(description="AIA pipeline evaluation gate")
+    p = argparse.ArgumentParser(description="AI Pipeline evaluation gate")
     p.add_argument("--dataset", default=str(SEED_DATASET))
     p.add_argument("--program", default="telesales")
     p.add_argument("--usecase", default="ai_pipeline")

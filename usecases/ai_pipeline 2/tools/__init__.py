@@ -1,1 +1,1 @@
-"""Operational tooling for the AIA pipeline (sample data, migration helpers)."""
+"""Operational tooling for the AI Pipeline (sample data, migration helpers)."""

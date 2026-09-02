@@ -1,1 +1,1 @@
-"""AIA LLMOps Ops console — backend package (stdlib only for mock mode)."""
+"""AI Pipeline LLMOps Ops console — backend package (stdlib only for mock mode)."""

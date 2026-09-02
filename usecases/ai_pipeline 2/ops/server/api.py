@@ -4,7 +4,7 @@ import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
-from . import config, engine, registry, seed, store
+from . import config, datasets, engine, registry, seed, store
 
 
 def _json_default(o):
@@ -47,7 +47,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send({"error": "not found"}, 404)
             r = p[1:]
             if r == ["health"]:
-                return self._send({"mode": config.mode(), **store.counts()})
+                return self._send({"mode": config.mode(), "programs": config.PROGRAMS,
+                                   "steps": config.STEPS, **store.counts()})
             if r == ["prompts"]:
                 return self._send(registry.list_prompts())
             if len(r) == 3 and r[0] == "prompts":
@@ -55,7 +56,11 @@ class Handler(BaseHTTPRequestHandler):
             if r == ["models"]:
                 return self._send(registry.list_models())
             if r == ["datasets"]:
-                return self._send(engine.list_datasets())
+                return self._send(datasets.list_datasets())
+            if len(r) == 2 and r[0] == "datasets":  # GET /api/datasets/{name}
+                return self._send({"name": r[1], "cases": datasets.read_cases(r[1])})
+            if r == ["runs"]:
+                return self._send(store.list_runs())
             if r == ["monitoring"]:
                 return self._send(store.monitoring_summary())
             if r == ["eval-runs"]:
@@ -87,6 +92,22 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(engine.run_playground(
                     b.get("program", "telesales"), b.get("prompt_name"), b.get("version"),
                     b.get("model_alias", "reason"), b.get("dataset"), b.get("ad_hoc_input")))
+            # POST /api/run  -> execute (mock) a pipeline run for the Application tab
+            if r == ["run"]:
+                res = engine.run_pipeline(b.get("program", "telesales"),
+                                          b.get("date", "2025-08-28"), b.get("steps"))
+                store.add_run(res["run_id"], res["program"], res["date"],
+                              len(res["steps"]), config.mode())
+                return self._send(res)
+            # dataset CRUD (local): POST /api/datasets/{name}/(cases|upload|delete)
+            if len(r) == 3 and r[0] == "datasets" and r[2] == "cases":
+                return self._send(datasets.add_case(r[1], b.get("case", {})), 201)
+            if len(r) == 4 and r[0] == "datasets" and r[2] == "cases":  # update by id
+                return self._send(datasets.update_case(r[1], r[3], b.get("case", {})))
+            if len(r) == 4 and r[0] == "datasets" and r[2] == "delete":  # delete case by id
+                return self._send(datasets.delete_case(r[1], r[3]))
+            if len(r) == 3 and r[0] == "datasets" and r[2] == "upload":
+                return self._send(datasets.upload_dataset(r[1], b.get("content", "")), 201)
             if r == ["feedback"]:
                 store.add_feedback(b.get("program", "telesales"), b.get("contact_id", ""),
                                    b.get("step", "analysis"), b.get("rating", ""), b.get("comment", ""),

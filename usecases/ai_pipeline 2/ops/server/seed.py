@@ -3,9 +3,11 @@ traces + guardrail + feedback from the demo sample-data.json, and a couple of
 starter prompt versions in the registry."""
 import json
 
-from . import config, registry, store
+from . import config, datasets, registry, store
 
-_SAMPLE = config.PKG_DIR / "ui" / "public" / "sample-data.json"
+_SAMPLE = config.OPS_DIR / "server" / "sample_dashboard.json"
+if not _SAMPLE.exists():
+    _SAMPLE = config.PKG_DIR / "ui" / "public" / "sample-data.json"
 
 _STARTER_PROMPTS = {
     ("telesales", "denoise"): ("You clean raw call-center transcripts into a structured, speaker-labelled "
@@ -18,14 +20,30 @@ _STARTER_PROMPTS = {
 def seed(force=False):
     config.ensure_dirs()
     store.init_db()
+    datasets.seed_defaults()
     c = store.counts()
     if c["traces"] == 0 or force:
         _seed_from_sample()
+    if c["eval_runs"] == 0 or force:
+        _seed_eval_history()
     if not registry.list_prompts() or force:
         for (prog, name), (tmpl, cap) in _STARTER_PROMPTS.items():
             if not registry.get_prompt(prog, name):
                 registry.save_version(prog, name, tmpl, cap, note="seeded starter prompt")
     return {"mode": config.mode(), **store.counts(), "prompts": len(registry.list_prompts())}
+
+
+def _seed_eval_history():
+    """A few prior evaluation runs so the Evaluation tab shows trend/metrics."""
+    history = [
+        ("analysis", 1, "reason", "telesales_golden.jsonl", 0.80),
+        ("analysis", 1, "reason", "telesales_golden.jsonl", 0.90),
+        ("analysis", 2, "reason", "telesales_golden.jsonl", 0.95),
+        ("analysis", 2, "bulk", "telesales_golden.jsonl", 0.85),
+        ("denoise", 1, "bulk", "analysis_golden.jsonl", 1.00),
+    ]
+    for prompt, ver, model, ds, rate in history:
+        store.add_eval_run("telesales", prompt, ver, model, ds, rate, rate >= 0.8, 5, 0.0)
 
 
 def _seed_from_sample():
