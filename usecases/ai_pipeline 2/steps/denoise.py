@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 from datetime import date
 
@@ -13,7 +12,7 @@ from ai_pipeline.programs_config.base import PipelineConfig, Transcript
 from ai_pipeline.logging_config import get_logger
 from ai_pipeline import observability as obs
 from ai_pipeline.services import query, Status, get_timestamp
-from ai_pipeline.utils import retry_async, validate_transcript, agent_word_fraction, customer_word_fraction, get_mode_for_program, build_program_filter_sql, ContentFilterSkip
+from ai_pipeline.utils import retry_async, validate_transcript, agent_word_fraction, customer_word_fraction, build_program_filter_sql, ContentFilterSkip
 from ai_pipeline.utils.throttle import Throttle, run_throttled
 from ai_pipeline.utils.coach_mapping import enrich_frame
 from ai_pipeline.services.storage import StorageService

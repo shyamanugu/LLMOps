@@ -3,16 +3,13 @@ unified DataFrame with coach mappings, computes runtime KPIs, and uploads
 the result as CSV to Azure Blob Storage.
 
 This is a post-summary step: it reads the output of ``run_summary`` and
-produces a flat CSV consumed by the application dashboard.
-
-Usage (standalone):
-    python -m ai_pipeline.steps.kpi_aggregator --program telesales --date 2025-08-28
+produces a flat CSV consumed by the application dashboard. It is invoked as the
+``kpi`` step of the pipeline (see ``ai_pipeline.main``), not as a standalone
+module.
 """
 
 from __future__ import annotations
 
-import json
-import re
 from datetime import date
 from typing import Optional
 
@@ -239,7 +236,7 @@ def _load_report(storage: StorageService, cfg: PipelineConfig, emp_id: str, week
     return None
 
 
-# ── Runtime KPI calculators (ported from reference kpi_aggregator.py) ────────
+# ── Runtime KPI calculators ──────────────────────────────────────────────────
 
 def _calculate_performance_score(emp_kpis: list[dict]) -> float:
     """Weighted composite performance score (0-100).

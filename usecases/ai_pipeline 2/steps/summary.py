@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 from datetime import date, timedelta
 from typing import Any, Dict, List
@@ -43,7 +42,7 @@ def _coerce_int(value: Any) -> Any:
         return None
 
 
-# ── helpers (preserved from original) ────────────────────────────────────────
+# ── helpers ──────────────────────────────────────────────────────────────────
 
 def _fetch_raw(storage: StorageService, day, program_filter=None, mode=None):
     df = storage.read_parquet(storage.config.raw_container, f"{day}.parquet")
@@ -88,7 +87,7 @@ def _expand_struct_columns(df: pl.DataFrame, rules: list) -> pl.DataFrame:
 
 
 def _ensure_columns(df: pl.DataFrame, defaults: dict) -> pl.DataFrame:
-    """Add missing columns with default values (mirrors reference ensure_columns)."""
+    """Add missing columns with default values."""
     for col, default_expr in defaults.items():
         if col not in df.columns:
             df = df.with_columns(default_expr.alias(col))
@@ -112,8 +111,8 @@ def _build_column_defaults(cfg: PipelineConfig) -> dict:
     return defaults
 
 
-def _get_url(account_name: str, date_utc) -> str:
-    return f"https://{account_name}.blob.core.windows.net/denoised-transcripts/{date_utc}.parquet"
+def _get_url(account_name: str, container: str, date_utc) -> str:
+    return f"https://{account_name}.blob.core.windows.net/{container}/{date_utc}.parquet"
 
 
 # ── KPI calculation ─────────────────────────────────────────────────────────
@@ -698,7 +697,7 @@ async def run_summary(date_utc: date, cfg: PipelineConfig, storage: StorageServi
         try:
             e = output["EmployeeID"]
             if output.get("status") != "ok":
-                logger.critical("EmployeeID %s | status=%s", e, output.get("status"))
+                logger.warning("EmployeeID %s | reflection status=%s — skipping", e, output.get("status"))
                 continue
 
             # previous week's report
@@ -905,7 +904,9 @@ async def run_summary(date_utc: date, cfg: PipelineConfig, storage: StorageServi
             out_json["kpi_groups"] = kpi_groups_out
 
             sf = cfg.summary_fields
-            get_url = lambda d: _get_url(cfg.storage.account_name, d)
+
+            def get_url(d):
+                return _get_url(cfg.storage.account_name, cfg.storage.denoised_container, d)
 
             # ── config-driven report sections ────────────────────────────
             for section in cfg.report_sections:

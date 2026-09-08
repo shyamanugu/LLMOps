@@ -162,7 +162,7 @@ class AzureSQLConfig:
     query_timeout: int = field(default_factory=lambda: int(_sql_env("QUERY_TIMEOUT", "0")))
 
 
-# ── Default individual-metric queries & groups (ported from the dashboard app) ──
+# ── Default individual-metric queries & groups ──────────────────────────────
 # Each group is (group_name, query_name, [metric_desc, ...]). The query template
 # accepts {employee_ids}, {metric_keys}, {start_date}, {end_date} placeholders and
 # must SELECT (EmployeeID, MetricDesc, AvgValue, SumValue) in that column order.

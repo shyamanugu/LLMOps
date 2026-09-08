@@ -124,7 +124,7 @@ class SalesAgentEvaluation(BaseModel):
     empathy:                bool = Field(description="False only if the agent does not show empathy with explicit phrasing.")
     confidence:             bool = Field(description="False only if the agent does not exhibit confident guidance.")
 
-    clarity:                bool = Field(description="False only if explanations/instructions are clear and explicit.")
+    clarity:                bool = Field(description="False only if explanations/instructions are not clear and explicit.")
     needs_discovery:        bool = Field(description="False only if the agent does not probe to understand needs.")
     solution_guidance:      bool = Field(description="False only if the agent does not guide the customer to a solution.")
     next_steps_summary:     bool = Field(description="False only if the agent does not summarize next steps.")

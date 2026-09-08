@@ -77,7 +77,7 @@ COACHING_SYSTEM_PROMPT = (
 )
 
 
-# ── Metric-name matching helpers (ported from the dashboard app) ─────────────
+# ── Metric-name matching helpers ─────────────────────────────────────────────
 
 def _normalize_metric_name(value: Optional[str]) -> str:
     return re.sub(r"[^a-z0-9]+", "", (value or "").lower())
