@@ -110,6 +110,22 @@ COMPARISON_METRICS = [
     {"metric": "Escalations", "columns": ["escalation_due_to_frustration", "escalation_requested_by_customer"]},
 ]
 
+# KPIs whose value is an absolute count of calls (not a 0-1 fraction). The
+# summary step tags these unit="count"; every other KPI is tagged "percent".
+# The two ``*_opportunity_missed`` rates and ``customer_experience`` are
+# fractions and are intentionally omitted.
+COUNT_KPI_KEYS = [
+    "new_line_pitches",
+    "new_line_opportunity_exists",
+    "upgrade_attempts",
+    "upgrade_opportunity_exists",
+    "save_attempts",
+    "escalations",
+    "fwa_attempts",
+    "mobile_protection_attempts",
+    "we_got_you_utterances",
+]
+
 
 # ── Custom KPI computation ───────────────────────────────────────────────────
 
@@ -225,6 +241,7 @@ def get_config() -> PipelineConfig:
         behavior_score_keys=BEHAVIOR_SCORE_KEYS,
         behavior_count_keys=BEHAVIOR_COUNT_KEYS,
         soft_skill_keys=SOFT_SKILL_KEYS,
+        count_kpi_keys=COUNT_KPI_KEYS,
         summary_lookback_days=7,
         trend_weeks=4,
     )
