@@ -6,218 +6,263 @@
 <title>Responsible AI for the LLMOps Platform &amp; APIX</title>
 <style>
   :root{
-    --bg:#F6F7F9; --surface:#FFFFFF; --surface-2:#EEF1F4;
+    --bg:#F4F6F8; --surface:#FFFFFF; --surface-2:#EAEEF1; --side:#0F1B1A;
     --ink:#14181F; --ink-soft:#4A5361; --ink-faint:#828D9C;
-    --line:#DCE1E7; --line-soft:#E7EBEF;
+    --line:#DBE1E7; --line-soft:#E7EBEF;
     --accent:#0E7C74; --accent-ink:#0A5B55; --accent-soft:#E1F0EE;
-    --good:#2E9E6B; --warn:#B77913;
-    --nav:rgba(246,247,249,.85);
-    --shadow:0 1px 2px rgba(20,24,31,.04),0 8px 24px rgba(20,24,31,.06);
+    --good:#2E9E6B; --good-soft:#E4F3EB; --warn:#B77913; --warn-soft:#F6ECD6;
+    --shadow:0 1px 2px rgba(20,24,31,.04),0 10px 26px rgba(20,24,31,.07);
   }
   @media (prefers-color-scheme:dark){
-    :root{
-      --bg:#0E1116; --surface:#161A21; --surface-2:#1E242D;
-      --ink:#E9EDF2; --ink-soft:#9AA5B2; --ink-faint:#6B7684;
-      --line:#29313B; --line-soft:#20272F;
-      --accent:#2CC3B4; --accent-ink:#7FE0D5; --accent-soft:#123531;
-      --good:#43B87D; --warn:#D69A3E;
-      --nav:rgba(14,17,22,.82);
-      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
-    }
+    :root{ --bg:#0C0F14; --surface:#141920; --surface-2:#1C222B; --side:#0A0D11; --ink:#E9EDF2; --ink-soft:#9AA5B2; --ink-faint:#6B7684; --line:#28303A; --line-soft:#1E252E; --accent:#2CC3B4; --accent-ink:#7FE0D5; --accent-soft:#123531; --good:#43B87D; --good-soft:#12281D; --warn:#D69A3E; --warn-soft:#2C2411; --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.4);}
   }
-  :root[data-theme="light"]{
-    --bg:#F6F7F9; --surface:#FFFFFF; --surface-2:#EEF1F4;
-    --ink:#14181F; --ink-soft:#4A5361; --ink-faint:#828D9C;
-    --line:#DCE1E7; --line-soft:#E7EBEF;
-    --accent:#0E7C74; --accent-ink:#0A5B55; --accent-soft:#E1F0EE;
-    --good:#2E9E6B; --warn:#B77913; --nav:rgba(246,247,249,.85);
-    --shadow:0 1px 2px rgba(20,24,31,.04),0 8px 24px rgba(20,24,31,.06);
-  }
-  :root[data-theme="dark"]{
-    --bg:#0E1116; --surface:#161A21; --surface-2:#1E242D;
-    --ink:#E9EDF2; --ink-soft:#9AA5B2; --ink-faint:#6B7684;
-    --line:#29313B; --line-soft:#20272F;
-    --accent:#2CC3B4; --accent-ink:#7FE0D5; --accent-soft:#123531;
-    --good:#43B87D; --warn:#D69A3E; --nav:rgba(14,17,22,.82);
-    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
-  }
+  :root[data-theme="light"]{ --bg:#F4F6F8; --surface:#FFFFFF; --surface-2:#EAEEF1; --side:#0F1B1A; --ink:#14181F; --ink-soft:#4A5361; --ink-faint:#828D9C; --line:#DBE1E7; --line-soft:#E7EBEF; --accent:#0E7C74; --accent-ink:#0A5B55; --accent-soft:#E1F0EE; --good:#2E9E6B; --good-soft:#E4F3EB; --warn:#B77913; --warn-soft:#F6ECD6; --shadow:0 1px 2px rgba(20,24,31,.04),0 10px 26px rgba(20,24,31,.07);}
+  :root[data-theme="dark"]{ --bg:#0C0F14; --surface:#141920; --surface-2:#1C222B; --side:#0A0D11; --ink:#E9EDF2; --ink-soft:#9AA5B2; --ink-faint:#6B7684; --line:#28303A; --line-soft:#1E252E; --accent:#2CC3B4; --accent-ink:#7FE0D5; --accent-soft:#123531; --good:#43B87D; --good-soft:#12281D; --warn:#D69A3E; --warn-soft:#2C2411; --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.4);}
+
   *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-  body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;line-height:1.62;
-    -webkit-font-smoothing:antialiased}
+  html{scroll-behavior:smooth} @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .mono{font-family:ui-monospace,Menlo,monospace;font-size:.9em}
 
-  nav{position:sticky;top:0;z-index:20;background:var(--nav);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  .nav-in{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:11px clamp(16px,4vw,32px)}
-  .brand{font-weight:800;letter-spacing:-.02em;font-size:15px;margin-right:auto;display:flex;align-items:center;gap:9px}
-  .brand .mk{width:22px;height:22px;border-radius:6px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:12px}
-  .toggle{background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer}
-  .toggle:hover{color:var(--ink)}
+  .shell{display:grid;grid-template-columns:264px minmax(0,1fr);max-width:1560px;margin:0 auto;min-height:100vh}
+  aside{background:var(--side);color:#cfe6e2;position:sticky;top:0;height:100vh;overflow:auto;padding:26px 20px;display:flex;flex-direction:column;gap:6px}
+  aside .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:15.5px;color:#fff;letter-spacing:-.02em;margin-bottom:4px}
+  aside .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--accent);color:#062b28;display:grid;place-items:center;font-size:12px;font-weight:900}
+  aside .sub{font-size:12px;color:#6f948e;margin:0 0 18px}
+  aside nav{display:flex;flex-direction:column;gap:2px}
+  aside nav a{color:#9fc3bd;text-decoration:none;font-size:13.5px;font-weight:600;padding:8px 11px;border-radius:8px;display:flex;gap:10px;align-items:center}
+  aside nav a .i{color:#5c807a;font-variant-numeric:tabular-nums;font-size:12px;width:16px}
+  aside nav a:hover{background:rgba(255,255,255,.06);color:#eafffb}
+  aside .foot{margin-top:auto;padding-top:18px;display:flex;flex-direction:column;gap:10px}
+  aside .toggle{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#dff3ef;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;text-align:left}
+  aside .toggle:hover{background:rgba(255,255,255,.14)}
+  aside .fp{font-size:11.5px;color:#5c807a;line-height:1.5}
 
-  main{max-width:900px;margin:0 auto;padding:0 clamp(16px,4vw,32px) 90px}
-  header.hero{padding:clamp(38px,7vw,72px) 0 clamp(24px,4vw,36px);border-bottom:1px solid var(--line)}
-  .kicker{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700}
-  h1{font-size:clamp(28px,4.6vw,42px);line-height:1.08;letter-spacing:-.028em;font-weight:800;margin:15px 0 0;text-wrap:balance;max-width:20ch}
-  .lede{font-size:clamp(16px,2.2vw,19px);color:var(--ink-soft);margin:16px 0 0;max-width:64ch}
-  .meta{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:13px;color:var(--ink-faint);margin-top:22px}
+  .content{min-width:0}
+  .inner{padding:0 clamp(22px,4.2vw,72px)}
+  header.hero{background:linear-gradient(180deg,var(--accent-soft),transparent);padding:clamp(34px,5vw,64px) clamp(22px,4.2vw,72px) clamp(26px,3vw,40px);border-bottom:1px solid var(--line)}
+  .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+  h1{font-size:clamp(28px,3.6vw,44px);line-height:1.07;letter-spacing:-.03em;font-weight:800;margin:14px 0 0;max-width:24ch;text-wrap:balance}
+  .lede{font-size:clamp(16px,1.5vw,20px);color:var(--ink-soft);margin:16px 0 0;max-width:80ch}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:13px;color:var(--ink-faint);margin-top:22px}
   .meta b{color:var(--ink-soft);font-weight:600}
+  .startbox{margin:26px 0 0;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:18px 22px;box-shadow:var(--shadow)}
+  .startbox h4{margin:0 0 6px;font-size:14px;color:var(--accent-ink);letter-spacing:.02em;text-transform:uppercase}
+  .startbox p{margin:0;color:var(--ink-soft);font-size:15.5px;max-width:88ch}
 
-  section{padding:clamp(34px,5vw,52px) 0;border-bottom:1px solid var(--line-soft)}
+  section{padding:clamp(34px,4vw,56px) 0;border-bottom:1px solid var(--line-soft)}
   section:last-of-type{border-bottom:none}
-  .eyebrow{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:12px}
-  h2{font-size:clamp(22px,3.2vw,30px);letter-spacing:-.022em;font-weight:770;margin:0 0 14px;text-wrap:balance;max-width:24ch}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);font-weight:700;margin-bottom:12px}
+  h2{font-size:clamp(23px,2.4vw,32px);letter-spacing:-.022em;font-weight:780;margin:0 0 14px;max-width:26ch;text-wrap:balance}
   h3{font-size:17px;font-weight:700;margin:0}
-  p{margin:0 0 15px;max-width:70ch}
-  .soft{color:var(--ink-soft)}
-  strong{font-weight:650}
+  p{margin:0 0 15px;max-width:82ch}
+  .soft{color:var(--ink-soft)} strong{font-weight:650}
 
-  .plain{background:var(--accent-soft);border-radius:12px;padding:15px 18px;margin:4px 0 20px;color:var(--accent-ink);font-size:15.5px;max-width:74ch}
+  .two{display:grid;grid-template-columns:1.15fr .85fr;gap:34px;align-items:start}
+  @media(max-width:1080px){.two{grid-template-columns:1fr;gap:22px}}
+  .example{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)}
+  .example .lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .example .lab::before{content:"◆";font-size:10px}
+  .example h4{margin:0 0 8px;font-size:15.5px}
+  .example p{font-size:14px;color:var(--ink-soft);margin:0 0 10px}
+  .example .code{background:var(--accent-soft);border-radius:9px;padding:12px 14px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--accent-ink);line-height:1.7;white-space:pre-wrap}
+  .example .arrow{color:var(--accent);font-weight:800}
+
+  .plain{background:var(--accent-soft);border-radius:12px;padding:15px 18px;margin:4px 0 20px;color:var(--accent-ink);font-size:15.5px;max-width:88ch}
   .plain b{font-weight:800}
-
-  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
-  @media(max-width:680px){.cards{grid-template-columns:1fr}}
-  .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
-  .card h3{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:16px}
-  .card .ic{width:26px;height:26px;border-radius:7px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
-  .card p{font-size:14.5px;color:var(--ink-soft);margin:0}
-
   ul.clean{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:11px}
-  ul.clean li{padding-left:22px;position:relative;color:var(--ink-soft);font-size:15.5px;max-width:72ch}
+  ul.clean li{padding-left:22px;position:relative;color:var(--ink-soft);font-size:15.5px;max-width:82ch}
   ul.clean li::before{content:"";position:absolute;left:2px;top:9px;width:7px;height:7px;border-radius:2px;background:var(--accent)}
   ul.clean li b{color:var(--ink);font-weight:650}
 
+  .capgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px}
+  @media(max-width:1080px){.capgrid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:620px){.capgrid{grid-template-columns:1fr}}
+  .cap{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:18px 20px;box-shadow:var(--shadow)}
+  .cap .ct{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .cap .ci{width:28px;height:28px;border-radius:8px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+  .cap h3{font-size:15.5px}
+  .cap p{font-size:14px;color:var(--ink-soft);margin:0 0 9px}
+  .cap .ex{font-size:12.5px;color:var(--ink-faint);border-top:1px solid var(--line-soft);padding-top:9px}
+  .cap .ex b{color:var(--accent-ink);font-weight:700}
+
   .tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:8px 0}
-  table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
   th,td{text-align:left;padding:11px 15px;border-bottom:1px solid var(--line-soft);vertical-align:top}
   thead th{background:var(--surface-2);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
   tbody tr:last-child td{border-bottom:none}
   td:first-child{font-weight:650;color:var(--ink);white-space:nowrap}
   td.soft2{color:var(--ink-soft)}
-
-  .keyline{margin-top:16px;padding:15px 18px;background:var(--accent-soft);border-radius:12px;color:var(--accent-ink);font-size:15.5px;font-weight:600;max-width:76ch}
+  .keyline{margin-top:16px;padding:15px 18px;background:var(--accent-soft);border-radius:12px;color:var(--accent-ink);font-size:15.5px;font-weight:600;max-width:88ch}
   .keyline b{font-weight:800}
 
-  ol.steps{list-style:none;counter-reset:st;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
-  ol.steps li{counter-increment:st;display:grid;grid-template-columns:auto 1fr;gap:15px;align-items:start}
+  ol.steps{list-style:none;counter-reset:st;margin:6px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:760px){ol.steps{grid-template-columns:1fr}}
+  ol.steps li{counter-increment:st;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 17px}
   ol.steps li::before{content:counter(st);font-weight:800;color:var(--accent);background:var(--accent-soft);width:29px;height:29px;border-radius:8px;display:grid;place-items:center;font-size:14px}
-  ol.steps p{margin:2px 0 0;font-size:15.5px}
-
-  footer{padding:30px 0 0;color:var(--ink-faint);font-size:13px}
+  ol.steps p{margin:2px 0 0;font-size:15px}
+  footer{padding:30px clamp(22px,4.2vw,72px);color:var(--ink-faint);font-size:13px}
 </style>
 </head>
 <body>
-<nav>
-  <div class="nav-in">
+<div class="shell">
+  <aside>
     <div class="brand"><span class="mk">A</span>Responsible AI · APIX</div>
-    <button class="toggle" id="themeBtn" type="button" aria-label="Toggle light or dark theme">Theme</button>
+    <p class="sub">AFNI Performance Index</p>
+    <nav>
+      <a href="#idea"><span class="i">01</span>What it means</a>
+      <a href="#parts"><span class="i">02</span>What it includes</a>
+      <a href="#value"><span class="i">03</span>Why it adds value</a>
+      <a href="#fit"><span class="i">04</span>How it fits our platform</a>
+      <a href="#apix"><span class="i">05</span>Why it matters for APIX</a>
+      <a href="#path"><span class="i">06</span>Where we are &amp; next</a>
+    </nav>
+    <div class="foot">
+      <button class="toggle" id="themeBtn" type="button">◐ Switch light / dark</button>
+      <p class="fp">Self-contained document · works offline · 9 Sep 2026</p>
+    </div>
+  </aside>
+
+  <div class="content">
+    <header class="hero">
+      <div class="kicker">Overview for Discussion</div>
+      <h1>Responsible AI, and how it strengthens the platform and APIX</h1>
+      <p class="lede">A plain-language explanation of what Responsible AI is, the value it adds, how it fits the platform we already run, and why it matters for APIX (AFNI Performance Index) — with a concrete example in each section.</p>
+      <div class="meta">
+        <span><b>Audience</b> Business &amp; program stakeholders</span>
+        <span><b>Read time</b> ~7 minutes</span>
+        <span><b>Date</b> 9 Sep 2026</span>
+      </div>
+      <div class="startbox">
+        <h4>New here? Start with this</h4>
+        <p>If the platform makes our AI <em>work</em>, Responsible AI makes it <em>trusted</em>. It is a set of everyday commitments — be fair, be safe, protect privacy, be clear, keep people in control — plus the checks that prove we meet them. This is especially important for APIX, because APIX uses AI to help evaluate people's work.</p>
+      </div>
+    </header>
+
+    <div class="inner">
+      <section id="idea">
+        <div class="eyebrow">01 · The idea</div>
+        <h2>What Responsible AI means</h2>
+        <div class="two">
+          <div>
+            <p class="soft">Responsible AI is a set of practices that make sure an AI system is <strong>fair, safe, private, clear about how it works, and always under human control</strong>. It is not a product you buy or a single piece of software. It is how a system is built, checked, and run, so that the people affected by it — and the business relying on it — can trust it.</p>
+            <div class="plain"><b>In plain terms:</b> the platform makes the AI work; Responsible AI makes it trustworthy — and lets us prove it if a client, an auditor, or a regulator asks.</div>
+          </div>
+          <div class="example">
+            <div class="lab">Example · the difference</div>
+            <h4>Two questions about the same result</h4>
+            <p><b>Platform question:</b> “Did the system score this call, quickly and at low cost?”</p>
+            <p><b>Responsible-AI question:</b> “Is that score <em>fair</em>, can we <em>explain</em> it, and can the agent <em>challenge</em> it?”</p>
+            <p class="soft" style="margin:0"><span class="arrow">→</span> Both matter. Responsible AI covers the second.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="parts">
+        <div class="eyebrow">02 · The parts</div>
+        <h2>What it includes</h2>
+        <p class="soft">Responsible AI is usually described as a few simple commitments. In everyday language, each with an example of what it looks like in APIX:</p>
+        <div class="capgrid">
+          <div class="cap"><div class="ct"><span class="ci">1</span><h3>Fairness</h3></div><p>Treats people evenly, with no hidden bias against any group.</p><div class="ex"><b>Example:</b> agents who speak with an accent aren't scored lower just for that.</div></div>
+          <div class="cap"><div class="ct"><span class="ci">2</span><h3>Safety &amp; reliability</h3></div><p>Does what it should; unsafe or wrong outputs are caught early.</p><div class="ex"><b>Example:</b> an out-of-place or offensive output is flagged, not published.</div></div>
+          <div class="cap"><div class="ct"><span class="ci">3</span><h3>Privacy &amp; security</h3></div><p>Personal information is protected and used only as intended.</p><div class="ex"><b>Example:</b> a customer's card number in a call is detected and shielded.</div></div>
+          <div class="cap"><div class="ct"><span class="ci">4</span><h3>Transparency</h3></div><p>You can see and explain why the system produced a result.</p><div class="ex"><b>Example:</b> each score links to the exact moments in the call behind it.</div></div>
+          <div class="cap"><div class="ct"><span class="ci">5</span><h3>Human oversight</h3></div><p>People stay in control; results can be reviewed and challenged.</p><div class="ex"><b>Example:</b> a coach reviews the AI's note before it reaches the agent.</div></div>
+          <div class="cap"><div class="ct"><span class="ci">6</span><h3>Evidence-based</h3></div><p>Outputs are backed by real information, not made up.</p><div class="ex"><b>Example:</b> a coaching tip must cite what actually happened on the call.</div></div>
+        </div>
+      </section>
+
+      <section id="value">
+        <div class="eyebrow">03 · The value</div>
+        <h2>Why it adds value to the platform</h2>
+        <div class="two">
+          <div>
+            <p class="soft">The platform already makes our AI reliable. Responsible AI is the next step in maturity — it makes the AI <strong>trustworthy and defensible</strong>. Concretely, it:</p>
+            <ul class="clean">
+              <li><b>Reduces risk</b> — legal, reputational, and operational — by catching problems before they reach customers or agents.</li>
+              <li><b>Builds confidence</b> with clients, auditors, and regulators, because decisions can be explained and reviewed.</li>
+              <li><b>Prepares for regulation</b> — rules for AI that affects people are tightening, and this puts us ahead of them.</li>
+              <li><b>Differentiates us</b> — a governed, trustworthy platform is easier to sell, expand, and keep.</li>
+            </ul>
+          </div>
+          <div class="example">
+            <div class="lab">Example · a question we should be ready for</div>
+            <h4>“Is your AI fair to our agents?”</h4>
+            <p>Without Responsible AI, the honest answer is “we believe so.”</p>
+            <p>With it, the answer is: <b>“Yes — here is the fairness check we run, the result, and the evidence behind each score.”</b></p>
+            <p class="soft" style="margin:0"><span class="arrow">→</span> That difference is what wins and keeps trust.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="fit">
+        <div class="eyebrow">04 · The fit</div>
+        <h2>How it fits the platform we already run</h2>
+        <p class="soft">The important point: Responsible AI is <strong>not a separate system to build</strong>. It extends the capabilities the platform already has. Each part we run today simply takes on a responsibility role.</p>
+        <div class="tw"><table>
+          <thead><tr><th>What we run today</th><th>What it does now</th><th>Responsible-AI addition</th></tr></thead>
+          <tbody>
+            <tr><td>Pre-release checks</td><td class="soft2">Scores quality before a change goes live</td><td class="soft2">Also checks fairness, safety, and that answers are backed by evidence — and blocks a change that fails</td></tr>
+            <tr><td>Guardrails</td><td class="soft2">Detects sensitive data such as personal information</td><td class="soft2">Adds checks for unsafe or inappropriate content, and keeps an audit record</td></tr>
+            <tr><td>Monitoring</td><td class="soft2">Tracks cost, speed, and errors</td><td class="soft2">Also tracks fairness and unusual behaviour over time</td></tr>
+            <tr><td>Feedback</td><td class="soft2">Lets users rate results</td><td class="soft2">Becomes a way to report and challenge a result</td></tr>
+            <tr><td>Model &amp; prompt management</td><td class="soft2">Manages versions safely</td><td class="soft2">Records each model's intended use and known limits</td></tr>
+            <tr><td>Controls</td><td class="soft2">Rate limits, retries, safe test mode</td><td class="soft2">Keeps a person in the loop and a way to switch off a misbehaving model</td></tr>
+          </tbody>
+        </table></div>
+        <div class="keyline">The single most valuable step is simple: the check we already run before releasing a change becomes a <b>quality-and-responsibility check</b>. Same mechanism, wider protection.</div>
+      </section>
+
+      <section id="apix">
+        <div class="eyebrow">05 · APIX</div>
+        <h2>Why this matters even more for APIX</h2>
+        <div class="two">
+          <div>
+            <p class="soft">APIX uses AI to score contact-centre agents — it helps evaluate people's work. That makes Responsible AI especially important here. The good news is that <strong>APIX is already well suited to it</strong>:</p>
+            <ul class="clean">
+              <li><b>Fairness</b> — we can check that scores don't unfairly disadvantage any group of agents (for example, agents who are not native English speakers). This protects both agents and AFNI.</li>
+              <li><b>Transparency</b> — APIX already records the exact moments in a call behind every score. An agent can be shown <em>why</em> they were scored, and can question it.</li>
+              <li><b>Human oversight</b> — coaches review the AI's output. The AI assists; it does not decide on its own.</li>
+              <li><b>Privacy</b> — customer details in call recordings are protected.</li>
+              <li><b>Evidence-based coaching</b> — coaching points are backed by what actually happened on the call, never invented.</li>
+            </ul>
+            <div class="keyline">Because APIX already keeps the evidence behind every score and keeps coaches in the loop, it demonstrates Responsible AI <b>in practice, not just on paper</b>.</div>
+          </div>
+          <div class="example">
+            <div class="lab">Example · a fairness check</div>
+            <h4>Is the “language proficiency” score fair?</h4>
+            <div class="code">Compare average scores across
+groups of agents:
+  native speakers     : 0.86
+  non-native speakers : 0.71
+   <span class="arrow">→</span> gap flagged for review</div>
+            <p class="soft" style="margin:10px 0 0">A gap doesn't automatically mean bias — but Responsible AI means we <b>look, measure, and explain it</b>, rather than assume it's fine.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="path">
+        <div class="eyebrow">06 · The path</div>
+        <h2>Where we are, and the next steps</h2>
+        <p class="soft">Today the platform has the foundations — data protection and basic safety checks. Responsible AI is the natural next step, and it can be introduced gradually, starting with APIX:</p>
+        <ol class="steps">
+          <li><p><b>Check APIX scores for fairness</b> across groups of agents, so we know the scoring is even.</p></li>
+          <li><p><b>Add an evidence check</b> so every coaching point is confirmed against the actual call.</p></li>
+          <li><p><b>Add a short “model card”</b> for each model — a one-page record of its purpose and limits.</p></li>
+          <li><p><b>Extend the pre-release check</b> to include fairness and safety, not just quality.</p></li>
+        </ol>
+        <p class="soft" style="margin-top:20px">In one line: the platform moves from <strong>“protected”</strong> today to <strong>“governed and trusted”</strong> — a clear, credible step that APIX is ready to lead.</p>
+      </section>
+
+      <footer>Responsible AI for the LLMOps platform &amp; APIX · prepared for stakeholder discussion · companion to the APIX overview and KPI documents.</footer>
+    </div>
   </div>
-</nav>
-
-<main>
-  <header class="hero">
-    <div class="kicker">Overview for Discussion</div>
-    <h1>Responsible AI, and how it strengthens the platform and APIX</h1>
-    <p class="lede">A short, plain-language explanation of what Responsible AI is, the value it adds, how it fits the platform we already run, and why it matters for APIX.</p>
-    <div class="meta">
-      <span><b>Audience</b> Business &amp; program stakeholders</span>
-      <span><b>Length</b> ~5 minute read</span>
-      <span><b>Date</b> 9 Sep 2026</span>
-    </div>
-  </header>
-
-  <section>
-    <div class="eyebrow">1 · The idea</div>
-    <h2>What Responsible AI means</h2>
-    <p class="soft">Responsible AI is a set of practices that make sure an AI system is <strong>fair, safe, private, clear about how it works, and always under human control</strong>. It is not a product you buy or a single piece of software. It is the way a system is built, checked, and run, so that the people affected by it — and the business relying on it — can trust it.</p>
-    <div class="plain"><b>In plain terms:</b> if the platform makes sure our AI <em>works</em>, Responsible AI makes sure it can be <em>trusted</em> — and that we can prove it if a client, an auditor, or a regulator asks.</div>
-  </section>
-
-  <section>
-    <div class="eyebrow">2 · The parts</div>
-    <h2>What it includes</h2>
-    <p class="soft">Responsible AI is usually described as a few simple commitments. In everyday language:</p>
-    <div class="cards">
-      <div class="card"><h3><span class="ic">1</span>Fairness</h3><p>The system treats people evenly and does not carry hidden bias against any group.</p></div>
-      <div class="card"><h3><span class="ic">2</span>Safety &amp; reliability</h3><p>It does what it is meant to do, and unsafe or wrong outputs are caught before they cause harm.</p></div>
-      <div class="card"><h3><span class="ic">3</span>Privacy &amp; security</h3><p>Personal information is protected and only used for its intended purpose.</p></div>
-      <div class="card"><h3><span class="ic">4</span>Transparency</h3><p>You can see and explain why the system produced a particular result.</p></div>
-      <div class="card"><h3><span class="ic">5</span>Human oversight &amp; accountability</h3><p>People stay in control, results can be reviewed and challenged, and someone is answerable for them.</p></div>
-      <div class="card"><h3><span class="ic">6</span>Evidence-based</h3><p>Outputs are backed by real information from the source, not made up by the model.</p></div>
-    </div>
-  </section>
-
-  <section>
-    <div class="eyebrow">3 · The value</div>
-    <h2>Why it adds value to the platform</h2>
-    <p class="soft">The platform already makes our AI reliable. Responsible AI is the next step in maturity — it makes the AI <strong>trustworthy and defensible</strong>. Concretely, it:</p>
-    <ul class="clean">
-      <li><b>Reduces risk</b> — legal, reputational, and operational — by catching problems before they reach customers or agents.</li>
-      <li><b>Builds confidence</b> with clients, auditors, and regulators, because decisions can be explained and reviewed.</li>
-      <li><b>Prepares for regulation</b> — rules for AI that affects people are tightening, and this puts us ahead of them.</li>
-      <li><b>Differentiates us</b> — a governed, trustworthy platform is easier to sell, expand, and keep.</li>
-    </ul>
-  </section>
-
-  <section>
-    <div class="eyebrow">4 · The fit</div>
-    <h2>How it fits the platform we already run</h2>
-    <p class="soft">The important point: Responsible AI is <strong>not a separate system to build</strong>. It extends the capabilities the platform already has. Each part we run today simply takes on a responsibility role.</p>
-    <div class="tw"><table>
-      <thead><tr><th>What we run today</th><th>What it does now</th><th>Responsible-AI addition</th></tr></thead>
-      <tbody>
-        <tr><td>Pre-release checks</td><td class="soft2">Scores quality before a change goes live</td><td class="soft2">Also checks fairness, safety, and that answers are backed by evidence — and blocks a change that fails</td></tr>
-        <tr><td>Guardrails</td><td class="soft2">Detects sensitive data such as personal information</td><td class="soft2">Adds checks for unsafe or inappropriate content, and keeps an audit record</td></tr>
-        <tr><td>Monitoring</td><td class="soft2">Tracks cost, speed, and errors</td><td class="soft2">Also tracks fairness and unusual behaviour over time</td></tr>
-        <tr><td>Feedback</td><td class="soft2">Lets users rate results</td><td class="soft2">Becomes a way to report and challenge a result</td></tr>
-        <tr><td>Model &amp; prompt management</td><td class="soft2">Manages versions safely</td><td class="soft2">Records each model's intended use and known limits</td></tr>
-        <tr><td>Controls</td><td class="soft2">Rate limits, retries, safe test mode</td><td class="soft2">Keeps a person in the loop and a way to switch off a misbehaving model</td></tr>
-      </tbody>
-    </table></div>
-    <div class="keyline">The single most valuable step is simple: the check we already run before releasing a change becomes a <b>quality-and-responsibility check</b>. Same mechanism, wider protection.</div>
-  </section>
-
-  <section>
-    <div class="eyebrow">5 · APIX</div>
-    <h2>Why this matters even more for APIX</h2>
-    <p class="soft">APIX (AFNI Performance Index) uses AI to score contact-centre agents — it helps evaluate people's work. That makes Responsible AI especially important here. The good news is that <strong>APIX is already well suited to it</strong>:</p>
-    <ul class="clean">
-      <li><b>Fairness</b> — we can check that scores do not unfairly disadvantage any group of agents (for example, agents who are not native English speakers). This protects both agents and AFNI.</li>
-      <li><b>Transparency</b> — APIX already records the exact moments in a call behind every score. An agent can be shown <em>why</em> they were scored, and can question it.</li>
-      <li><b>Human oversight</b> — coaches review the AI's output. The AI assists; it does not decide on its own.</li>
-      <li><b>Privacy</b> — customer details in call recordings are protected.</li>
-      <li><b>Evidence-based coaching</b> — coaching points are backed by what actually happened on the call, never invented.</li>
-    </ul>
-    <div class="keyline">Because APIX already keeps the evidence behind every score and keeps coaches in the loop, it demonstrates Responsible AI <b>in practice, not just on paper</b>.</div>
-  </section>
-
-  <section>
-    <div class="eyebrow">6 · The path</div>
-    <h2>Where we are, and the next steps</h2>
-    <p class="soft">Today the platform has the foundations — data protection and basic safety checks. Responsible AI is the natural next step, and it can be introduced gradually, starting with APIX:</p>
-    <ol class="steps">
-      <li><p><b>Check APIX scores for fairness</b> across groups of agents, so we know the scoring is even.</p></li>
-      <li><p><b>Add an evidence check</b> so every coaching point is confirmed against the actual call.</p></li>
-      <li><p><b>Add a short “model card”</b> for each model — a one-page record of its purpose and limits.</p></li>
-      <li><p><b>Extend the pre-release check</b> to include fairness and safety, not just quality.</p></li>
-    </ol>
-    <p class="soft" style="margin-top:20px">In one line: the platform moves from <strong>“protected”</strong> today to <strong>“governed and trusted”</strong> — a clear, credible step that APIX is ready to lead.</p>
-  </section>
-
-  <footer>
-    Responsible AI for the LLMOps platform &amp; APIX · prepared for stakeholder discussion · companion to the APIX overview and KPI documents.
-  </footer>
-</main>
-
+</div>
 <script>
-  (function(){
-    var b=document.getElementById('themeBtn');
-    b.addEventListener('click',function(){
-      var cur=document.documentElement.getAttribute('data-theme');
-      var dark=cur? cur==='dark' : matchMedia('(prefers-color-scheme:dark)').matches;
-      document.documentElement.setAttribute('data-theme', dark?'light':'dark');
-    });
-  })();
+  (function(){var b=document.getElementById('themeBtn');b.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    var dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
+    document.documentElement.setAttribute('data-theme',dark?'light':'dark');});})();
 </script>
 </body>
 </html>

@@ -6,176 +6,132 @@
 <title>APIX on the LLMOps Platform — Overview</title>
 <style>
   :root{
-    --bg:#F6F7F9; --surface:#FFFFFF; --surface-2:#EEF1F4;
+    --bg:#F4F6F8; --surface:#FFFFFF; --surface-2:#EAEEF1; --side:#0F1B1A;
     --ink:#14181F; --ink-soft:#4A5361; --ink-faint:#828D9C;
-    --line:#DCE1E7; --line-soft:#E7EBEF;
+    --line:#DBE1E7; --line-soft:#E7EBEF;
     --accent:#0E7C74; --accent-ink:#0A5B55; --accent-soft:#E1F0EE;
-    --good:#2E9E6B; --good-soft:#E4F3EB;
-    --warn:#B77913; --warn-soft:#F6ECD6;
-    --crit:#C1503F; --crit-soft:#F6E2DE;
-    --nav:rgba(246,247,249,.85);
-    --shadow:0 1px 2px rgba(20,24,31,.04),0 8px 24px rgba(20,24,31,.06);
+    --good:#2E9E6B; --good-soft:#E4F3EB; --warn:#B77913; --warn-soft:#F6ECD6;
+    --code:#0B3D39;
+    --shadow:0 1px 2px rgba(20,24,31,.04),0 10px 26px rgba(20,24,31,.07);
   }
   @media (prefers-color-scheme:dark){
     :root{
-      --bg:#0E1116; --surface:#161A21; --surface-2:#1E242D;
+      --bg:#0C0F14; --surface:#141920; --surface-2:#1C222B; --side:#0A0D11;
       --ink:#E9EDF2; --ink-soft:#9AA5B2; --ink-faint:#6B7684;
-      --line:#29313B; --line-soft:#20272F;
+      --line:#28303A; --line-soft:#1E252E;
       --accent:#2CC3B4; --accent-ink:#7FE0D5; --accent-soft:#123531;
       --good:#43B87D; --good-soft:#12281D; --warn:#D69A3E; --warn-soft:#2C2411;
-      --crit:#E0705E; --crit-soft:#2E1712;
-      --nav:rgba(14,17,22,.82);
-      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+      --code:#0C2C29;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.4);
     }
   }
-  :root[data-theme="light"]{
-    --bg:#F6F7F9; --surface:#FFFFFF; --surface-2:#EEF1F4;
-    --ink:#14181F; --ink-soft:#4A5361; --ink-faint:#828D9C;
-    --line:#DCE1E7; --line-soft:#E7EBEF;
-    --accent:#0E7C74; --accent-ink:#0A5B55; --accent-soft:#E1F0EE;
-    --good:#2E9E6B; --good-soft:#E4F3EB; --warn:#B77913; --warn-soft:#F6ECD6;
-    --crit:#C1503F; --crit-soft:#F6E2DE; --nav:rgba(246,247,249,.85);
-    --shadow:0 1px 2px rgba(20,24,31,.04),0 8px 24px rgba(20,24,31,.06);
-  }
-  :root[data-theme="dark"]{
-    --bg:#0E1116; --surface:#161A21; --surface-2:#1E242D;
-    --ink:#E9EDF2; --ink-soft:#9AA5B2; --ink-faint:#6B7684;
-    --line:#29313B; --line-soft:#20272F;
-    --accent:#2CC3B4; --accent-ink:#7FE0D5; --accent-soft:#123531;
-    --good:#43B87D; --good-soft:#12281D; --warn:#D69A3E; --warn-soft:#2C2411;
-    --crit:#E0705E; --crit-soft:#2E1712; --nav:rgba(14,17,22,.82);
-    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
-  }
+  :root[data-theme="light"]{ --bg:#F4F6F8; --surface:#FFFFFF; --surface-2:#EAEEF1; --side:#0F1B1A; --ink:#14181F; --ink-soft:#4A5361; --ink-faint:#828D9C; --line:#DBE1E7; --line-soft:#E7EBEF; --accent:#0E7C74; --accent-ink:#0A5B55; --accent-soft:#E1F0EE; --good:#2E9E6B; --good-soft:#E4F3EB; --warn:#B77913; --warn-soft:#F6ECD6; --code:#0B3D39; --shadow:0 1px 2px rgba(20,24,31,.04),0 10px 26px rgba(20,24,31,.07);}
+  :root[data-theme="dark"]{ --bg:#0C0F14; --surface:#141920; --surface-2:#1C222B; --side:#0A0D11; --ink:#E9EDF2; --ink-soft:#9AA5B2; --ink-faint:#6B7684; --line:#28303A; --line-soft:#1E252E; --accent:#2CC3B4; --accent-ink:#7FE0D5; --accent-soft:#123531; --good:#43B87D; --good-soft:#12281D; --warn:#D69A3E; --warn-soft:#2C2411; --code:#0C2C29; --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.4);}
 
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
   @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
   body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;
-    line-height:1.6;-webkit-font-smoothing:antialiased}
-  .mono{font-family:ui-monospace,"Cascadia Code","SF Mono",Menlo,monospace;font-size:.92em}
+    font-family:-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;line-height:1.62;-webkit-font-smoothing:antialiased}
+  .mono{font-family:ui-monospace,"Cascadia Code","SF Mono",Menlo,monospace;font-size:.9em}
 
-  /* Nav */
-  nav{position:sticky;top:0;z-index:20;background:var(--nav);backdrop-filter:blur(10px);
-    border-bottom:1px solid var(--line)}
-  .nav-in{max-width:1120px;margin:0 auto;display:flex;align-items:center;gap:18px;
-    padding:11px clamp(16px,4vw,40px);flex-wrap:wrap}
-  .brand{font-weight:800;letter-spacing:-.02em;font-size:15px;margin-right:auto;display:flex;align-items:center;gap:9px}
-  .brand .mk{width:22px;height:22px;border-radius:6px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:12px}
-  .nav-links{display:flex;gap:4px;flex-wrap:wrap}
-  .nav-links a{color:var(--ink-soft);text-decoration:none;font-size:13px;font-weight:600;
-    padding:5px 10px;border-radius:7px}
-  .nav-links a:hover{background:var(--surface-2);color:var(--ink)}
-  .toggle{background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);
-    border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer}
-  .toggle:hover{color:var(--ink)}
-  @media(max-width:820px){.nav-links{display:none}}
+  /* shell: sidebar + wide content */
+  .shell{display:grid;grid-template-columns:264px minmax(0,1fr);max-width:1640px;margin:0 auto;min-height:100vh}
+  aside{background:var(--side);color:#cfe6e2;position:sticky;top:0;height:100vh;overflow:auto;
+    padding:26px 20px;display:flex;flex-direction:column;gap:6px}
+  aside .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;color:#fff;letter-spacing:-.02em;margin-bottom:4px}
+  aside .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--accent);color:#062b28;display:grid;place-items:center;font-size:13px;font-weight:900}
+  aside .sub{font-size:12px;color:#6f948e;margin:0 0 18px;letter-spacing:.02em}
+  aside nav{display:flex;flex-direction:column;gap:2px}
+  aside nav a{color:#9fc3bd;text-decoration:none;font-size:13.5px;font-weight:600;padding:8px 11px;border-radius:8px;display:flex;gap:10px;align-items:center}
+  aside nav a .i{color:#5c807a;font-variant-numeric:tabular-nums;font-size:12px;width:16px}
+  aside nav a:hover{background:rgba(255,255,255,.06);color:#eafffb}
+  aside .foot{margin-top:auto;padding-top:18px;display:flex;flex-direction:column;gap:10px}
+  aside .toggle{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#dff3ef;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;text-align:left}
+  aside .toggle:hover{background:rgba(255,255,255,.14)}
+  aside .foot .fp{font-size:11.5px;color:#5c807a;line-height:1.5}
 
-  main{max-width:1120px;margin:0 auto;padding:0 clamp(16px,4vw,40px) 100px}
+  .content{min-width:0}
+  .inner{padding:0 clamp(22px,4.2vw,72px)}
 
-  /* Hero */
-  header.hero{padding:clamp(40px,7vw,84px) 0 clamp(28px,4vw,44px);border-bottom:1px solid var(--line)}
-  .kicker{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700}
-  h1{font-size:clamp(32px,5.4vw,52px);line-height:1.04;letter-spacing:-.03em;font-weight:800;
-    margin:16px 0 0;text-wrap:balance;max-width:18ch}
-  .lede{font-size:clamp(17px,2.3vw,21px);color:var(--ink-soft);margin:18px 0 0;max-width:64ch}
-  .meta{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:var(--ink-faint);margin-top:26px}
+  header.hero{background:linear-gradient(180deg,var(--accent-soft),transparent);padding:clamp(34px,5vw,64px) clamp(22px,4.2vw,72px) clamp(26px,3vw,40px);border-bottom:1px solid var(--line)}
+  .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+  h1{font-size:clamp(30px,4vw,46px);line-height:1.05;letter-spacing:-.03em;font-weight:800;margin:14px 0 0;max-width:24ch;text-wrap:balance}
+  .lede{font-size:clamp(16px,1.5vw,20px);color:var(--ink-soft);margin:16px 0 0;max-width:80ch}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:13px;color:var(--ink-faint);margin-top:22px}
   .meta b{color:var(--ink-soft);font-weight:600}
 
-  /* TOC */
-  .toc{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:34px 0 0}
-  @media(max-width:820px){.toc{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:480px){.toc{grid-template-columns:1fr}}
-  .toc a{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:14px 16px;
-    text-decoration:none;color:var(--ink);display:flex;flex-direction:column;gap:3px;box-shadow:var(--shadow)}
-  .toc a:hover{border-color:var(--accent)}
-  .toc .tn{font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.05em}
-  .toc .tt{font-weight:650;font-size:14.5px;letter-spacing:-.01em}
+  .startbox{margin:26px 0 0;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:18px 22px;box-shadow:var(--shadow);max-width:none}
+  .startbox h4{margin:0 0 6px;font-size:14px;color:var(--accent-ink);letter-spacing:.02em;text-transform:uppercase}
+  .startbox p{margin:0;color:var(--ink-soft);font-size:15.5px;max-width:88ch}
 
-  section{padding:clamp(40px,6vw,68px) 0;border-bottom:1px solid var(--line-soft)}
-  .eyebrow{display:flex;align-items:center;gap:12px;font-size:12px;letter-spacing:.13em;
-    text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:16px}
-  .eyebrow .num{font-variant-numeric:tabular-nums}
-  h2{font-size:clamp(24px,3.4vw,34px);letter-spacing:-.025em;font-weight:780;margin:0 0 14px;
-    text-wrap:balance;max-width:22ch}
-  h3{font-size:18px;letter-spacing:-.01em;font-weight:700;margin:0}
-  p{margin:0 0 15px;max-width:70ch}
+  section{padding:clamp(34px,4vw,56px) 0;border-bottom:1px solid var(--line-soft)}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);font-weight:700;margin-bottom:12px}
+  h2{font-size:clamp(23px,2.4vw,32px);letter-spacing:-.022em;font-weight:780;margin:0 0 14px;max-width:26ch;text-wrap:balance}
+  h3{font-size:17px;font-weight:700;margin:0}
+  p{margin:0 0 15px;max-width:82ch}
   .soft{color:var(--ink-soft)}
-  a.inl{color:var(--accent-ink);text-decoration:underline;text-underline-offset:2px}
+  strong{font-weight:650}
 
-  .explain{background:var(--accent-soft);border-radius:12px;padding:15px 18px;margin:6px 0 22px;
-    color:var(--accent-ink);font-size:15.5px;max-width:74ch}
-  .explain b{font-weight:800}
+  /* two-column: explanation | example — fills width */
+  .two{display:grid;grid-template-columns:1.15fr .85fr;gap:34px;align-items:start}
+  @media(max-width:1080px){.two{grid-template-columns:1fr;gap:22px}}
 
-  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 24px;box-shadow:var(--shadow)}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-  @media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr}}
+  .example{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)}
+  .example .lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .example .lab::before{content:"◆";font-size:10px}
+  .example h4{margin:0 0 8px;font-size:15.5px}
+  .example p{font-size:14px;color:var(--ink-soft);margin:0 0 10px}
+  .example .code{background:var(--accent-soft);border-radius:9px;padding:12px 14px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--accent-ink);line-height:1.7;white-space:pre-wrap}
+  .example .arrow{color:var(--accent);font-weight:800}
 
-  ul.clean{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
-  ul.clean li{padding-left:22px;position:relative;color:var(--ink-soft);font-size:15px;max-width:72ch}
+  .plain{background:var(--accent-soft);border-radius:12px;padding:15px 18px;margin:4px 0 20px;color:var(--accent-ink);font-size:15.5px;max-width:88ch}
+  .plain b{font-weight:800}
+
+  ul.clean{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:11px}
+  ul.clean li{padding-left:22px;position:relative;color:var(--ink-soft);font-size:15.5px;max-width:82ch}
   ul.clean li::before{content:"";position:absolute;left:2px;top:9px;width:7px;height:7px;border-radius:2px;background:var(--accent)}
   ul.clean li b{color:var(--ink);font-weight:650}
 
-  .split-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
-  .tag{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:3px 9px;border-radius:999px}
-  .tag.reuse{background:var(--accent-soft);color:var(--accent-ink)}
-  .tag.spec{background:var(--surface-2);color:var(--ink-soft)}
+  .capgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px}
+  @media(max-width:1080px){.capgrid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:620px){.capgrid{grid-template-columns:1fr}}
+  .cap{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:18px 20px;box-shadow:var(--shadow)}
+  .cap .ct{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .cap .ci{width:28px;height:28px;border-radius:8px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+  .cap h3{font-size:15.5px}
+  .cap p{font-size:14px;color:var(--ink-soft);margin:0 0 9px}
+  .cap .ex{font-size:12.5px;color:var(--ink-faint);border-top:1px solid var(--line-soft);padding-top:9px}
+  .cap .ex b{color:var(--accent-ink);font-weight:700}
 
-  /* capability cards */
-  .capgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:8px}
-  @media(max-width:760px){.capgrid{grid-template-columns:1fr}}
-  .cap{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px 22px;box-shadow:var(--shadow)}
-  .cap .ct{display:flex;align-items:center;gap:11px;margin-bottom:8px}
-  .cap .ci{width:30px;height:30px;border-radius:8px;background:var(--accent-soft);color:var(--accent-ink);
-    display:grid;place-items:center;font-weight:800;font-size:14px;flex:none}
-  .cap h3{font-size:16.5px}
-  .cap p{font-size:14.5px;margin:0 0 8px;color:var(--ink-soft)}
-  .cap .how{font-size:13px;color:var(--ink-faint);border-top:1px solid var(--line-soft);padding-top:9px;margin-top:4px}
-  .cap .how b{color:var(--ink-soft);font-weight:650}
-
-  /* pipeline flow */
-  .flow{display:flex;gap:10px;align-items:stretch;overflow-x:auto;padding:6px 2px 12px;margin-top:8px}
-  .step{min-width:180px;flex:1;background:var(--surface);border:1px solid var(--line);border-radius:12px;
-    padding:16px;box-shadow:var(--shadow);position:relative}
+  .flow{display:flex;gap:10px;align-items:stretch;overflow-x:auto;padding:6px 2px 14px;margin-top:8px}
+  .step{min-width:190px;flex:1;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);position:relative}
   .step .sn{font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.06em}
   .step h3{font-size:15px;margin:5px 0 6px}
   .step p{font-size:13px;color:var(--ink-soft);margin:0}
   .step .io{font-size:11px;color:var(--ink-faint);margin-top:9px;font-family:ui-monospace,Menlo,monospace}
-  .step::after{content:"\2192";position:absolute;right:-13px;top:50%;transform:translateY(-50%);
-    color:var(--ink-faint);font-size:16px;z-index:1}
+  .step::after{content:"\2192";position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:var(--ink-faint);font-size:16px;z-index:1}
   .step:last-child::after{content:""}
 
-  /* tables */
-  .tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:8px 0 8px}
-  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:540px}
-  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top}
-  thead th{background:var(--surface-2);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;
-    color:var(--ink-soft);font-weight:700;position:sticky;top:0}
+  .tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:8px 0}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+  th,td{text-align:left;padding:10px 15px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  thead th{background:var(--surface-2);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
   tbody tr:last-child td{border-bottom:none}
   td.k{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--accent-ink);white-space:nowrap}
-  td .u{font-variant-numeric:tabular-nums}
-  .cap-note{font-size:12.5px;color:var(--ink-faint);margin-top:6px}
+  .cols3{columns:3;column-gap:26px}
+  @media(max-width:1080px){.cols3{columns:2}}
+  @media(max-width:620px){.cols3{columns:1}}
 
-  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
-  .pill.good{background:var(--good-soft);color:var(--good)}
-  .pill.warn{background:var(--warn-soft);color:var(--warn)}
-  .pill.crit{background:var(--crit-soft);color:var(--crit)}
-  .pill.n{background:var(--surface-2);color:var(--ink-soft)}
-
-  /* eval stack */
   .stack{display:flex;flex-direction:column;gap:10px;margin-top:8px}
-  .layer{display:grid;grid-template-columns:60px 1fr auto;gap:16px;align-items:center;
-    background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 18px}
+  .layer{display:grid;grid-template-columns:58px 1fr auto;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
   .layer .lyr{font-weight:800;font-size:15px;color:var(--accent);font-variant-numeric:tabular-nums}
   .layer .name{font-weight:650}
   .layer .desc{font-size:13.5px;color:var(--ink-soft);margin-top:2px}
-  .layer .how{font-size:12.5px;font-weight:700;text-align:right;color:var(--ink-soft);max-width:15ch}
+  .layer .how{font-size:12.5px;font-weight:700;text-align:right;color:var(--ink-soft);max-width:16ch}
   .layer.sql{border-style:dashed;background:transparent}
-  .layer.sql .lyr{color:var(--ink-faint)}
-  @media(max-width:620px){.layer{grid-template-columns:44px 1fr}.layer .how{grid-column:2;text-align:left;max-width:none}}
-  .keyline{margin-top:16px;padding:15px 18px;background:var(--accent-soft);border-radius:12px;
-    color:var(--accent-ink);font-size:15.5px;font-weight:600;max-width:76ch}
+  @media(max-width:620px){.layer{grid-template-columns:44px 1fr}.layer .how{grid-column:2;text-align:left}}
+  .keyline{margin-top:16px;padding:15px 18px;background:var(--accent-soft);border-radius:12px;color:var(--accent-ink);font-size:15.5px;font-weight:600;max-width:88ch}
   .keyline b{font-weight:800}
 
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:6px 0 22px}
@@ -184,362 +140,320 @@
   .stat .v{font-size:30px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
   .stat .l{font-size:12.5px;color:var(--ink-soft);margin-top:7px}
 
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .pill.good{background:var(--good-soft);color:var(--good)} .pill.warn{background:var(--warn-soft);color:var(--warn)}
   .findlist{display:flex;flex-direction:column;gap:10px;margin-top:6px}
-  .find{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--line);
-    border-radius:10px;padding:14px 16px}
-  .find.crit{border-left-color:var(--crit)} .find.warn{border-left-color:var(--warn)} .find.good{border-left-color:var(--good)}
+  .find{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:10px;padding:14px 16px}
+  .find.good{border-left-color:var(--good)} .find.warn{border-left-color:var(--warn)}
   .find .t{font-weight:650;font-size:15px;margin-bottom:3px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-  .find .d{font-size:14px;color:var(--ink-soft);margin:0;max-width:78ch}
+  .find .d{font-size:14px;color:var(--ink-soft);margin:0;max-width:88ch}
 
-  ol.road{list-style:none;counter-reset:r;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
-  ol.road li{counter-increment:r;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
-  ol.road li::before{content:counter(r);font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent);
-    background:var(--accent-soft);width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:14px}
+  ol.road{list-style:none;counter-reset:r;margin:8px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:760px){ol.road{grid-template-columns:1fr}}
+  ol.road li{counter-increment:r;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 17px}
+  ol.road li::before{content:counter(r);font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent);background:var(--accent-soft);width:29px;height:29px;border-radius:8px;display:grid;place-items:center;font-size:14px}
   ol.road .h{font-weight:650}
-  ol.road .s{font-size:14px;color:var(--ink-soft);max-width:74ch}
-  ol.road .when{font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:var(--ink-faint);margin-left:9px}
+  ol.road .s{font-size:14px;color:var(--ink-soft)}
+  ol.road .when{font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:var(--ink-faint);margin-left:8px}
 
-  .asks{display:flex;flex-direction:column;gap:12px;margin-top:6px}
-  .ask{display:flex;gap:14px;align-items:flex-start}
-  .ask .q{width:27px;height:27px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);
-    display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
-  .ask p{margin:2px 0 0;font-size:15px}
+  dl.gloss{margin:8px 0 0;display:grid;grid-template-columns:repeat(2,1fr);gap:0 30px}
+  @media(max-width:820px){dl.gloss{grid-template-columns:1fr}}
+  dl.gloss div{display:grid;grid-template-columns:170px 1fr;gap:16px;padding:10px 0;border-top:1px solid var(--line-soft)}
+  @media(max-width:520px){dl.gloss div{grid-template-columns:1fr;gap:2px}}
+  dl.gloss dt{font-weight:700;font-size:14px} dl.gloss dd{margin:0;font-size:14px;color:var(--ink-soft)}
 
-  dl.gloss{margin:8px 0 0;display:grid;grid-template-columns:180px 1fr;gap:2px 20px}
-  @media(max-width:640px){dl.gloss{grid-template-columns:1fr}}
-  dl.gloss dt{font-weight:700;font-size:14px;padding:9px 0;border-top:1px solid var(--line-soft)}
-  dl.gloss dd{margin:0;font-size:14px;color:var(--ink-soft);padding:9px 0;border-top:1px solid var(--line-soft)}
-  @media(max-width:640px){dl.gloss dd{border-top:none;padding-top:0}}
-
-  footer{padding:34px 0 0;color:var(--ink-faint);font-size:13px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between}
-  .exhibit{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--surface-2);
-    border:1px solid var(--line);border-radius:8px;padding:5px 10px;color:var(--ink-soft)}
+  footer{padding:30px clamp(22px,4.2vw,72px);color:var(--ink-faint);font-size:13px}
 </style>
 </head>
 <body>
-<nav>
-  <div class="nav-in">
+<div class="shell">
+  <aside>
     <div class="brand"><span class="mk">A</span>APIX × LLMOps</div>
-    <div class="nav-links">
-      <a href="#picture">Big picture</a>
-      <a href="#platform">Platform</a>
-      <a href="#pipeline">APIX pipeline</a>
-      <a href="#metrics">Metrics</a>
-      <a href="#evaluation">Evaluation</a>
-      <a href="#status">Status</a>
-      <a href="#next">What's next</a>
+    <p class="sub">AFNI Performance Index</p>
+    <nav>
+      <a href="#picture"><span class="i">01</span>The big picture</a>
+      <a href="#platform"><span class="i">02</span>Platform capabilities</a>
+      <a href="#pipeline"><span class="i">03</span>How APIX works</a>
+      <a href="#metrics"><span class="i">04</span>The metric system</a>
+      <a href="#evaluation"><span class="i">05</span>Evaluation &amp; golden data</a>
+      <a href="#status"><span class="i">06</span>Where we are</a>
+      <a href="#next"><span class="i">07</span>Dependencies &amp; roadmap</a>
+      <a href="#glossary"><span class="i">08</span>Glossary</a>
+    </nav>
+    <div class="foot">
+      <button class="toggle" id="themeBtn" type="button">◐ Switch light / dark</button>
+      <p class="fp">Self-contained document · works offline · updated 9 Sep 2026</p>
     </div>
-    <button class="toggle" id="themeBtn" type="button" aria-label="Toggle light or dark theme">Theme</button>
+  </aside>
+
+  <div class="content">
+    <header class="hero">
+      <div class="kicker">Platform &amp; Use-Case Overview</div>
+      <h1>APIX is the proof. The LLMOps platform is the product.</h1>
+      <p class="lede">A reusable foundation for building, evaluating and operating AI use cases — explained end to end, using APIX (AFNI Performance Index), AFNI's call-analytics pipeline, as the working example. Written to be followed by someone seeing this for the first time.</p>
+      <div class="meta">
+        <span><b>Subject</b> LLMOps platform · APIX pipeline</span>
+        <span><b>Audience</b> Program &amp; business stakeholders</span>
+        <span><b>Read time</b> ~10 minutes</span>
+      </div>
+      <div class="startbox">
+        <h4>New here? Start with this</h4>
+        <p>APIX listens to every customer call, judges how the agent handled it, and turns that into a weekly coaching scorecard. The <em>platform</em> is the shared machinery that runs it safely and lets us improve it. This document explains both — the machinery first, then APIX as the example — with a worked example in each section.</p>
+      </div>
+    </header>
+
+    <div class="inner">
+      <section id="picture">
+        <div class="eyebrow">01 · The big picture</div>
+        <h2>One reusable platform, many use cases</h2>
+        <div class="two">
+          <div>
+            <p class="soft">The work is not a single call-analytics application. It is a <strong>standardized LLMOps platform</strong> — a common foundation for deploying and operating any number of AI use cases. APIX, AFNI's contact-centre performance pipeline, is simply the first use case that runs on it and proves it works.</p>
+            <p class="soft">Every use case reuses the whole platform and supplies only its own recipe: its data, its prompts, and how it wants to be measured. Nothing underneath has to be rebuilt.</p>
+            <ul class="clean">
+              <li><b>The platform</b> gives every use case: prompt &amp; model management, evaluation, monitoring, guardrails, feedback and controls.</li>
+              <li><b>A use case</b> adds only its evaluation schema, prompts, KPI definitions and its golden data.</li>
+              <li><b>Future use cases</b> already in view — hiring intelligence, agent knowledge-assist, automated quality-scoring, coaching-plan generation — inherit all of it.</li>
+            </ul>
+          </div>
+          <div class="example">
+            <div class="lab">Analogy</div>
+            <h4>Think of a car factory</h4>
+            <p>The <b>factory</b> — the robots, the assembly line, the quality checks — is the platform. It doesn't change from car to car.</p>
+            <p>Each <b>car model</b> is a use case. It reuses the entire factory and only brings its own blueprint and parts.</p>
+            <p class="soft" style="margin:0"><span class="arrow">→</span> APIX is the first car off this line. The value we're building is the line, not just the car.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="platform">
+        <div class="eyebrow">02 · The platform, capability by capability</div>
+        <h2>What every use case gets for free</h2>
+        <p class="soft">Seven capabilities make up the platform. All seven are already connected to APIX through a single connection point, so the pipeline benefits from them today without carrying their complexity in its own code. Each below has a one-line example of what it does in practice.</p>
+        <div class="capgrid">
+          <div class="cap"><div class="ct"><span class="ci">1</span><h3>Prompt Management</h3></div><p>Prompts live in a versioned library, separate from code. Approved changes go live without a software release.</p><div class="ex"><b>Example:</b> a prompt engineer improves the wording that detects escalations and publishes “v4” — no developer needed.</div></div>
+          <div class="cap"><div class="ct"><span class="ci">2</span><h3>Model Management</h3></div><p>Code refers to a model by a nickname; a registry maps it to the real model, per environment.</p><div class="ex"><b>Example:</b> switch from one model to a newer one for everyone by changing one setting, not the code.</div></div>
+          <div class="cap"><div class="ct"><span class="ci">3</span><h3>Evaluation Gate</h3></div><p>Before a change ships, it is scored against a trusted test set; weak changes are blocked.</p><div class="ex"><b>Example:</b> a new prompt scores 82% vs the required 90% → automatically rejected before customers see it.</div></div>
+          <div class="cap"><div class="ct"><span class="ci">4</span><h3>Monitoring</h3></div><p>Every model call is tracked — cost, speed, errors — so runs can be watched and costed.</p><div class="ex"><b>Example:</b> spot that one step's cost doubled overnight and act on it the same day.</div></div>
+          <div class="cap"><div class="ct"><span class="ci">5</span><h3>Guardrails &amp; Audit</h3></div><p>Checks such as personal-data detection run on the way through; flagged events are kept for review.</p><div class="ex"><b>Example:</b> a customer's card number in a transcript is detected and logged, not passed on blindly.</div></div>
+          <div class="cap"><div class="ct"><span class="ci">6</span><h3>Feedback Loop</h3></div><p>Users rate a result and comment; that feedback drives prompt and test-set improvements.</p><div class="ex"><b>Example:</b> a coach marks a coaching tip 2/5 → the case is reviewed and the prompt fixed.</div></div>
+          <div class="cap"><div class="ct"><span class="ci">7</span><h3>Operational Controls</h3></div><p>Rate-limits, retries and a safe test mode keep large runs reliable and within provider limits.</p><div class="ex"><b>Example:</b> scoring 100,000 calls without tripping the AI provider's rate limits.</div></div>
+        </div>
+      </section>
+
+      <section id="pipeline">
+        <div class="eyebrow">03 · How APIX works</div>
+        <h2>From a raw call to per-agent coaching, in five steps</h2>
+        <p class="soft">APIX runs weekly. It takes raw call transcripts and turns them into a coaching scorecard for every agent. Each step feeds the next; the AI is used where judgment is needed, and plain calculation everywhere else.</p>
+        <div class="flow">
+          <div class="step"><div class="sn">STEP 1</div><h3>Denoise</h3><p>Cleans messy speech-to-text so later steps judge content, not typos.</p><div class="io">raw → clean</div></div>
+          <div class="step"><div class="sn">STEP 2</div><h3>Analysis</h3><p>Scores every call against the program's checklist — with the evidence behind each point.</p><div class="io">call → evaluation</div></div>
+          <div class="step"><div class="sn">STEP 3</div><h3>Summary</h3><p>Rolls a week of a coach's calls into per-agent scores and a coaching note.</p><div class="io">week → scorecard</div></div>
+          <div class="step"><div class="sn">STEP 4</div><h3>Individual metrics</h3><p>Adds operational numbers from Verizon and writes tailored tips.</p><div class="io">+ AHT / VXS</div></div>
+          <div class="step"><div class="sn">STEP 5</div><h3>KPI aggregator</h3><p>Flattens everything into the weekly file the dashboard reads.</p><div class="io">→ dashboard</div></div>
+        </div>
+        <div class="two" style="margin-top:26px">
+          <div>
+            <p class="soft">A defining strength: <strong>every judgment is backed by evidence</strong> — the exact call moments that support it are recorded with the result. Coaching is auditable, not a black-box score.</p>
+            <h3 style="margin-top:18px">Three programs, three lenses</h3>
+            <p class="soft">The same pipeline serves three Verizon lines of business; each has its own checklist because “a good call” means something different in each.</p>
+            <ul class="clean">
+              <li><b>Telesales</b> — a sales lens (pitches, upgrades, saves). <b>12 KPIs.</b></li>
+              <li><b>WCC</b> — care &amp; retention across LEARN / PROVIDE / CLOSE. <b>11 KPIs.</b></li>
+              <li><b>PSO</b> — VZ Mobile care, the most detailed. <b>24 KPIs.</b></li>
+            </ul>
+          </div>
+          <div class="example">
+            <div class="lab">Worked example · follow one call</div>
+            <h4>A single sales call through APIX</h4>
+            <div class="code">Customer asks about their bill.
+Agent resolves it, then offers
+a second line. Customer declines.
+   <span class="arrow">↓ Step 2 (Analysis) judges:</span>
+new_line_opportunity_exists = true
+pitched_new_line            = true
+issue_resolved              = true
+customer_experience         = "Good"
+   <span class="arrow">↓ Step 3 counts it toward:</span>
+this agent's new-line pitches +1</div>
+            <p class="soft" style="margin:10px 0 0">Every one of those judgments links back to the exact sentence in the call that justifies it.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="metrics">
+        <div class="eyebrow">04 · The metric system</div>
+        <h2>How one call becomes measurable KPIs</h2>
+        <div class="two">
+          <div>
+            <p class="soft">This is the heart of APIX. There are four kinds of metric, produced in a clear chain: the AI judges each <strong>call</strong>; those judgments are <strong>added up per agent</strong> into KPIs; operational numbers from Verizon are joined in; and a few <strong>roll-up scores</strong> summarize the week.</p>
+            <p class="soft"><strong>A prompt only ever changes the first link.</strong> Everything after it is arithmetic — which is what makes the system testable.</p>
+            <ul class="clean">
+              <li><b>KPIs</b> — counts and rates of behaviours and outcomes (e.g. how many pitches, what share resolved).</li>
+              <li><b>Behaviour &amp; soft-skill scores</b> — how consistently a skill shows, as a 0–1 average.</li>
+              <li><b>Operational metrics</b> — handling time, VXS, resolution — from Verizon's data, <b>not the AI</b>.</li>
+              <li><b>Roll-up scores</b> — a composite score and status that summarize the week for managers.</li>
+            </ul>
+          </div>
+          <div class="example">
+            <div class="lab">Worked example · a KPI calculation</div>
+            <h4>“New-line pitches” for one agent</h4>
+            <div class="code">In the week, this agent had:
+  20 calls where a new-line
+     opportunity existed
+  12 of those, they pitched
+   <span class="arrow">→</span> new_line_pitches      = 12
+   <span class="arrow">→</span> opportunity_missed    = 8 / 20
+                          = 40%</div>
+            <p class="soft" style="margin:10px 0 0">No labelling needed here — it is pure counting on top of the call-level judgments.</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top:30px">The KPIs, by program</h3>
+        <p class="soft">“Unit” is whether a KPI is an absolute <span class="mono">count</span> of calls or a <span class="mono">rate</span> (0–1). Full field-level detail lives in <span class="mono">KPI_DICTIONARY.md</span>.</p>
+
+        <h3 style="margin-top:20px;font-size:15px;color:var(--ink-soft)">Telesales — sales performance (12)</h3>
+        <div class="tw"><table>
+          <thead><tr><th>KPI</th><th>What it measures</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="k">new_line_pitches</td><td>New-line pitches where an opportunity existed</td><td>count</td></tr>
+            <tr><td class="k">new_line_opportunity_missed</td><td>Share of new-line opportunities not pitched</td><td>rate</td></tr>
+            <tr><td class="k">upgrade_attempts</td><td>Upgrade pitches where an opportunity existed</td><td>count</td></tr>
+            <tr><td class="k">upgrade_opportunity_missed</td><td>Share of upgrade opportunities not pitched</td><td>rate</td></tr>
+            <tr><td class="k">save_attempts</td><td>Retention save attempts</td><td>count</td></tr>
+            <tr><td class="k">mobile_protection_attempts</td><td>Mobile-protection pitches</td><td>count</td></tr>
+            <tr><td class="k">fwa_attempts</td><td>Fixed-wireless-access pitches</td><td>count</td></tr>
+            <tr><td class="k">we_got_you_utterances</td><td>Reassurance phrasing used</td><td>count</td></tr>
+            <tr><td class="k">escalations</td><td>Calls with an escalation</td><td>count</td></tr>
+            <tr><td class="k">customer_experience</td><td>Share of rated calls not rated “Poor”</td><td>rate</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3 style="margin-top:22px;font-size:15px;color:var(--ink-soft)">WCC — care &amp; retention (11)</h3>
+        <div class="tw"><table>
+          <thead><tr><th>KPI</th><th>What it measures</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="k">resolution_opportunities</td><td>Calls where the issue could be resolved</td><td>count</td></tr>
+            <tr><td class="k">resolutions</td><td>Of those, calls actually resolved</td><td>count</td></tr>
+            <tr><td class="k">survival_opportunities</td><td>Calls with churn / retention risk present</td><td>count</td></tr>
+            <tr><td class="k">saves</td><td>Of those, customers retained</td><td>count</td></tr>
+            <tr><td class="k">right_of_sell_opportunities</td><td>Calls where a sell was appropriate</td><td>count</td></tr>
+            <tr><td class="k">right_of_sell_actuals</td><td>Of those, sell attempts made</td><td>count</td></tr>
+            <tr><td class="k">escalations</td><td>Calls with an escalation</td><td>count</td></tr>
+            <tr><td class="k">customer_experience</td><td>Share of rated calls not rated “Poor”</td><td>rate</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3 style="margin-top:22px;font-size:15px;color:var(--ink-soft)">PSO — VZ Mobile care, grouped (24)</h3>
+        <div class="tw"><table>
+          <thead><tr><th>Group</th><th>KPIs</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td>Customer Experience</td><td>Predicted CSAT · Customer confidence · Customer effort</td><td>rate</td></tr>
+            <tr><td>Resolve</td><td>FCR likelihood · Resolution completeness · Resolution confidence · Next-steps clarity · Issue-resolution effectiveness</td><td>rate</td></tr>
+            <tr><td>Quality</td><td>Quality · Compliance · Process adherence</td><td>rate</td></tr>
+            <tr><td>Care Handling</td><td>Issue ownership · Escalation necessity · Transfer avoidance · Case management</td><td>rate</td></tr>
+            <tr><td>Operational Efficiency</td><td>AHT assessment · Contact-handling efficiency · Hold management</td><td>rate</td></tr>
+            <tr><td>Repeat-Contact Risk</td><td>Repeat-contact · Escalation · Callback · Reopen risk</td><td>count</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="evaluation">
+        <div class="eyebrow">05 · Evaluation &amp; golden data</div>
+        <h2>How we prove the system is right — and keep it right</h2>
+        <div class="two">
+          <div>
+            <p class="soft">To improve prompts safely we need “ground truth”: examples where the correct answer is agreed. The challenge is that APIX KPIs are aggregated across many calls, so a naïve “one transcript → one KPI value” can't validate them. The resolution: a prompt change can only affect <strong>one</strong> part, so we evaluate each part the right way.</p>
+            <div class="stack">
+              <div class="layer"><span class="lyr">L1</span><div><div class="name">Call-level analysis</div><div class="desc">The per-call judgments the AI makes</div></div><div class="how">Golden set — coaches certify</div></div>
+              <div class="layer"><span class="lyr">L2</span><div><div class="name">Aggregation into KPIs</div><div class="desc">Counts and rates — plain arithmetic</div></div><div class="how">Automated tests</div></div>
+              <div class="layer"><span class="lyr">L3</span><div><div class="name">Coaching narrative</div><div class="desc">The weekly written recommendations</div></div><div class="how">SME rubric</div></div>
+              <div class="layer sql"><span class="lyr">SQL</span><div><div class="name">Operational metrics</div><div class="desc">AHT, VXS — from Verizon's warehouse</div></div><div class="how">Validate the query</div></div>
+            </div>
+            <div class="keyline">Certify the <b>call-level</b> judgments and test the <b>arithmetic</b>, and every aggregate KPI is right by construction. AHT / VXS / resolution rate aren't AI outputs at all — golden data doesn't apply to them.</div>
+          </div>
+          <div class="example">
+            <div class="lab">Worked example · one golden record</div>
+            <h4>What a coach certifies</h4>
+            <div class="code">Transcript #4471 (Telesales)
+Coaches agree the correct answer is:
+  new_line_opportunity_exists = true
+  pitched_new_line            = false
+  escalation                  = none
+  customer_experience         = "Medium"
+Evidence: lines 12–14 of the call
+Certified by: 2 coaches · 8 Sep</div>
+            <p class="soft" style="margin:10px 0 0">A transcript becomes “golden” only when ≥2 coaches agree on its answers — not because we picked it.</p>
+          </div>
+        </div>
+        <h3 style="margin-top:28px">What makes a transcript “golden”</h3>
+        <p class="soft">Deliberate coverage, not random selection: the set must include calls that exercise each decision (each opportunity type, each experience rating, escalations vs none, edge cases), with enough positive <em>and</em> negative examples, kept only where reviewers agree. If two coaches disagree, that tells us the <em>definition</em> needs fixing — before the record can be golden.</p>
+      </section>
+
+      <section id="status">
+        <div class="eyebrow">06 · Where we are</div>
+        <h2>Built, verified, and honestly scoped</h2>
+        <div class="stats">
+          <div class="stat"><div class="v">7/7</div><div class="l">Platform capabilities integrated</div></div>
+          <div class="stat"><div class="v">47</div><div class="l">KPIs mapped &amp; classified</div></div>
+          <div class="stat"><div class="v">3</div><div class="l">Programs documented</div></div>
+          <div class="stat"><div class="v">2</div><div class="l">Improvements applied this cycle</div></div>
+        </div>
+        <div class="findlist">
+          <div class="find good"><div class="t"><span class="pill good">Done</span> Platform integrated &amp; documented</div><p class="d">All seven capabilities are connected through one fail-open point; the full KPI dictionary and golden-data spec are written.</p></div>
+          <div class="find good"><div class="t"><span class="pill good">Improved</span> Metric labelling corrected &amp; code cleaned</div><p class="d">Count-type KPIs in two programs were shown as percentages; corrected and verified.</p></div>
+          <div class="find warn"><div class="t"><span class="pill warn">In progress</span> Manager roll-up score re-specified per program</div><p class="d">The composite score was tuned for sales only; being redefined so care programs score fairly.</p></div>
+          <div class="find warn"><div class="t"><span class="pill warn">Needs input</span> A few definitions to confirm with SMEs</div><p class="d">Captured as focused questions in the next section.</p></div>
+        </div>
+      </section>
+
+      <section id="next">
+        <div class="eyebrow">07 · Dependencies &amp; roadmap</div>
+        <h2>What we need, and where this goes</h2>
+        <h3>Focused asks for business &amp; SMEs</h3>
+        <p class="soft">Specific, value-adding requests — the basic definitions are already worked out internally.</p>
+        <ul class="clean">
+          <li><b>Certify labels</b> on a stratified sample of transcripts — this creates the golden set.</li>
+          <li><b>Confirm the flagged definitions</b> where wording is ambiguous.</li>
+          <li><b>Author the coaching rubric</b> — what makes a recommendation good.</li>
+          <li><b>Set acceptance thresholds</b> per KPI for the evaluation gate.</li>
+          <li><b>Confirm operational-metric coverage</b> for WCC &amp; PSO with the existing SMEs.</li>
+        </ul>
+        <h3 style="margin-top:26px">Roadmap</h3>
+        <ol class="road">
+          <li><div><span class="h">Homework &amp; cleanup</span><span class="when">Done</span><div class="s">KPI dictionary, golden-data spec, code cleanup, labelling fix.</div></div></li>
+          <li><div><span class="h">Correctness batch</span><span class="when">Next</span><div class="s">Re-spec the roll-up score; align WCC; confirm definitions.</div></div></li>
+          <li><div><span class="h">Golden set v1</span><span class="when">With SMEs</span><div class="s">Build the certified call-level dataset per program.</div></div></li>
+          <li><div><span class="h">Gate &amp; feedback live</span><span class="when">Then</span><div class="s">Changes promoted only above threshold; feedback feeds new scenarios.</div></div></li>
+        </ol>
+      </section>
+
+      <section id="glossary" style="border-bottom:none">
+        <div class="eyebrow">08 · Glossary</div>
+        <h2>Terms used in this document</h2>
+        <dl class="gloss">
+          <div><dt>APIX</dt><dd>AFNI Performance Index — the call-analytics pipeline; the first use case on the platform.</dd></div>
+          <div><dt>LLMOps platform</dt><dd>The reusable foundation for building and operating AI use cases — the “factory.”</dd></div>
+          <div><dt>Use case</dt><dd>One application on the platform, supplying its own schema, prompts, KPIs and data.</dd></div>
+          <div><dt>KPI</dt><dd>A key performance indicator — a count or rate derived from the per-call judgments.</dd></div>
+          <div><dt>Schema</dt><dd>The fixed checklist of fields the AI fills in for each call.</dd></div>
+          <div><dt>Golden dataset</dt><dd>Curated calls with business-certified correct answers, used to evaluate changes.</dd></div>
+          <div><dt>Evaluation gate</dt><dd>The check that scores a change against the golden set before it ships.</dd></div>
+          <div><dt>Evidence</dt><dd>The exact call moments recorded behind each judgment — the audit trail.</dd></div>
+          <div><dt>AHT / VXS / FCR</dt><dd>Operational metrics: average handling time, Verizon experience score, first-contact resolution.</dd></div>
+          <div><dt>SME</dt><dd>Subject-matter expert — here, coaches and the internal APIX specialists.</dd></div>
+        </dl>
+      </section>
+
+      <footer>APIX × LLMOps · overview · companion to KPI_DICTIONARY.md, GOLDEN_DATASET_SPEC.md and the Responsible AI document.</footer>
+    </div>
   </div>
-</nav>
-
-<main>
-  <header class="hero" id="top">
-    <div class="kicker">Platform &amp; Use-Case Overview</div>
-    <h1>APIX is the proof. The LLMOps platform is the product.</h1>
-    <p class="lede">A reusable foundation for building, evaluating and operating LLM-powered use cases — explained end to end, using APIX (AFNI Performance Index), AFNI's call-analytics pipeline as the working example.</p>
-    <div class="meta">
-      <span><b>Subject</b> LLMOps platform · APIX AI pipeline</span>
-      <span><b>Audience</b> Program &amp; business stakeholders</span>
-      <span><b>Updated</b> 8 Sep 2026</span>
-    </div>
-    <div class="toc">
-      <a href="#picture"><span class="tn">01</span><span class="tt">The big picture</span></a>
-      <a href="#platform"><span class="tn">02</span><span class="tt">Platform capabilities</span></a>
-      <a href="#pipeline"><span class="tn">03</span><span class="tt">How APIX works</span></a>
-      <a href="#metrics"><span class="tn">04</span><span class="tt">The metric system</span></a>
-      <a href="#evaluation"><span class="tn">05</span><span class="tt">Evaluation &amp; golden data</span></a>
-      <a href="#status"><span class="tn">06</span><span class="tt">Where we are</span></a>
-      <a href="#next"><span class="tn">07</span><span class="tt">Dependencies &amp; roadmap</span></a>
-      <a href="#glossary"><span class="tn">08</span><span class="tt">Glossary</span></a>
-    </div>
-  </header>
-
-  <section id="picture">
-    <div class="eyebrow"><span class="num">01</span> The big picture</div>
-    <h2>One reusable platform, many use cases</h2>
-    <p class="soft">The work is not a single call-analytics application. It is a <b>standardized LLMOps platform</b> — a common foundation for deploying and operating any number of LLM-based use cases. APIX, AFNI's contact-center performance pipeline, is simply the first use case that runs on it and proves it works.</p>
-    <div class="explain"><b>In plain terms:</b> we built the factory, not just one product. APIX is the first thing off the line. Each new use case reuses the whole factory and only supplies its own recipe — its data, its prompts, and how it wants to be measured.</div>
-    <div class="grid2" style="margin-top:8px">
-      <div class="card">
-        <div class="split-h"><h3>The platform</h3><span class="tag reuse">Reused by everyone</span></div>
-        <ul class="clean">
-          <li><b>Provides the operational muscle</b> every LLM use case needs: prompt &amp; model management, evaluation, observability, guardrails, feedback and controls.</li>
-          <li><b>Onboard by configuration</b> — a new use case adds only its own config and evaluation data; no re-plumbing.</li>
-          <li><b>Improve without code changes</b> — an evaluation gate before deployment, and prompt-level tuning after it.</li>
-        </ul>
-      </div>
-      <div class="card">
-        <div class="split-h"><h3>A use case (APIX)</h3><span class="tag spec">Its own recipe</span></div>
-        <ul class="clean">
-          <li><b>Scores 100% of weekly calls</b> into per-agent coaching, across three Verizon lines of business.</li>
-          <li><b>Supplies only what's unique to it:</b> the evaluation schema, the prompts, the KPI definitions and its golden data.</li>
-          <li><b>Plugs into the platform</b> at a single, fail-open connection point — a platform hiccup never breaks a run.</li>
-        </ul>
-      </div>
-    </div>
-    <p class="soft" style="margin-top:20px">Future use cases already in view — hiring intelligence, agent knowledge-assist, automated quality-scoring, coaching-plan generation — inherit the same platform and add only their own configuration. That reuse is the strategic value; APIX demonstrates it end to end.</p>
-  </section>
-
-  <section id="platform">
-    <div class="eyebrow"><span class="num">02</span> The platform, capability by capability</div>
-    <h2>What every use case gets for free</h2>
-    <p class="soft">Seven capabilities make up the platform. All seven are already integrated into APIX through a single connection point, so the pipeline benefits from them today without carrying their complexity in its own code.</p>
-    <div class="capgrid">
-      <div class="cap">
-        <div class="ct"><span class="ci">1</span><h3>Prompt Management</h3></div>
-        <p>Prompts live in a versioned registry, separate from application code. A prompt engineer edits and tests a prompt, and — once approved — promotes it as a new version. The running system picks it up without a code release.</p>
-        <div class="how"><b>Why it matters:</b> most quality improvements are prompt changes; this makes them safe, tracked and independent of engineering.</div>
-      </div>
-      <div class="cap">
-        <div class="ct"><span class="ci">2</span><h3>Model Management</h3></div>
-        <p>Code refers to a model by a stable alias (e.g. <span class="mono">reason</span>, <span class="mono">bulk</span>), not a hard-coded deployment name. A registry maps aliases to actual models per environment, and resolution is fail-open.</p>
-        <div class="how"><b>Why it matters:</b> swap or upgrade models by config, per environment, with zero code change and no risk of a bad lookup breaking a run.</div>
-      </div>
-      <div class="cap">
-        <div class="ct"><span class="ci">3</span><h3>Evaluation Gate</h3></div>
-        <p>Before a prompt/model change ships, it is scored against a curated "golden" dataset. The gate reports quality plus token usage, cost and latency. Below the required threshold, the change is rejected rather than deployed.</p>
-        <div class="how"><b>Why it matters:</b> quality is measured before customers see it — no more "ship and hope."</div>
-      </div>
-      <div class="cap">
-        <div class="ct"><span class="ci">4</span><h3>Observability</h3></div>
-        <p>Every model call is traced with its step context, token counts, latency and cost, so runs can be monitored, debugged and costed after the fact.</p>
-        <div class="how"><b>Why it matters:</b> operational visibility into a system that makes thousands of model calls per run.</div>
-      </div>
-      <div class="cap">
-        <div class="ct"><span class="ci">5</span><h3>Guardrails &amp; Audit</h3></div>
-        <p>Checks such as PII detection run on the way through, and flagged events are recorded for review rather than silently dropped. Each use case applies the policy appropriate to it.</p>
-        <div class="how"><b>Why it matters:</b> compliance and safety with an auditable trail, not a black box.</div>
-      </div>
-      <div class="cap">
-        <div class="ct"><span class="ci">6</span><h3>Feedback Loop</h3></div>
-        <p>Application users — for APIX, coaches — rate a generated result (1–5) and add comments. Feedback is stored so a maintenance engineer can revise prompts and, where justified, expand the evaluation dataset.</p>
-        <div class="how"><b>Why it matters:</b> production experience flows back into measurable improvement.</div>
-      </div>
-      <div class="cap">
-        <div class="ct"><span class="ci">7</span><h3>Operational Controls</h3></div>
-        <p>Rate-limiting, retries, timeouts and a mock/real switch keep large runs within provider limits and let the pipeline be exercised safely without live calls.</p>
-        <div class="how"><b>Why it matters:</b> reliability and cost-control at the scale of scoring every call, every week.</div>
-      </div>
-    </div>
-  </section>
-  <section id="pipeline">
-    <div class="eyebrow"><span class="num">03</span> How APIX works</div>
-    <h2>From raw call to per-agent coaching, in five steps</h2>
-    <p class="soft">APIX runs weekly. It takes raw contact-center call transcripts and turns them into a coaching scorecard for every agent. Each step feeds the next; the model is used where judgment is needed and plain computation is used everywhere else.</p>
-    <div class="explain"><b>In plain terms:</b> the pipeline reads every call, judges what happened on it, adds up those judgments per agent over the week, blends in operational numbers from Verizon's systems, and writes one weekly file the coaching dashboard reads.</div>
-    <div class="flow">
-      <div class="step"><div class="sn">STEP 1</div><h3>Denoise</h3><p>Cleans raw, messy speech-to-text transcripts into readable form so later steps judge content, not transcription errors.</p><div class="io">raw → clean transcript</div></div>
-      <div class="step"><div class="sn">STEP 2</div><h3>Analysis</h3><p>Scores every single call against the program's evaluation schema — behaviours, outcomes, sentiment — each with the call segments that justify it.</p><div class="io">call → structured evaluation</div></div>
-      <div class="step"><div class="sn">STEP 3</div><h3>Summary</h3><p>Rolls a full week of a coach's calls into per-agent KPIs and behaviour scores, and writes a coaching narrative.</p><div class="io">week of calls → scorecard</div></div>
-      <div class="step"><div class="sn">STEP 4</div><h3>Individual metrics</h3><p>Adds each agent's operational metrics from Verizon's data warehouse and generates tailored coaching tips from the trends.</p><div class="io">+ AHT / VXS / resolve</div></div>
-      <div class="step"><div class="sn">STEP 5</div><h3>KPI aggregator</h3><p>Flattens everything into the single weekly file the dashboard consumes, with roll-up scores per agent.</p><div class="io">→ dashboard CSV</div></div>
-    </div>
-    <p class="soft" style="margin-top:22px">A defining strength: <b>every judgment the model makes is backed by evidence</b> — the specific call segments that support it are recorded alongside the result. Coaching is auditable, not a black-box score.</p>
-
-    <h3 style="margin-top:30px">Three programs, three lenses</h3>
-    <p class="soft">The same pipeline serves three Verizon lines of business. Each has its own evaluation schema, prompts and KPIs, because "a good call" means something different in each.</p>
-    <div class="grid3" style="margin-top:8px">
-      <div class="card"><h3>Telesales</h3><p class="soft" style="font-size:14px;margin:8px 0 0">VZW Telesales — a <b>sales</b> lens: new-line pitches, upgrades, save attempts, mobile protection. <b>12 KPIs.</b></p></div>
-      <div class="card"><h3>WCC</h3><p class="soft" style="font-size:14px;margin:8px 0 0">Wireless Customer Care — a <b>care &amp; retention</b> lens across LEARN / PROVIDE / CLOSE phases: resolution, saves, right-of-sell. <b>11 KPIs.</b></p></div>
-      <div class="card"><h3>PSO</h3><p class="soft" style="font-size:14px;margin:8px 0 0">VZ Mobile Service — a <b>care</b> lens and the most metric-dense: CSAT, FCR, quality, efficiency, repeat-contact risk. <b>24 KPIs.</b></p></div>
-    </div>
-  </section>
-
-  <section id="metrics">
-    <div class="eyebrow"><span class="num">04</span> The metric system</div>
-    <h2>How one call becomes a set of measurable KPIs</h2>
-    <p class="soft">This is the heart of APIX. Understanding it is what lets us evaluate and improve the system with confidence. There are four kinds of metric, produced in a clear chain.</p>
-    <div class="explain"><b>The chain:</b> the model judges each <b>call</b> (true/false, a rating, a score) → those per-call judgments are <b>added up per agent</b> into KPIs and behaviour scores → operational numbers from Verizon's warehouse are joined in → a few <b>roll-up scores</b> summarize the week. A prompt only ever changes the first link; everything after it is arithmetic.</div>
-    <div class="grid2" style="margin-top:8px">
-      <div class="card"><h3>1 · KPIs</h3><p class="soft" style="font-size:14.5px;margin:8px 0 0">Counts and rates of behaviours and outcomes — e.g. how many new-line pitches, what share of calls resolved. Derived by adding up the per-call flags.</p></div>
-      <div class="card"><h3>2 · Behaviour &amp; soft-skill scores</h3><p class="soft" style="font-size:14.5px;margin:8px 0 0">How consistently an agent shows a skill (active listening, empathy, clarity…), expressed as a 0–1 average across their calls.</p></div>
-      <div class="card"><h3>3 · Operational metrics</h3><p class="soft" style="font-size:14.5px;margin:8px 0 0">Handling time, VXS, resolution and disconnect rates — pulled from Verizon's data warehouse. <b>Not produced by the model.</b></p></div>
-      <div class="card"><h3>4 · Roll-up scores</h3><p class="soft" style="font-size:14.5px;margin:8px 0 0">A composite performance score, risk counts and a status label that summarize an agent's week for the manager view.</p></div>
-    </div>
-
-    <h3 style="margin-top:32px">The KPIs, by program</h3>
-    <p class="soft">Each KPI below is derived deterministically from the per-call evaluation fields. "Unit" is whether it's an absolute <span class="mono">count</span> of calls or a <span class="mono">rate</span> (0–1). The full field-level detail lives in <span class="mono">KPI_DICTIONARY.md</span>.</p>
-
-    <h3 style="margin-top:22px;font-size:15px;color:var(--ink-soft)">Telesales — sales performance</h3>
-    <div class="tw"><table>
-      <thead><tr><th>KPI</th><th>What it measures</th><th>Unit</th></tr></thead>
-      <tbody>
-        <tr><td class="k">new_line_pitches</td><td>New-line pitches made where an opportunity existed</td><td class="u">count</td></tr>
-        <tr><td class="k">new_line_opportunity_missed</td><td>Share of new-line opportunities not pitched</td><td class="u">rate</td></tr>
-        <tr><td class="k">upgrade_attempts</td><td>Plan-upgrade pitches where an opportunity existed</td><td class="u">count</td></tr>
-        <tr><td class="k">upgrade_opportunity_missed</td><td>Share of upgrade opportunities not pitched</td><td class="u">rate</td></tr>
-        <tr><td class="k">save_attempts</td><td>Retention save attempts</td><td class="u">count</td></tr>
-        <tr><td class="k">mobile_protection_attempts</td><td>Mobile-protection pitches</td><td class="u">count</td></tr>
-        <tr><td class="k">fwa_attempts</td><td>Fixed-wireless-access pitches</td><td class="u">count</td></tr>
-        <tr><td class="k">we_got_you_utterances</td><td>Reassurance phrasing used</td><td class="u">count</td></tr>
-        <tr><td class="k">escalations</td><td>Calls with an escalation (frustration or requested)</td><td class="u">count</td></tr>
-        <tr><td class="k">customer_experience</td><td>Share of rated calls not rated "Poor"</td><td class="u">rate</td></tr>
-      </tbody>
-    </table></div>
-    <div class="cap-note">Plus the two opportunity-exists denominators. 10 behaviour scores (active listening, empathy, clarity…) and 6 soft skills are tracked separately as 0–1 averages.</div>
-
-    <h3 style="margin-top:24px;font-size:15px;color:var(--ink-soft)">WCC — care &amp; retention (LEARN / PROVIDE / CLOSE)</h3>
-    <div class="tw"><table>
-      <thead><tr><th>KPI</th><th>What it measures</th><th>Unit</th></tr></thead>
-      <tbody>
-        <tr><td class="k">resolution_opportunities</td><td>Calls where the issue could be resolved</td><td class="u">count</td></tr>
-        <tr><td class="k">resolutions</td><td>Of those, calls actually resolved</td><td class="u">count</td></tr>
-        <tr><td class="k">survival_opportunities</td><td>Calls with churn/retention risk present</td><td class="u">count</td></tr>
-        <tr><td class="k">saves</td><td>Of those, customers retained</td><td class="u">count</td></tr>
-        <tr><td class="k">right_of_sell_opportunities</td><td>Calls where a sell was appropriate</td><td class="u">count</td></tr>
-        <tr><td class="k">right_of_sell_actuals</td><td>Of those, sell attempts made</td><td class="u">count</td></tr>
-        <tr><td class="k">escalations</td><td>Calls with an escalation</td><td class="u">count</td></tr>
-        <tr><td class="k">customer_experience</td><td>Share of rated calls not "Poor"</td><td class="u">rate</td></tr>
-      </tbody>
-    </table></div>
-    <div class="cap-note">Plus 15 phase behaviours across LEARN / PROVIDE / CLOSE (greeting, verification, address needs, overcoming objections, closing restate…) and the 6 shared soft skills.</div>
-
-    <h3 style="margin-top:24px;font-size:15px;color:var(--ink-soft)">PSO — customer care (VZ Mobile), most metric-dense</h3>
-    <div class="tw"><table>
-      <thead><tr><th>Group</th><th>KPIs</th><th>Unit</th></tr></thead>
-      <tbody>
-        <tr><td>Customer experience</td><td>Predicted CSAT · Customer confidence · Customer effort</td><td class="u">rate</td></tr>
-        <tr><td>Resolve</td><td>FCR likelihood · Resolution completeness · Resolution confidence · Next-steps clarity · Issue-resolution effectiveness</td><td class="u">rate</td></tr>
-        <tr><td>Quality</td><td>Quality · Compliance · Process adherence</td><td class="u">rate</td></tr>
-        <tr><td>Care handling</td><td>Issue ownership · Escalation necessity · Transfer avoidance · Case management</td><td class="u">rate</td></tr>
-        <tr><td>Operational efficiency</td><td>AHT assessment · Contact-handling efficiency · Hold management</td><td class="u">rate</td></tr>
-        <tr><td>Repeat-contact risk</td><td>Repeat-contact · Escalation · Callback · Reopen risk</td><td class="u">count</td></tr>
-      </tbody>
-    </table></div>
-    <div class="cap-note">24 KPIs in total, plus 13 behaviour scores and the 6 shared soft skills.</div>
-
-    <div class="card" style="margin-top:26px">
-      <h3>A note on the operational metrics</h3>
-      <p class="soft" style="margin:8px 0 0;font-size:14.5px">Handling time (AHT), VXS, resolution and disconnect rates come from Verizon's data warehouse, not from the model. They are joined into each agent's scorecard as this-week-vs-last-week trends and feed the coaching tips — but because the model never computes them, they are validated as data queries, not as model output. This distinction matters for evaluation (next section).</p>
-    </div>
-  </section>
-
-  <section id="evaluation">
-    <div class="eyebrow"><span class="num">05</span> Evaluation &amp; golden data</div>
-    <h2>How we prove the system is right — and keep it right</h2>
-    <p class="soft">To improve prompts safely we need "ground truth": examples where the correct answer is agreed. The challenge raised in review was real — APIX KPIs are aggregated across many calls, so a naïve "one transcript → one KPI value" cannot validate them. The resolution is to recognize that a prompt change can only affect <b>one</b> part of the system, and to evaluate each part the right way.</p>
-    <div class="stack">
-      <div class="layer"><span class="lyr">L1</span><div><div class="name">Call-level analysis</div><div class="desc">The per-call true/false, ratings and scores the model produces</div></div><div class="how">Golden set — SME-certified labels</div></div>
-      <div class="layer"><span class="lyr">L2</span><div><div class="name">Aggregation into KPIs</div><div class="desc">Counts and rates — plain arithmetic over the call-level results</div></div><div class="how">Unit tests · no golden data</div></div>
-      <div class="layer"><span class="lyr">L3</span><div><div class="name">Coaching narrative</div><div class="desc">The weekly reflection &amp; recommendations per agent</div></div><div class="how">SME rubric / judge</div></div>
-      <div class="layer sql"><span class="lyr">SQL</span><div><div class="name">Operational metrics</div><div class="desc">AHT, VXS, resolution rate — from Verizon's warehouse</div></div><div class="how">Validate the query</div></div>
-    </div>
-    <div class="keyline">Certify the <b>call-level</b> judgments and unit-test the <b>arithmetic</b>, and every aggregate KPI is correct by construction. The metrics business worried about most — AHT, VXS, resolution rate — aren't model outputs at all, so golden data doesn't apply to them.</div>
-
-    <h3 style="margin-top:30px">What makes a transcript "golden"</h3>
-    <p class="soft">Not random selection — <b>deliberate coverage</b> of the decision space, plus reviewer agreement:</p>
-    <ul class="clean">
-      <li><b>Coverage:</b> the set must include calls that exercise each decision — with and without each opportunity type, each customer-experience rating, escalations vs none, each program, and edge cases (dropped calls, transfers, ambiguous intent).</li>
-      <li><b>Balance:</b> enough positive and negative examples of each field to measure both precision and recall; rare-but-critical fields (escalations, saves) are deliberately over-sampled.</li>
-      <li><b>Agreement:</b> each call labelled by two or more coaches; kept only where they agree. Where they disagree, the <b>definition</b> is unclear — a signal to fix before the record can be golden.</li>
-    </ul>
-
-    <h3 style="margin-top:26px">The workflow</h3>
-    <div class="flow">
-      <div class="step"><div class="sn">A</div><h3>Sample</h3><p>Pick transcripts against the coverage matrix, per program.</p></div>
-      <div class="step"><div class="sn">B</div><h3>Pre-label</h3><p>Run the current model to give reviewers a starting point.</p></div>
-      <div class="step"><div class="sn">C</div><h3>SME review</h3><p>Coaches correct the field values and confirm the evidence.</p></div>
-      <div class="step"><div class="sn">D</div><h3>Adjudicate</h3><p>Keep records where reviewers agree; freeze as a version.</p></div>
-      <div class="step"><div class="sn">E</div><h3>Gate &amp; grow</h3><p>Score prompts against it; feedback adds new scenarios.</p></div>
-    </div>
-    <p class="soft" style="margin-top:20px">Once a golden set exists, the evaluation gate does the rest: a prompt engineer selects the dataset, a model and a prompt, and runs it. The gate reports quality alongside token usage, cost and latency; below the required threshold the change is rejected. Approved prompts are saved as a new registry version — all without a code change.</p>
-  </section>
-
-  <section id="status">
-    <div class="eyebrow"><span class="num">06</span> Where we are</div>
-    <h2>Built, verified, and honestly scoped</h2>
-    <div class="stats">
-      <div class="stat"><div class="v">7/7</div><div class="l">Platform capabilities integrated</div></div>
-      <div class="stat"><div class="v">47</div><div class="l">KPIs fully mapped &amp; classified</div></div>
-      <div class="stat"><div class="v">3</div><div class="l">Programs documented end to end</div></div>
-      <div class="stat"><div class="v">2</div><div class="l">Improvements applied this cycle</div></div>
-    </div>
-    <p class="soft">The platform integration is complete. The APIX domain has been mapped in full and reviewed rigorously — deliberately, before taking questions to business — so what we bring to stakeholders is focused, not basic. A candid status:</p>
-    <div class="findlist">
-      <div class="find good">
-        <div class="t"><span class="pill good">Done</span> Platform fully integrated &amp; documented</div>
-        <p class="d">All seven capabilities are wired into APIX through a single fail-open connection point; the full KPI dictionary and golden-data spec are written.</p>
-      </div>
-      <div class="find good">
-        <div class="t"><span class="pill good">Improved this cycle</span> Metric labelling corrected &amp; code cleaned</div>
-        <p class="d">Count-type KPIs in two programs were being labelled as percentages; corrected and verified. The codebase was also cleaned for client hand-off.</p>
-      </div>
-      <div class="find warn">
-        <div class="t"><span class="pill warn">In progress</span> Manager-level roll-up score being re-specified</div>
-        <p class="d">The composite performance score was originally tuned for sales only; it needs a per-program definition so care programs are scored fairly. Scheduled as the next correctness item.</p>
-      </div>
-      <div class="find warn">
-        <div class="t"><span class="pill warn">In progress</span> WCC prompt aligned to its scorecard</div>
-        <p class="d">WCC's analysis prompt asks for some fields its scorecard doesn't use, and its coaching narrative reuses the sales template; being realigned to the care domain.</p>
-      </div>
-      <div class="find warn">
-        <div class="t"><span class="pill warn">Needs business input</span> A few definitions to confirm with SMEs</div>
-        <p class="d">A small number of metric definitions and the availability of certain operational metrics for WCC/PSO need confirmation from the APIX SMEs — captured as focused questions, below.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="next">
-    <div class="eyebrow"><span class="num">07</span> Dependencies &amp; roadmap</div>
-    <h2>What we need, and where this goes</h2>
-    <h3>Focused asks for business &amp; SMEs</h3>
-    <p class="soft">These are specific, value-adding requests — the basic definitions have already been worked out internally.</p>
-    <div class="asks">
-      <div class="ask"><span class="q">1</span><p><b>Certify labels</b> on a stratified sample of transcripts — the actual creation of the golden set.</p></div>
-      <div class="ask"><span class="q">2</span><p><b>Confirm the flagged definitions</b> where the current wording is ambiguous.</p></div>
-      <div class="ask"><span class="q">3</span><p><b>Author the coaching rubric</b> — what makes a coaching recommendation good.</p></div>
-      <div class="ask"><span class="q">4</span><p><b>Set acceptance thresholds</b> per KPI for the evaluation gate.</p></div>
-      <div class="ask"><span class="q">5</span><p><b>Confirm operational-metric coverage</b> for WCC &amp; PSO with the existing APIX SMEs.</p></div>
-    </div>
-    <h3 style="margin-top:30px">Roadmap</h3>
-    <ol class="road">
-      <li><div><span class="h">Homework &amp; cleanup</span><span class="when">Done</span><div class="s">Full KPI dictionary, golden-data spec, code cleanup and the metric-labelling fix.</div></div></li>
-      <li><div><span class="h">Correctness batch</span><span class="when">Next</span><div class="s">Re-specify the manager roll-up score per program; align the WCC prompt and coaching narrative; confirm the flagged definitions with SMEs.</div></div></li>
-      <li><div><span class="h">Golden set v1</span><span class="when">With SMEs</span><div class="s">Build the stratified, certified call-level dataset per program and wire it into the evaluation gate.</div></div></li>
-      <li><div><span class="h">Gate &amp; feedback live</span><span class="when">Then</span><div class="s">Prompt and model changes promoted only above threshold; production feedback feeds new scenarios back into the golden set.</div></div></li>
-    </ol>
-  </section>
-
-  <section id="glossary" style="border-bottom:none">
-    <div class="eyebrow"><span class="num">08</span> Glossary</div>
-    <h2>Terms used in this document</h2>
-    <dl class="gloss">
-      <dt>LLMOps platform</dt><dd>The reusable foundation for building, evaluating and operating LLM use cases — the "factory."</dd>
-      <dt>APIX</dt><dd>AFNI's contact-center performance pipeline; the first use case running on the platform.</dd>
-      <dt>Use case</dt><dd>One application built on the platform, supplying its own schema, prompts, KPIs and data.</dd>
-      <dt>KPI</dt><dd>A key performance indicator — a count or rate derived from the per-call evaluations.</dd>
-      <dt>Schema</dt><dd>The fixed structure of fields the model fills in for each call (booleans, ratings, scores).</dd>
-      <dt>Denoise</dt><dd>Cleaning raw speech-to-text transcripts before analysis.</dd>
-      <dt>Reflection</dt><dd>The model-written weekly coaching narrative for an agent.</dd>
-      <dt>Segment IDs</dt><dd>References to the specific call parts that justify a judgment — the evidence trail.</dd>
-      <dt>Golden dataset</dt><dd>Curated examples with business-certified correct answers, used to evaluate changes.</dd>
-      <dt>Ground truth</dt><dd>The agreed-correct answer for an example, certified by coaches or SMEs.</dd>
-      <dt>Evaluation gate</dt><dd>The check that scores a prompt/model against the golden set before deployment.</dd>
-      <dt>Guardrails</dt><dd>Safety/compliance checks (e.g. PII) recorded for audit rather than silently dropped.</dd>
-      <dt>AHT / VXS / FCR</dt><dd>Operational metrics: average handling time, Verizon experience score, first-contact resolution.</dd>
-      <dt>SME</dt><dd>Subject-matter expert — here, coaches and the internal APIX specialists.</dd>
-    </dl>
-  </section>
-
-  <footer>
-    <span>APIX × LLMOps · overview · prepared for stakeholder review</span>
-    <span>
-      <span class="exhibit">KPI_DICTIONARY.md</span>
-      <span class="exhibit">GOLDEN_DATASET_SPEC.md</span>
-    </span>
-  </footer>
-</main>
-
+</div>
 <script>
-  (function(){
-    var b=document.getElementById('themeBtn');
-    b.addEventListener('click',function(){
-      var cur=document.documentElement.getAttribute('data-theme');
-      var dark=cur? cur==='dark' : matchMedia('(prefers-color-scheme:dark)').matches;
-      document.documentElement.setAttribute('data-theme', dark?'light':'dark');
-    });
-  })();
+  (function(){var b=document.getElementById('themeBtn');b.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    var dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
+    document.documentElement.setAttribute('data-theme',dark?'light':'dark');});})();
 </script>
 </body>
 </html>
