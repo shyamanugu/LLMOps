@@ -1,6 +1,6 @@
-# Apex KPI Dictionary
+# APIX KPI Dictionary
 
-**Purpose.** One authoritative reference for every metric the Apex pipeline produces — across all three programs (Telesales, WCC, PSO). For each KPI it records the source schema field, how it is aggregated, its unit, its polarity, its dashboard group, and a **status** flag. This is the sign-off artifact for AFNI SME review and the map of the label space that the golden/evaluation dataset must cover.
+**Purpose.** One authoritative reference for every metric the APIX (AFNI Performance Index) pipeline produces — across all three programs (Telesales, WCC, PSO). For each KPI it records the source schema field, how it is aggregated, its unit, its polarity, its dashboard group, and a **status** flag. This is the sign-off artifact for AFNI SME review and the map of the label space that the golden/evaluation dataset must cover.
 
 > Scope note: this dictionary is generated from the code in `programs_config/<program>/` and `steps/kpi_aggregator.py`. Line references are to those files. It documents behaviour **as coded today**, including known defects (flagged), not the intended spec.
 
@@ -186,4 +186,4 @@ Bring these — not basic KPI definitions — to the business/SME sessions.
 | PSO: fix `escalation.explanation` expand rule → `escalation_reason` | `pso/__init__.py:244` | Low |
 
 ---
-*Generated as a definitional audit of the Apex pipeline configs. Update this file when KPI definitions change — it is the source of truth for the evaluation/golden dataset scope.*
+*Generated as a definitional audit of the APIX pipeline configs. Update this file when KPI definitions change — it is the source of truth for the evaluation/golden dataset scope.*

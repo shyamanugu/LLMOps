@@ -1,13 +1,13 @@
-# Apex Golden Dataset — Construction Spec
+# APIX Golden Dataset — Construction Spec
 
-**Purpose.** Define how Apex golden/ground-truth data is constructed for the LLMOps evaluation gate: what qualifies as golden, at what granularity, how it is certified by the business, and what the evaluation actually measures. This is the answer to the open dependency raised in the client review ("golden data is a foundational dependency requiring a more rigorous, use-case-specific approach").
+**Purpose.** Define how APIX golden/ground-truth data is constructed for the LLMOps evaluation gate: what qualifies as golden, at what granularity, how it is certified by the business, and what the evaluation actually measures. This is the answer to the open dependency raised in the client review ("golden data is a foundational dependency requiring a more rigorous, use-case-specific approach").
 
 Companion doc: **`KPI_DICTIONARY.md`** — the authoritative list of every metric, which defines the label space this dataset must cover.
 
 ---
 
 ## 1. The problem, stated precisely
-Apex KPIs are **aggregated across many calls over a period** (e.g. resolution rate, AHT, VXS). A naive golden recipe of *"one transcript → one expected KPI value"* cannot validate an aggregate metric, and it was never defined *why* some transcripts qualify as golden and others don't. This spec resolves both by separating what a prompt can actually change from what it cannot.
+APIX KPIs are **aggregated across many calls over a period** (e.g. resolution rate, AHT, VXS). A naive golden recipe of *"one transcript → one expected KPI value"* cannot validate an aggregate metric, and it was never defined *why* some transcripts qualify as golden and others don't. This spec resolves both by separating what a prompt can actually change from what it cannot.
 
 ## 2. The three layers (a prompt change moves only one)
 | Layer | What it is | Certifiable unit | Validation method |
@@ -61,7 +61,7 @@ A transcript qualifies **not at random** but by **stratified coverage of the lab
 6. **Grow via feedback loop** — when production feedback (coach 1–5 ratings) exposes an uncovered scenario, add it to the coverage matrix and repeat.
 
 ## 6. Sizing & stratification (starting proposal)
-Per program, an initial **150–250 certified transcripts**, allocated by the coverage matrix rather than evenly — heavier on rare-but-critical fields (escalations, saves, Poor CX). Rationale mirrors the prior chatbot effort (≈500 questions → SME-validated in cycles); start smaller per program because Apex fields are more constrained than open-domain Q&A. Exact N per field is set once the coverage matrix is filled from `KPI_DICTIONARY.md`.
+Per program, an initial **150–250 certified transcripts**, allocated by the coverage matrix rather than evenly — heavier on rare-but-critical fields (escalations, saves, Poor CX). Rationale mirrors the prior chatbot effort (≈500 questions → SME-validated in cycles); start smaller per program because APIX fields are more constrained than open-domain Q&A. Exact N per field is set once the coverage matrix is filled from `KPI_DICTIONARY.md`.
 
 ## 7. What the evaluation gate reports (per prompt/model version)
 - **L1 quality:** per-field precision / recall / F1 vs golden (detection booleans), accuracy (enums), MAE (scores) — plus token usage, cost, latency (already in the playground). Threshold-gated: below target ⇒ reject the prompt+model before deploy.
@@ -69,7 +69,7 @@ Per program, an initial **150–250 certified transcripts**, allocated by the co
 - **L3:** rubric score distribution + % flagged by judge.
 
 ## 8. What we need from the business / SMEs
-Bring these — not basic KPI definitions (do the homework first via the existing Apex SMEs). See `KPI_DICTIONARY.md §7` for the full list; the golden-data-specific asks:
+Bring these — not basic KPI definitions (do the homework first via the existing APIX SMEs). See `KPI_DICTIONARY.md §7` for the full list; the golden-data-specific asks:
 1. **Certify labels** on the stratified transcript sample (the actual golden-set creation).
 2. **Confirm field definitions** where inter-rater κ is low (definitions are ambiguous → fix before golden).
 3. **Author the L3 coaching rubric** (what makes a coaching recommendation good).
