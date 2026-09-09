@@ -309,6 +309,33 @@ this agent's new-line pitches +1</div>
           </div>
         </div>
 
+        <h3 style="margin-top:30px">Two calls, compared</h3>
+        <p class="soft">The clearest way to see what APIX captures: the <em>same</em> situation, handled two ways. Notice how one judgment flips — and changes which KPI the call counts toward.</p>
+        <div class="two" style="grid-template-columns:1fr 1fr">
+          <div class="example">
+            <div class="lab">Call A · opportunity taken</div>
+            <div class="code">Customer asks about their bill.
+Agent resolves it, then offers a
+second line. Customer accepts.
+  new_line_opportunity_exists = true
+  pitched_new_line            = <span class="arrow">true</span>
+  sale_made                   = true
+  customer_experience         = "Good"</div>
+            <p class="soft" style="margin:10px 0 0">Counts toward this agent's <b>pitches</b> and a good experience.</p>
+          </div>
+          <div class="example">
+            <div class="lab">Call B · opportunity missed</div>
+            <div class="code">Same bill question. Agent resolves
+it but never mentions a second line,
+though the customer was a clear fit.
+  new_line_opportunity_exists = true
+  pitched_new_line            = <span class="arrow">false</span>
+  issue_resolved              = true
+  customer_experience         = "Medium"</div>
+            <p class="soft" style="margin:10px 0 0">Counts toward <b>opportunity missed</b> — a coaching moment.</p>
+          </div>
+        </div>
+
         <h3 style="margin-top:30px">The KPIs, by program</h3>
         <p class="soft">“Unit” is whether a KPI is an absolute <span class="mono">count</span> of calls or a <span class="mono">rate</span> (0–1). Full field-level detail lives in <span class="mono">KPI_DICTIONARY.md</span>.</p>
 
